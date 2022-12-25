@@ -1,8 +1,7 @@
 #include "Node.h"
 
-Node::Node(char name)  {
+Node::Node(string name)  {
     this->name = name;
-    this->visited = false;
     this->neighbors = vector<Node*>();
     this->shape = sf::CircleShape(); // Creates a circle with radius = 0.
 

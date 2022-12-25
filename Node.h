@@ -2,19 +2,23 @@
 #define ALGOVIZ_NODE_H
 
 #include "SFML/Graphics.hpp"
+#include <string>
 using namespace std;
 
-class Node {
-public:
-    Node(char name);
-    void setShape(float pos_x, float pos_y);
-    sf::CircleShape getShape();
+enum node_state {current, undiscovered, discovered, done};
+enum node_color {yellow, white, red, blue};
 
-private:
-    char name;
-    bool visited;
+class Node {
+    string name;
+    node_state state = undiscovered;
+    node_color color = white;
     vector<Node*> neighbors;
     sf::CircleShape shape;
+
+public:
+    explicit Node(string name);
+    void setShape(float pos_x, float pos_y);
+    sf::CircleShape getShape();
 };
 
 
