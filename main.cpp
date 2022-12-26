@@ -1,9 +1,12 @@
 #include <iostream>
 #include "Node.h"
+#include "SFML/Graphics.hpp"
+
+using namespace sf;
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(1000, 600), "Graph");
-    Node* node = new Node('a');
+    Node* node = new Node("v");
 
     while (window.isOpen()) {
         sf::Event event;
@@ -14,12 +17,10 @@ int main() {
                     window.close();
                     break;
                 case sf::Event::MouseButtonPressed:
-                    std::cout << event.mouseButton.x << "   " << event.mouseButton.y << std::endl;
-                    node->setShape(event.mouseButton.x, event.mouseButton.y);
+                    node->setShape(Mouse::getPosition(window).x, Mouse::getPosition(window).y);
                     break;
             }
 
-            window.clear({100,100,100}); //grey
             window.draw(node->getShape());
             window.display();
         }
