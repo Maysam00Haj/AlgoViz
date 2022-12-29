@@ -34,4 +34,8 @@ int Node::getPathWeight() const {
     return this->path_weight;
 }
 
+bool Node::operator==(const Node& node) const {
+    return (this->getName() == node.getName());
+}
+
 

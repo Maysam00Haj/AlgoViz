@@ -18,7 +18,8 @@ class Edge{
     sf::RectangleShape shape;
 
 public:
-    explicit Edge(Node node1, Node node2);
+    explicit Edge(Node node1, Node
+    node2);
     ~Edge() = default;
     Node getNode1() const;
     Node getNode2() const;
