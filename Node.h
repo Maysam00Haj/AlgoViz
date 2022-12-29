@@ -23,9 +23,10 @@ public:
     sf::CircleShape getShape();
     std::string getName() const;
     void setDistance(int distance);
-    int getDistance() const ;
+    int getDistance() const;
     void setPathWeight(int path_weight);
     int getPathWeight() const;
+    bool operator==(const Node& node) const;
 };
 
 
