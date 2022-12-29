@@ -2,7 +2,7 @@
 #include "Node.h"
 #include "SFML/Graphics.hpp"
 
-using namespace sf;
+
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(1000, 600), "Graph");
@@ -17,7 +17,7 @@ int main() {
                     window.close();
                     break;
                 case sf::Event::MouseButtonPressed:
-                    node->setShape(Mouse::getPosition(window).x, Mouse::getPosition(window).y);
+                    node->setShape(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
                     break;
             }
 

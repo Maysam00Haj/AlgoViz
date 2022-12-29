@@ -5,19 +5,25 @@
 #define ALGOVIZ_EDGE_H
 
 #include "Node.h"
+#include "SFML/Graphics.hpp"
 
 enum edge_color {grey_edge, white_edge};
 
 class Edge{
-    Node node1;
-    Node node2;
+    std::string literal;
+    const Node node1;
+    const Node node2;
+    int weight = 0;
     edge_color color = grey_edge;
+    sf::RectangleShape shape;
 
 public:
-    explicit Edge(const Node& node1, const Node& node2);
+    explicit Edge(Node node1, Node node2);
     ~Edge() = default;
-    Edge(const Edge& other);
-    Edge& operator=(const Edge& other);
+    Node getNode1() const;
+    Node getNode2() const;
+    void setShape(float pos_x1, float pos_y1, float pos_x2, float pos_y2);
+    sf::RectangleShape getShape() const;
 };
 
 #endif //ALGOVIZ_EDGE_H

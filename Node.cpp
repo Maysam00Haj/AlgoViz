@@ -1,11 +1,8 @@
 #include "Node.h"
 
-Node::Node(string name)  {
-    this->name = name;
-    this->neighbors = vector<Node*>();
-    this->shape = sf::CircleShape(); // Creates a circle with radius = 0.
+#include <utility>
 
-}
+Node::Node(std::string name): name(std::move(name)),neighbors(), shape(sf::CircleShape()) {}
 
 void Node::setShape(float pos_x, float pos_y) {
     this->shape.setRadius(30);
@@ -15,6 +12,26 @@ void Node::setShape(float pos_x, float pos_y) {
 
 sf::CircleShape Node::getShape() {
     return this->shape;
+}
+
+std::string Node::getName() const {
+    return this->name;
+}
+
+void Node::setDistance(int updated_distance) {
+    this->distance = updated_distance;
+}
+
+int Node::getDistance() const {
+    return this->distance;
+}
+
+void Node::setPathWeight(int updated_path_weight) {
+    this->path_weight = updated_path_weight;
+}
+
+int Node::getPathWeight() const {
+    return this->path_weight;
 }
 
 
