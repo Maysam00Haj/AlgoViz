@@ -7,6 +7,7 @@
 
 
 
+
 int main() {
     Node v1("v1");
     Node v2("v2");
@@ -34,27 +35,40 @@ int main() {
     graph.addEdge(e2);
     assert(graph.getEdgesNum() == 1);
 
+/*
+    sf::RenderWindow window(sf::VideoMode(1000, 600), "Graph");
+    Node node("v1");
+    Node n("v2");
+    bool flag = false;
 
+    while (window.isOpen()) {
+        sf::Event event;
 
-//    sf::RenderWindow window(sf::VideoMode(1000, 600), "Graph");
-//    Node* node = new Node("v");
-//
-//    while (window.isOpen()) {
-//        sf::Event event;
-//
-//        while (window.pollEvent(event)) {
-//            switch (event.type) {
-//                case sf::Event::Closed:
-//                    window.close();
-//                    break;
-//                case sf::Event::MouseButtonPressed:
-//                    node->setShape(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
-//                    break;
-//            }
-//
-//            window.draw(node->getShape());
-//            window.display();
-//        }
-//    }
+        while (window.pollEvent(event)) {
+            switch (event.type) {
+                case sf::Event::Closed:
+                    window.close();
+                    break;
+
+                case sf::Event::MouseButtonPressed:
+                    if (!flag) {
+                        n.setShape(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
+                        flag = true;
+                        break;
+                    }
+                    else {
+                        node.setShape(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
+                        if (node.checkCollision(std::make_shared<Node>(n))) std::cout << "COLLISION!";
+                        break;
+                    }
+            }
+
+            window.clear();
+            window.draw(n.getShape());
+            window.draw(node.getShape());
+            window.display();
+        }
+    }
+*/
     return 0;
 }
