@@ -24,6 +24,7 @@ class Graph {
 public:
     explicit Graph() = default;
     ~Graph() = default;
+    bool checkValidPos(const Node& node) const;
     void addNode(const Node& node);
     void removeNode(const std::string& node_name);
     void addEdge(const Edge& edge);

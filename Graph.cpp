@@ -5,11 +5,17 @@
 #include "Node.h"
 #include "SFML/Graphics.hpp"
 
+bool Graph::checkValidPos(const Node& node) const {
+    for (auto& pair : this->nodes_list) {
+        if (node.checkCollision(pair.second)) return false;
+    }
+    return true;
+}
 
 void Graph::addNode(const Node& node) { //TODO: check if the node already exists and handle accordingly
     std::string node_name = node.getName();
     if (this->nodes_list.find(node_name) != this->nodes_list.end()) return;
-
+    if (!checkValidPos(node)) return; //TODO: exception
     this->nodes_list[node_name] = std::make_shared<Node>(node);
     this->neighbors_list[node_name] = {};
     this->nodes_num++;
