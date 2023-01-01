@@ -4,12 +4,13 @@
 #include "Graph.h"
 #include "SFML/Graphics.hpp"
 #include <cassert>
+#include "Toolbar.h"
 
 
 
 
 int main() {
-    Node v1("v1");
+  /*  Node v1("v1");
     Node v2("v2");
     Node v3("v3");
     Node v4("v4");
@@ -35,11 +36,10 @@ int main() {
     graph.addEdge(e2);
     assert(graph.getEdgesNum() == 1);
 
-/*
+*/
+
     sf::RenderWindow window(sf::VideoMode(1000, 600), "Graph");
-    Node node("v1");
-    Node n("v2");
-    bool flag = false;
+    //Button* button = new Button(200, 200, 100, 100, "C:\\Users\\Maysam\\Desktop\\eraserIcon.png", 0);
 
     while (window.isOpen()) {
         sf::Event event;
@@ -49,26 +49,12 @@ int main() {
                 case sf::Event::Closed:
                     window.close();
                     break;
-
-                case sf::Event::MouseButtonPressed:
-                    if (!flag) {
-                        n.setShape(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
-                        flag = true;
-                        break;
-                    }
-                    else {
-                        node.setShape(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
-                        if (node.checkCollision(std::make_shared<Node>(n))) std::cout << "COLLISION!";
-                        break;
-                    }
             }
-
             window.clear();
-            window.draw(n.getShape());
-            window.draw(node.getShape());
+        //    button->render(window);
             window.display();
         }
     }
-*/
+
     return 0;
 }
