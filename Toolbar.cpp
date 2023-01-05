@@ -55,6 +55,14 @@ Toolbar::Toolbar(float x, float y, float width, float height, std::vector<std::s
     }
 }
 
+Toolbar::Toolbar() {
+    //Todo: fix
+    std::vector<std::string> icons = {"a", "b"};
+    for (unsigned int i = 0; i < icons.size(); i++) {
+        this->Buttons.push_back(std::make_shared<Button>(100, 100 + (i + 1) * 20, 20, 20, icons[i],i));
+    }
+}
+
 Toolbar::~Toolbar() {}
 
 void Toolbar::update(const sf::Vector2i& mousePosWindow) {

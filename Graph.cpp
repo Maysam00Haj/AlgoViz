@@ -3,7 +3,17 @@
 //
 #include "Graph.h"
 #include "Node.h"
-#include "SFML/Graphics.hpp"
+
+void Graph::render(sf::RenderTarget& target) {
+    for (auto &pair: this->nodes_list) {
+        pair.second->render(target);
+    }
+    //Todo: render edges
+}
+
+std::string Graph::generateName() const {
+    return "node_" + std::to_string(this->nodes_num);
+}
 
 bool Graph::checkValidPos(const Node& node) const {
     for (auto& pair : this->nodes_list) {
@@ -12,9 +22,9 @@ bool Graph::checkValidPos(const Node& node) const {
     return true;
 }
 
-void Graph::addNode(const Node& node) { //TODO: check if the node already exists and handle accordingly
-    std::string node_name = node.getName();
-    if (this->nodes_list.find(node_name) != this->nodes_list.end()) return;
+void Graph::addNode(float pos_x, float pos_y) {
+    std::string node_name = generateName();
+    Node node(node_name, pos_x, pos_y);
     if (!checkValidPos(node)) return; //TODO: exception
     this->nodes_list[node_name] = std::make_shared<Node>(node);
     this->neighbors_list[node_name] = {};

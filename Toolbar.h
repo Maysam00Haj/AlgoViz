@@ -29,6 +29,7 @@ private:
 
 public:
     Toolbar(float x, float y, float width, float height, std::vector<std::string>& buttonIcons);
+    Toolbar();
     ~Toolbar();
     int getActiveButtonId() const;
     void update(const sf::Vector2i& mousePosWindow);
