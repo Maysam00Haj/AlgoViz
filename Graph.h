@@ -10,7 +10,7 @@
 #include <unordered_set>
 #include "Node.h"
 #include "Edge.h"
-
+#include <SFML/Graphics.hpp>
 
 class Graph {
     int nodes_num = 0;
@@ -21,11 +21,14 @@ class Graph {
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Edge>>> edges_list; // for each node there's a set of edges that touch it (2 copies for each edge)
     bool directed = false; //TODO: is this the best way to handle different types of graphs?
 
+    std::string generateName() const;
+    bool checkValidPos(const Node& node) const;
+
 public:
     explicit Graph() = default;
     ~Graph() = default;
-    bool checkValidPos(const Node& node) const;
-    void addNode(const Node& node);
+    void render(sf::RenderTarget& target);
+    void addNode(float pos_x, float pos_y);
     void removeNode(const std::string& node_name);
     void addEdge(const Edge& edge);
     void removeEdge(const Edge& edge);

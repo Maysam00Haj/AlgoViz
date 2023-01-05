@@ -4,7 +4,9 @@
 
 #define RADIUS 30
 
-Node::Node(std::string name): name(std::move(name)),neighbors(), shape(sf::CircleShape()) {}
+Node::Node(std::string name, float pos_x, float pos_y): name(std::move(name)),neighbors(), shape(sf::CircleShape()) {
+    setShape(pos_x, pos_y);
+}
 
 void Node::setShape(float pos_x, float pos_y) {
     this->shape.setRadius(RADIUS);
@@ -18,6 +20,10 @@ sf::CircleShape Node::getShape() const {
 
 sf::Rect<float> Node::getShapeLocalBounds() const {
     return this->shape.getLocalBounds();
+}
+
+void Node::render(sf::RenderTarget& target) {
+    target.draw(this->shape);
 }
 
 std::string Node::getName() const {

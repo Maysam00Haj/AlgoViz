@@ -1,13 +1,6 @@
 #include <iostream>
-#include "Node.h"
-#include "Edge.h"
-#include "Graph.h"
-#include "SFML/Graphics.hpp"
+#include "Visualizer.h"
 #include <cassert>
-#include "Toolbar.h"
-
-
-
 
 int main() {
   /*  Node v1("v1");
@@ -38,23 +31,7 @@ int main() {
 
 */
 
-    sf::RenderWindow window(sf::VideoMode(1000, 600), "Graph");
-    //Button* button = new Button(200, 200, 100, 100, "C:\\Users\\Maysam\\Desktop\\eraserIcon.png", 0);
-
-    while (window.isOpen()) {
-        sf::Event event;
-
-        while (window.pollEvent(event)) {
-            switch (event.type) {
-                case sf::Event::Closed:
-                    window.close();
-                    break;
-            }
-            window.clear();
-        //    button->render(window);
-            window.display();
-        }
-    }
-
+    Visualizer algoViz;
+    algoViz.run();
     return 0;
 }
