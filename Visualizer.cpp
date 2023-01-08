@@ -2,10 +2,10 @@
 
 void Visualizer::initWindow() {
     this->window = new sf::RenderWindow(sf::VideoMode(1000, 600), "Graph Visualizer");
+    this->window->setFramerateLimit(60);
 }
 
 void Visualizer::initState() {
-
 }
 
 Visualizer::Visualizer() {
@@ -35,7 +35,7 @@ void Visualizer::update() {
 
 void Visualizer::render() {
     this->window->clear();
- //   this->toolbar.render(*this->window); //Todo: fix
+    this->toolbar.render(*this->window);
     this->graph.render(*this->window);
     this->window->display();
 }
