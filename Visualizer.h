@@ -8,11 +8,9 @@ private:
     sf::RenderWindow* window;
     sf::Event sfEvent;
     Graph graph;
-  //Toolbar toolbar; //Todo: fix
+    Toolbar toolbar;
 
     void initWindow();
-    void initGraph();
-    void initToolbar();
     void initState();
 
 public:

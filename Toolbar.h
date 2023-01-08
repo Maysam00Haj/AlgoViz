@@ -9,10 +9,11 @@ class Button {
 private:
     button_states buttonState;
     sf::RectangleShape shape;
+    sf::Text text;
     int id;
 
 public:
-    Button(float x, float y, float width, float height, std::string iconPath, int id = 0);
+    Button(float x, float y, float width, float height, std::string txt, int id = 0);
     ~Button();
     bool isPressed() const;
     int getId() const;

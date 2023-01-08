@@ -19,6 +19,7 @@ bool Graph::checkValidPos(const Node& node) const {
     for (auto& pair : this->nodes_list) {
         if (node.checkCollision(pair.second)) return false;
     }
+    //Todo: set x and y limits
     return true;
 }
 

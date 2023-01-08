@@ -1,16 +1,18 @@
 #include "Toolbar.h"
 #include <iostream>
 
-Button::Button(float x, float y, float width, float height, std::string iconPath, int id) {
+Button::Button(float x, float y, float width, float height, std::string txt, int id) {
     this->buttonState = BUTTON_IDLE;
     this->id = id;
     this->shape.setPosition(sf::Vector2f(x, y));
     this->shape.setSize(sf::Vector2f(width, height));
     this->shape.setOutlineThickness(1.f);
-
-    sf::Texture texture;
-    texture.loadFromFile(iconPath); // TODO: exception
-    this->shape.setTexture(&texture);
+    //Todo: fix this.
+    //text isn't being printed
+    this->text = sf::Text();
+    this->text.setString(txt);
+    this->text.setPosition(sf::Vector2f(x, y));
+    this->text.setFillColor(sf::Color::Red);
 }
 
 Button::~Button() {}
@@ -44,22 +46,15 @@ bool Button::update(const sf::Vector2i& mousePosWindow) {
 
 void Button::render(sf::RenderTarget& target) {
     target.draw(this->shape);
+    target.draw(this->text);
 }
 
 //-----------------------------------------------------------------------------------------------------
 
-
-Toolbar::Toolbar(float x, float y, float width, float height, std::vector<std::string>& buttonIcons) {
-    for (unsigned int i = 0; i < buttonIcons.size(); i++) {
-        this->Buttons.push_back(std::make_shared<Button>(x, y + (i + 1) * height, width, height,buttonIcons[i],i));
-    }
-}
-
 Toolbar::Toolbar() {
-    //Todo: fix
-    std::vector<std::string> icons = {"a", "b"};
+    std::vector<std::string> icons = {"add node", "add edge", "erase"};
     for (unsigned int i = 0; i < icons.size(); i++) {
-        this->Buttons.push_back(std::make_shared<Button>(100, 100 + (i + 1) * 20, 20, 20, icons[i],i));
+        this->Buttons.push_back(std::make_shared<Button>(20, 20 + ((50 + 10) * i), 50, 50, icons[i], i));
     }
 }
 

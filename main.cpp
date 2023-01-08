@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Visualizer.h"
 #include <cassert>
+#include "Toolbar.h"
 
 int main() {
   /*  Node v1("v1");
@@ -28,10 +29,10 @@ int main() {
     assert(graph.getNodesNum() == 2);
     graph.addEdge(e2);
     assert(graph.getEdgesNum() == 1);
-
 */
 
     Visualizer algoViz;
     algoViz.run();
+
     return 0;
 }
