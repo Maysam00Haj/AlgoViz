@@ -18,10 +18,13 @@ class Node {
     sf::CircleShape shape;
 
 public:
-    explicit Node(std::string name);
+    explicit Node(std::string name, float pos_x, float pos_y);
     void setShape(float pos_x, float pos_y);
-    sf::CircleShape getShape();
+    sf::CircleShape getShape() const;
+    sf::Rect<float> getShapeLocalBounds() const;
+    void render(sf::RenderTarget& target);
     std::string getName() const;
+    bool checkCollision(std::shared_ptr<Node> node) const;
     void setDistance(int distance);
     int getDistance() const;
     void setPathWeight(int path_weight);
