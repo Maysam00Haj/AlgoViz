@@ -15,16 +15,16 @@ class Edge{
     const Node node2;
     int weight = 0;
     edge_color color = grey_edge;
-    sf::RectangleShape shape;
+    sf::Vertex line[2];
 
 public:
-    explicit Edge(Node node1, Node
-    node2);
+    explicit Edge(const Node& node1, const Node& node2);
     ~Edge() = default;
     Node getNode1() const;
     Node getNode2() const;
-    void setShape(float pos_x1, float pos_y1, float pos_x2, float pos_y2);
-    sf::RectangleShape getShape() const;
+    void render(sf::RenderTarget& target);
+    bool operator<(const Edge& other) const;
+    bool operator==(const Edge& other) const;
 };
 
 #endif //ALGOVIZ_EDGE_H

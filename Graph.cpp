@@ -1,14 +1,17 @@
 //
 // Created by User on 12/23/2022.
 //
+#include <queue>
 #include "Graph.h"
 #include "Node.h"
 
 void Graph::render(sf::RenderTarget& target) {
-    for (auto &pair: this->nodes_list) {
-        pair.second->render(target);
+    for (auto &node: this->nodes_list) {
+        node.second->render(target);
+        for (auto &edge: this->edges_list[node.first]) {
+            edge->render(target);
+        }
     }
-    //Todo: render edges
 }
 
 std::string Graph::generateName() const {
@@ -112,13 +115,21 @@ bool Graph::containsEdge(const Edge& edge) {
 
 
 
-void Graph::changeStartNode(const Node& new_start_node) { //TODO: implement containsNode and containsEdge and change this implementation
+void Graph::changeStartNode(const Node& new_start_node) {
     if (!this->containsNode(new_start_node.getName())) return;
     this->start_node = std::make_shared<Node>(new_start_node);
+    this->start_node->setDistance(0);
+    this->start_node->setPathWeight(0);
 }
 
-
 void Graph::runBFS() {
+    //TODO: heavy duty SFML stuff, change colors of nodes and edges,
+    //      detect event of clicking on pause/resume/single step.
+    //      implement delay between steps. (below is just a generic
+    //      non-GUI implementation of BFS).
+    if (this->start_node == nullptr) return;
+    std::queue<std::shared_ptr<Node>> bfs_queue;
+    bfs_queue.push(this->start_node);
 
 }
 
