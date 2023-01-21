@@ -1,7 +1,7 @@
 #include "Toolbar.h"
 #include <iostream>
 
-Button::Button(float x, float y, float width, float height, std::string txt, int id) {
+Button::Button(float x, float y, float width, float height, const std::string& txt, button_id id) {
     this->buttonState = BUTTON_IDLE;
     this->id = id;
     this->shape.setPosition(sf::Vector2f(x, y));
@@ -15,8 +15,6 @@ Button::Button(float x, float y, float width, float height, std::string txt, int
     this->text.setFillColor(sf::Color::Red);
 }
 
-Button::~Button() {}
-
 bool Button::isPressed() const {
     if (this->buttonState == BUTTON_ACTIVE)
         return true;
@@ -24,22 +22,19 @@ bool Button::isPressed() const {
     return false;
 }
 
-int Button::getId() const {
+button_id Button::getId() const {
     return this->id;
 }
 
-void Button::setId(int id) {
+void Button::setId(button_id id) {
     this->id = id;
 }
 
 bool Button::update(const sf::Vector2i& mousePosWindow) {
-    //Mouse is in bounds
+    //Mouse click is in bounds
     if (this->shape.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosWindow))) {
-        //Pressed
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            this->buttonState = BUTTON_ACTIVE;
-            return true;
-        }
+        this->buttonState = BUTTON_ACTIVE;
+        return true;
     }
     return false;
 }
@@ -52,23 +47,27 @@ void Button::render(sf::RenderTarget& target) {
 //-----------------------------------------------------------------------------------------------------
 
 Toolbar::Toolbar() {
-    std::vector<std::string> icons = {"add node", "add edge", "erase"};
+    std::vector<std::string> icons = {"add node", "add edge", "erase", "change start node", "start", "pause", "end", "clean"};
+    std::vector<button_id> id_list = {ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, START, PAUSE, END, CLEAN};
     for (unsigned int i = 0; i < icons.size(); i++) {
-        this->Buttons.push_back(std::make_shared<Button>(20, 20 + ((50 + 10) * i), 50, 50, icons[i], i));
+        this->buttons.push_back(std::make_shared<Button>(20, 20 + ((50 + 10) * i), 50, 50, icons[i], id_list[i]));
     }
+    this->active_button = buttons[0];
 }
 
-Toolbar::~Toolbar() {}
+button_id Toolbar::getActiveButtonId() const {
+    return this->active_button->getId();
+}
 
 void Toolbar::update(const sf::Vector2i& mousePosWindow) {
-    for (auto& i : this->Buttons) {
-        if (i->update(mousePosWindow)) this->activeButton = i;
+    for (auto& button : this->buttons) {
+        if (button->update(mousePosWindow)) this->active_button = button;
     }
 }
 
 void Toolbar::render(sf::RenderTarget& target) {
-    for (auto& i : this->Buttons) {
-        i->render(target);
+    for (const auto& button : this->buttons) {
+        button->render(target);
     }
 }
 

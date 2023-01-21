@@ -19,7 +19,7 @@ class Graph {
     std::unordered_map<std::string, std::shared_ptr<Node>> nodes_list; // enables us to find node pointer by its name string
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Node>>> neighbors_list;
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Edge>>> edges_list; // for each node there's a set of edges that touch it (2 copies of each edge)
-    bool directed = false; //TODO: is this the best way to handle different types of graphs?
+    bool directed = false;
 
     std::string generateName() const;
     bool checkValidPos(const Node& node) const;
@@ -35,13 +35,12 @@ public:
     std::shared_ptr<Node> getStartNode() const;
     int getNodesNum() const;
     int getEdgesNum() const;
-    bool containsNode(const std::string& node_name); //important, changes some implementation
-    bool containsEdge(const Edge& edge);//same as above
+    bool containsNode(const std::string& node_name);
+    bool containsEdge(const Edge& edge);
     void changeStartNode(const Node& new_start_node);
-    void runBFS();
-    void runDFS();
-    void runDijkstra();
     bool hasNegativeCircle();
+    std::shared_ptr<Node> getNodeByPosition(float pos_x, float pos_y);
+    std::shared_ptr<Edge> getEdgeByPosition(float pos_x, float pos_y);
 
 };
 #endif //ALGOVIZ_GRAPH_H

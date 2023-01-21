@@ -5,13 +5,12 @@
 #include <string>
 #include <memory>
 
-enum node_state {current, undiscovered, discovered, done};
-enum node_color {yellow, white, red, blue};
 
 class Node {
+    enum state {CURRENT, UNDISCOVERED, DISCOVERED, DONE};
+
     std::string name;
-    node_state state = undiscovered;
-    node_color color = white;
+    state state = UNDISCOVERED;
     int distance = INT_MAX;
     int path_weight = INT_MAX;
     std::vector<std::shared_ptr<Node>> neighbors;
@@ -29,6 +28,7 @@ public:
     void setPathWeight(int path_weight);
     int getPathWeight() const;
     bool operator==(const Node& node) const;
+    void changeColor(const sf::Color& color);
 };
 
 
