@@ -7,21 +7,21 @@
 #include "Node.h"
 #include "SFML/Graphics.hpp"
 
-enum edge_color {grey_edge, white_edge};
 
 class Edge{
+
     std::string literal;
     const Node node1;
     const Node node2;
     int weight = 0;
-    edge_color color = grey_edge;
-    sf::Vertex line[2];
+    sf::RectangleShape shape;
 
 public:
     explicit Edge(const Node& node1, const Node& node2);
     ~Edge() = default;
     Node getNode1() const;
     Node getNode2() const;
+    sf::RectangleShape getShape() const;
     void render(sf::RenderTarget& target);
     bool operator<(const Edge& other) const;
     bool operator==(const Edge& other) const;

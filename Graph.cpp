@@ -7,10 +7,10 @@
 
 void Graph::render(sf::RenderTarget& target) {
     for (auto &node: this->nodes_list) {
-        node.second->render(target);
         for (auto &edge: this->edges_list[node.first]) {
             edge->render(target);
         }
+        node.second->render(target);
     }
 }
 
@@ -36,7 +36,7 @@ void Graph::addNode(float pos_x, float pos_y) {
 }
 
 
-void Graph::removeNode(const std::string& node_name) { //TODO: is there a need to handle the case where the node doesn't exist?
+void Graph::removeNode(const std::string& node_name) {
     if (this->nodes_list.find(node_name) == this->nodes_list.end()) return;
 
     this->nodes_list.erase(node_name);
@@ -114,7 +114,6 @@ bool Graph::containsEdge(const Edge& edge) {
 }
 
 
-
 void Graph::changeStartNode(const Node& new_start_node) {
     if (!this->containsNode(new_start_node.getName())) return;
     this->start_node = std::make_shared<Node>(new_start_node);
@@ -122,25 +121,26 @@ void Graph::changeStartNode(const Node& new_start_node) {
     this->start_node->setPathWeight(0);
 }
 
-void Graph::runBFS() {
-    //TODO: heavy duty SFML stuff, change colors of nodes and edges,
-    //      detect event of clicking on pause/resume/single step.
-    //      implement delay between steps. (below is just a generic
-    //      non-GUI implementation of BFS).
-    if (this->start_node == nullptr) return;
-    std::queue<std::shared_ptr<Node>> bfs_queue;
-    bfs_queue.push(this->start_node);
-
-}
-
-void Graph::runDFS() {
-
-}
-
-void Graph::runDijkstra() {
-
-}
-
 bool Graph::hasNegativeCircle() {
     return false;
+}
+
+std::shared_ptr<Node> Graph::getNodeByPosition(float pos_x, float pos_y) {
+    for (const auto& node: this->nodes_list) {
+        if (node.second->getShape().getGlobalBounds().contains(pos_x, pos_y)) {
+            return node.second;
+        }
+    }
+    return nullptr;
+}
+
+std::shared_ptr<Edge> Graph::getEdgeByPosition(float pos_x, float pos_y) {
+    for (const auto& edges: edges_list) {
+        for (const auto& edge: edges.second) {
+            if (edge->getShape().getGlobalBounds().contains(pos_x, pos_y)) {
+                return edge;
+            }
+        }
+    }
+    return nullptr;
 }

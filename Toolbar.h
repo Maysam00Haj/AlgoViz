@@ -4,20 +4,20 @@
 #include <SFML/Graphics.hpp>
 
 enum button_states {BUTTON_IDLE = 0, BUTTON_ACTIVE};
+enum button_id {ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, START, PAUSE, END, CLEAN};
 
 class Button {
-private:
     button_states buttonState;
     sf::RectangleShape shape;
     sf::Text text;
-    int id;
+    button_id id;
 
 public:
-    Button(float x, float y, float width, float height, std::string txt, int id = 0);
-    ~Button();
+    Button(float x, float y, float width, float height, const std::string& txt, button_id id);
+    ~Button() = default;
     bool isPressed() const;
-    int getId() const;
-    void setId(int id);
+    button_id getId() const;
+    void setId(button_id id);
     bool update(const sf::Vector2i& mousePosWindow);
     void render(sf::RenderTarget& target);
 };
@@ -25,16 +25,16 @@ public:
 
 class Toolbar {
 private:
-    std::shared_ptr<Button> activeButton;
-    std::vector<std::shared_ptr<Button>> Buttons;
+    std::shared_ptr<Button> active_button;
 
 public:
-    Toolbar(float x, float y, float width, float height, std::vector<std::string>& buttonIcons);
     Toolbar();
-    ~Toolbar();
-    int getActiveButtonId() const;
+    ~Toolbar() = default;
+    button_id getActiveButtonId() const;
     void update(const sf::Vector2i& mousePosWindow);
     void render(sf::RenderTarget& target);
+
+    std::vector<std::shared_ptr<Button>> buttons;
 };
 
 
