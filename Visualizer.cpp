@@ -6,6 +6,7 @@ void Visualizer::initWindow() {
 }
 
 void Visualizer::initState() {
+
 }
 
 Visualizer::Visualizer() {
@@ -22,12 +23,14 @@ void Visualizer::update() {
         switch (this->sfEvent.type) {
             case sf::Event::Closed:
                 this->window->close();
-                break;
             case sf::Event::MouseButtonPressed:
                 if (this->sfEvent.mouseButton.button == sf::Mouse::Left) {
                     //Todo: work according to current state
                     this->graph.addNode(this->sfEvent.mouseButton.x, this->sfEvent.mouseButton.y);
                 }
+            case sf::Event::Resized:
+//                window->setView(sf::View(sf::FloatRect(0, 0, this->sfEvent.size.width, this->sfEvent.size.height)));
+            default:
                 break;
         }
     }
