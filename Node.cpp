@@ -10,7 +10,6 @@ Node::Node(std::string name, float pos_x, float pos_y): name(std::move(name)) {
     this->shape.setPosition(pos_x, pos_y);
 }
 
-
 sf::CircleShape Node::getShape() const {
     return this->shape;
 }
