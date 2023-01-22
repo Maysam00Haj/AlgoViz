@@ -7,10 +7,10 @@
 
 void Graph::render(sf::RenderTarget& target) {
     for (auto &node: this->nodes_list) {
-        for (auto &edge: this->edges_list[node.first]) {
-            edge->render(target);
-        }
         node.second->render(target);
+        for (auto &edge: this->edges_list[node.first]) {
+            if (!this->containsEdge(*edge)) edge->render(target);
+        }
     }
 }
 
@@ -66,6 +66,7 @@ void Graph::removeNode(const std::string& node_name) {
 
 
 void Graph::addEdge(const Edge& edge) {
+    if (this->containsEdge(edge)) return;
     this->edges_num++;
     this->edges_list[edge.getNode1().getName()].insert(std::make_shared<Edge>(edge));
     this->edges_list[edge.getNode2().getName()].insert(std::make_shared<Edge>(edge)); // done twice because each edge exists in 2 lists, one for each node it connects
@@ -105,12 +106,14 @@ bool Graph::containsNode(const std::string& node_name) {
 bool Graph::containsEdge(const Edge& edge) {
     std::string node1_name = edge.getNode1().getName();
     std::string node2_name = edge.getNode2().getName();
+    Edge reverse_edge(edge.getNode2(), edge.getNode1());
 
     if (this->edges_list.find(node1_name) == this->edges_list.end() ||
         this->edges_list.find(node2_name) == this->edges_list.end())
         return false;
 
-    return (this->edges_list[node1_name].find(std::make_shared<Edge>(edge)) == this->edges_list[node1_name].end());
+    return (this->edges_list[node1_name].find(std::make_shared<Edge>(reverse_edge)) != this->edges_list[node1_name].end()) ||
+            (this->edges_list[node2_name].find(std::make_shared<Edge>(reverse_edge)) != this->edges_list[node2_name].end());
 }
 
 
