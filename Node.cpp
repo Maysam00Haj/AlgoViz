@@ -1,6 +1,7 @@
 #include "Node.h"
 #include "cmath"
 #include <utility>
+#include <iostream>
 
 #define RADIUS 30
 
@@ -50,6 +51,10 @@ int Node::getPathWeight() const {
 
 bool Node::operator==(const Node& node) const {
     return (this->getName() == node.getName());
+}
+
+void Node::changeColor(const sf::Color &color) {
+    this->shape.setFillColor(color);
 }
 
 

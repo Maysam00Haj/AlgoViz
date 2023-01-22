@@ -15,6 +15,7 @@
 class Graph {
     int nodes_num = 0;
     int edges_num = 0;
+    int name_count = 0;
     std::shared_ptr<Node> start_node = nullptr;
     std::unordered_map<std::string, std::shared_ptr<Node>> nodes_list; // enables us to find node pointer by its name string
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Node>>> neighbors_list;
@@ -27,6 +28,7 @@ class Graph {
 public:
     explicit Graph() = default;
     ~Graph() = default;
+    void setStartNode(std::shared_ptr<Node> newStartNode);
     void render(sf::RenderTarget& target);
     void addNode(float pos_x, float pos_y);
     void removeNode(const std::string& node_name);
@@ -37,7 +39,6 @@ public:
     int getEdgesNum() const;
     bool containsNode(const std::string& node_name);
     bool containsEdge(const Edge& edge);
-    void changeStartNode(const Node& new_start_node);
     bool hasNegativeCircle();
     std::shared_ptr<Node> getNodeByPosition(float pos_x, float pos_y);
     std::shared_ptr<Edge> getEdgeByPosition(float pos_x, float pos_y);
