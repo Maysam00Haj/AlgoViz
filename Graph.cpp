@@ -9,7 +9,7 @@ void Graph::render(sf::RenderTarget& target) {
     for (auto &node: this->nodes_list) {
         node.second->render(target);
         for (auto &edge: this->edges_list[node.first]) {
-            if (!this->containsEdge(*edge)) edge->render(target);
+            edge->render(target);
         }
     }
 }
@@ -121,10 +121,14 @@ bool Graph::containsEdge(const Edge& edge) {
         this->edges_list.find(node2_name) == this->edges_list.end())
         return false;
 
-    return (this->edges_list[node1_name].find(std::make_shared<Edge>(reverse_edge)) != this->edges_list[node1_name].end()) ||
-            (this->edges_list[node2_name].find(std::make_shared<Edge>(reverse_edge)) != this->edges_list[node2_name].end());
-}
+    for (const auto& current_edge: edges_list[edge.getNode1().getName()]) {
+        if (current_edge->getNode1().getName() == node1_name && current_edge->getNode2().getName() == node2_name ||
+            current_edge->getNode2().getName() == node1_name && current_edge->getNode1().getName() == node2_name)
+            return true;
+    }
 
+    return false;
+}
 
 void Graph::setStartNode(std::shared_ptr<Node> new_start_node) {
     if (!new_start_node) return;

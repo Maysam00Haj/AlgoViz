@@ -42,6 +42,5 @@ public:
     bool hasNegativeCircle();
     std::shared_ptr<Node> getNodeByPosition(float pos_x, float pos_y);
     std::shared_ptr<Edge> getEdgeByPosition(float pos_x, float pos_y);
-
 };
 #endif //ALGOVIZ_GRAPH_H
