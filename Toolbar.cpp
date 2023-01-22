@@ -71,3 +71,7 @@ void Toolbar::render(sf::RenderTarget& target) {
     }
 }
 
+void Toolbar::updateActiveButton() {
+    this->active_button = buttons[0];
+}
+

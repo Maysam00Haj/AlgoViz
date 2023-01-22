@@ -68,9 +68,18 @@ void Visualizer::executeClickAction(float pos_x, float pos_y) {
             break;
         }
     }
-    if (button_pressed) return;
-
     button_id id = this->toolbar.getActiveButtonId();
+
+    if (button_pressed) {
+        if (id == CLEAN) {
+            this->graph = Graph();
+            this->node_is_clicked = false;
+            this->clicked_node = nullptr;
+            this->toolbar.updateActiveButton();
+        }
+        return;
+    }
+
     switch (id) {
         case ADD_NODE: {
             this->graph.addNode(MOUSE_X_CORRECTED, MOUSE_Y_CORRECTED);
@@ -101,10 +110,6 @@ void Visualizer::executeClickAction(float pos_x, float pos_y) {
             break;
         }
         case END: {
-            break;
-        }
-        case CLEAN: {
-            this->graph = Graph();
             break;
         }
         default: {

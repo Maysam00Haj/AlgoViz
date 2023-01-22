@@ -22,6 +22,7 @@ Edge::Edge(const Node& node1, const Node& node2): node1(node1), node2(node2){
     this->shape.setPosition(x1, y1);
     this->shape.setRotation(getAngle(x1,y1,x2,y2));
     this->shape.setSize(sf::Vector2f(3, getDistance(x1,y1,x2,y2)));
+    this->shape.setFillColor(sf::Color::Yellow);
 }
 
 Node Edge::getNode1() const {
