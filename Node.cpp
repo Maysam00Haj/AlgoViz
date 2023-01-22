@@ -1,6 +1,7 @@
 #include "Node.h"
 #include "cmath"
 #include <utility>
+#include <iostream>
 
 #define RADIUS 30
 
@@ -52,6 +53,11 @@ bool Node::operator==(const Node& node) const {
     return (this->getName() == node.getName());
 }
 
+
+void Node::changeColor(const sf::Color &color) {
+    this->shape.setFillColor(color);
+}
+
 void Node::setColor(const sf::Color &color) {
     this->shape.setFillColor(color);
 }
@@ -67,6 +73,5 @@ void Node::setState(Node::node_state state) {
 Node::node_state Node::getState() const {
     return this->state;
 }
-
 
 

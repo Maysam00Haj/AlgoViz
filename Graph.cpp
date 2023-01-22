@@ -15,7 +15,7 @@ void Graph::render(sf::RenderTarget& target) {
 }
 
 std::string Graph::generateName() const {
-    return "node_" + std::to_string(this->nodes_num);
+    return "node_" + std::to_string(this->name_count);
 }
 
 bool Graph::checkValidPos(const Node& node) const {
@@ -28,11 +28,13 @@ bool Graph::checkValidPos(const Node& node) const {
 
 void Graph::addNode(float pos_x, float pos_y) {
     std::string node_name = generateName();
-    Node node(node_name, pos_x, pos_y);
-    if (!checkValidPos(node)) return; //TODO: exception
-    this->nodes_list[node_name] = std::make_shared<Node>(node);
+    std::shared_ptr<Node> node = std::make_shared<Node>(Node(node_name, pos_x, pos_y));
+    if (!checkValidPos(*node)) return; //TODO: exception
+    this->nodes_list[node_name] = node;
     this->neighbors_list[node_name] = {};
     this->nodes_num++;
+    this->name_count++;
+    if (this->nodes_num == 1) setStartNode(node);
 }
 
 
@@ -41,6 +43,12 @@ void Graph::removeNode(const std::string& node_name) {
 
     this->nodes_list.erase(node_name);
     this->nodes_num--;
+
+    // update the start node if it's the deleted node
+    if (!this->nodes_list.contains(this->start_node->getName())) {
+        if (this->nodes_list.empty()) this->start_node = nullptr;
+        else setStartNode(nodes_list.begin()->second);
+    }
 
     // go over all the nodes' neighbors and delete the edges between them
     for (const auto& neighbor : this->neighbors_list[node_name]) { // for every neighbor of the node with the given name
@@ -62,6 +70,7 @@ void Graph::removeNode(const std::string& node_name) {
             if (node->getName() == node_name) neighbors.second.erase(node);
         }
     }
+
 }
 
 
@@ -121,12 +130,13 @@ bool Graph::containsEdge(const Edge& edge) {
     return false;
 }
 
-
-void Graph::setStartNode(const Node& new_start_node) {
-    if (!this->containsNode(new_start_node.getName())) return;
-    this->start_node = std::make_shared<Node>(new_start_node);
+void Graph::setStartNode(std::shared_ptr<Node> new_start_node) {
+    if (!new_start_node) return;
+    if (this->start_node) this->start_node->changeColor(sf::Color::White);
+    this->start_node = new_start_node;
     this->start_node->setDistance(0);
     this->start_node->setPathWeight(0);
+    this->start_node->changeColor(sf::Color::Yellow);
 }
 
 bool Graph::hasNegativeCircle() {

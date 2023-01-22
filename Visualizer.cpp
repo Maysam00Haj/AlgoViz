@@ -103,6 +103,10 @@ void Visualizer::executeClickAction(float pos_x, float pos_y) {
         case ERASE: {
             break;
         }
+        case CHANGE_START_NODE: {
+            this->graph.setStartNode(this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y));
+            break;
+        }
         case START: {
             runAlgorithm();
             break;
