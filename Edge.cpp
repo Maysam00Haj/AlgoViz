@@ -48,6 +48,22 @@ bool Edge::operator==(const Edge &other) const {
     return this->weight == other.weight;
 }
 
+void Edge::setColor(const sf::Color &color) {
+    this->shape.setFillColor(color);
+}
+
+sf::Color Edge::getColor() const {
+    return this->shape.getFillColor();
+}
+
+Edge::edge_state Edge::getState() const {
+    return this->state;
+}
+
+void Edge::setState(Edge::edge_state state) {
+    this->state = state;
+}
+
 //**********************************************************************************************************************
 
 

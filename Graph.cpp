@@ -122,7 +122,7 @@ bool Graph::containsEdge(const Edge& edge) {
 }
 
 
-void Graph::changeStartNode(const Node& new_start_node) {
+void Graph::setStartNode(const Node& new_start_node) {
     if (!this->containsNode(new_start_node.getName())) return;
     this->start_node = std::make_shared<Node>(new_start_node);
     this->start_node->setDistance(0);

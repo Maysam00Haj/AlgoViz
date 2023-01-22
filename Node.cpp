@@ -52,5 +52,21 @@ bool Node::operator==(const Node& node) const {
     return (this->getName() == node.getName());
 }
 
+void Node::setColor(const sf::Color &color) {
+    this->shape.setFillColor(color);
+}
+
+sf::Color Node::getColor() const {
+    return this->shape.getFillColor();
+}
+
+void Node::setState(Node::node_state state) {
+    this->state = state;
+}
+
+Node::node_state Node::getState() const {
+    return this->state;
+}
+
 
 
