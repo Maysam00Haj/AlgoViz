@@ -104,6 +104,7 @@ void Visualizer::executeClickAction(float pos_x, float pos_y) {
             break;
         }
         case START: {
+            runAlgorithm();
             break;
         }
         case PAUSE: {
@@ -118,3 +119,45 @@ void Visualizer::executeClickAction(float pos_x, float pos_y) {
     }
 
 }
+
+void Visualizer::runBFS() {
+    sf::Clock clock;
+
+}
+
+void Visualizer::runDFS() {
+
+}
+
+void Visualizer::runMST() {
+
+}
+
+void Visualizer::runDijkstra() {
+
+}
+
+void Visualizer::runAlgorithm() {
+    if (!this->graph.getStartNode()) return;
+    vis_mode current_mode = this->mode;
+    switch (current_mode) {
+        case BFS: {
+            runBFS();
+            break;
+        }
+        case DFS: {
+            runDFS();
+            break;
+        }
+        case MST: {
+            runMST();
+            break;
+        }
+        case DIJKSTRA: {
+            runDijkstra();
+            break;
+        }
+    }
+}
+
+

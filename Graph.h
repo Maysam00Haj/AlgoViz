@@ -37,10 +37,9 @@ public:
     int getEdgesNum() const;
     bool containsNode(const std::string& node_name);
     bool containsEdge(const Edge& edge);
-    void changeStartNode(const Node& new_start_node);
+    void setStartNode(const Node& new_start_node);
     bool hasNegativeCircle();
     std::shared_ptr<Node> getNodeByPosition(float pos_x, float pos_y);
     std::shared_ptr<Edge> getEdgeByPosition(float pos_x, float pos_y);
-
 };
 #endif //ALGOVIZ_GRAPH_H
