@@ -10,11 +10,13 @@ static float getCorrectedY1(float y1, float y2, float angle);
 
 
 
-Edge::Edge(const Node& node1, const Node& node2): node1(node1), node2(node2){
-    float x1 = node1.getShape().getPosition().x+NODE_RADIUS;
-    float y1 = node1.getShape().getPosition().y+NODE_RADIUS;
-    float x2 = node2.getShape().getPosition().x+NODE_RADIUS;
-    float y2 = node2.getShape().getPosition().y+NODE_RADIUS;
+Edge::Edge(std::shared_ptr<Node> node1, std::shared_ptr<Node> node2) {
+    this->node1 = node1;
+    this->node2 = node2;
+    float x1 = node1->getShape().getPosition().x+NODE_RADIUS;
+    float y1 = node1->getShape().getPosition().y+NODE_RADIUS;
+    float x2 = node2->getShape().getPosition().x+NODE_RADIUS;
+    float y2 = node2->getShape().getPosition().y+NODE_RADIUS;
     float rotation_angle = getAngle(x1,y1,x2,y2);
     float corrected_x1 = getCorrectedX1(x1,x2,rotation_angle);
     float corrected_y1 = getCorrectedY1(y1,y2,rotation_angle);
@@ -24,11 +26,11 @@ Edge::Edge(const Node& node1, const Node& node2): node1(node1), node2(node2){
     this->shape.setFillColor(sf::Color::Green);
 }
 
-Node Edge::getNode1() const {
+const std::shared_ptr<Node>& Edge::getNode1() const {
     return this->node1;
 }
 
-Node Edge::getNode2() const {
+const std::shared_ptr<Node>& Edge::getNode2() const {
     return this->node2;
 }
 
