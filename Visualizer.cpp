@@ -101,6 +101,12 @@ void Visualizer::executeClickAction(float pos_x, float pos_y) {
             break;
         }
         case ERASE: {
+            std::shared_ptr<Node> node_to_delete = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
+            if (node_to_delete)
+                this->graph.removeNode(node_to_delete->getName());
+            std::shared_ptr<Edge> edge_to_delete = this->graph.getEdgeByPosition(MOUSE_X, MOUSE_Y);
+            if (edge_to_delete)
+                this->graph.removeEdge(*edge_to_delete);
             break;
         }
         case CHANGE_START_NODE: {
