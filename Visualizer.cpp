@@ -93,7 +93,7 @@ void Visualizer::executeClickAction(float pos_x, float pos_y) {
             else {
                 std::shared_ptr<Node> dst = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
                 if (dst) {
-                    Edge to_add(*this->clicked_node, *dst);
+                    Edge to_add(this->clicked_node, dst);
                     this->graph.addEdge(to_add);
                 }
                 this->node_is_clicked = false;

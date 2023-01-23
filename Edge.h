@@ -11,17 +11,17 @@
 class Edge{
     enum edge_state {DISCOVERED, UNDISCOVERED};
     std::string literal;
-    const Node node1;
-    const Node node2;
+    std::shared_ptr<Node> node1;
+    std::shared_ptr<Node> node2;
     int weight = 0;
     edge_state state = UNDISCOVERED;
     sf::RectangleShape shape;
 
 public:
-    explicit Edge(const Node& node1, const Node& node2);
+    explicit Edge(std::shared_ptr<Node> node1, std::shared_ptr<Node> node2);
     ~Edge() = default;
-    Node getNode1() const;
-    Node getNode2() const;
+    const std::shared_ptr<Node>& getNode1() const;
+    const std::shared_ptr<Node>& getNode2() const;
     sf::RectangleShape getShape() const;
     void render(sf::RenderTarget& target);
     void setColor(const sf::Color& color);
