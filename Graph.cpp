@@ -76,9 +76,13 @@ void Graph::removeNode(const std::string& node_name) {
 
 void Graph::addEdge(const Edge& edge) {
     if (this->containsEdge(edge)) return;
+    std::string node1_name = edge.getNode1().getName();
+    std::string node2_name = edge.getNode2().getName();
     this->edges_num++;
     this->edges_list[edge.getNode1().getName()].insert(std::make_shared<Edge>(edge));
     this->edges_list[edge.getNode2().getName()].insert(std::make_shared<Edge>(edge)); // done twice because each edge exists in 2 lists, one for each node it connects
+    this->neighbors_list[node1_name].insert(std::make_shared<Node>(edge.getNode2()));
+    this->neighbors_list[node2_name].insert(std::make_shared<Node>(edge.getNode1()));
 }
 
 
@@ -132,11 +136,11 @@ bool Graph::containsEdge(const Edge& edge) {
 
 void Graph::setStartNode(std::shared_ptr<Node> new_start_node) {
     if (!new_start_node) return;
-    if (this->start_node) this->start_node->changeColor(sf::Color::White);
+    if (this->start_node) this->start_node->setColor(sf::Color::White);
     this->start_node = new_start_node;
     this->start_node->setDistance(0);
     this->start_node->setPathWeight(0);
-    this->start_node->changeColor(sf::Color::Yellow);
+    this->start_node->setColor(sf::Color::Yellow);
 }
 
 bool Graph::hasNegativeCircle() {
