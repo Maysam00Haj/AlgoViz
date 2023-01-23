@@ -14,7 +14,7 @@ class Button {
 
 public:
     Button(float x, float y, float width, float height, const std::string& txt, button_id id);
-    ~Button() = default;
+    ~Button();
     bool isPressed() const;
     button_id getId() const;
     void setId(button_id id);
