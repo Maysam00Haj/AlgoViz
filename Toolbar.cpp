@@ -4,15 +4,16 @@
 Button::Button(float x, float y, float width, float height, const std::string& txt, button_id id) {
     this->buttonState = BUTTON_IDLE;
     this->id = id;
+    sf::Texture* texture = new sf::Texture(); //Todo: exception in case it fails
+    texture->loadFromFile(txt); //Todo: exception in case it fails
+    this->shape.setTexture(texture);
     this->shape.setPosition(sf::Vector2f(x, y));
     this->shape.setSize(sf::Vector2f(width, height));
     this->shape.setOutlineThickness(1.f);
-    //Todo: fix this.
-    //text isn't being printed
-    this->text = sf::Text();
-    this->text.setString(txt);
-    this->text.setPosition(sf::Vector2f(x, y));
-    this->text.setFillColor(sf::Color::Red);
+}
+
+Button::~Button() {
+    delete this->shape.getTexture();
 }
 
 bool Button::isPressed() const {
@@ -47,10 +48,10 @@ void Button::render(sf::RenderTarget& target) {
 //-----------------------------------------------------------------------------------------------------
 
 Toolbar::Toolbar() {
-    std::vector<std::string> icons = {"add node", "add edge", "erase", "change start node", "start", "pause", "end", "clean"};
+    std::vector<std::string> icons = {"add_node", "add_edge", "erase", "change_start_node", "start", "pause", "end", "clean"};
     std::vector<button_id> id_list = {ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, START, PAUSE, END, CLEAN};
     for (unsigned int i = 0; i < icons.size(); i++) {
-        this->buttons.push_back(std::make_shared<Button>(20, 20 + ((50 + 10) * i), 50, 50, icons[i], id_list[i]));
+        this->buttons.push_back(std::make_shared<Button>(20, 20 + ((40 + 20) * i), 150, 40, "icons//" + icons[i] + ".png", id_list[i]));
     }
     this->active_button = buttons[0];
 }
