@@ -12,6 +12,7 @@ static float getCorrectedY1(float y1, float y2, float angle);
 
 
 
+
 Edge::Edge(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2): node1(node1), node2(node2){
     float x1 = node1->getShape().getPosition().x+NODE_RADIUS;
     float y1 = node1->getShape().getPosition().y+NODE_RADIUS;
@@ -26,11 +27,13 @@ Edge::Edge(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node
     this->shape.setFillColor(UNDISCOVERED_EDGE_COLOR);
 }
 
-std::shared_ptr<Node> Edge::getNode1() const {
+
+const std::shared_ptr<Node>& Edge::getNode1() const {
     return this->node1;
 }
 
-std::shared_ptr<Node> Edge::getNode2() const {
+const std::shared_ptr<Node>& Edge::getNode2() const {
+
     return this->node2;
 }
 

@@ -33,13 +33,13 @@ bool Graph::checkValidPos(const Node& node) const {
 
 void Graph::addNode(float pos_x, float pos_y) {
     std::string node_name = generateName();
-    std::shared_ptr<Node> node = std::make_shared<Node>(Node(node_name, pos_x, pos_y));
-    if (!checkValidPos(*node)) return; //TODO: exception
-    this->nodes_list[node_name] = node;
+    std::shared_ptr<Node> node_ptr = std::make_shared<Node>(node_name, pos_x, pos_y);
+    if (!checkValidPos(*node_ptr)) return; //TODO: exception
+    this->nodes_list[node_name] = node_ptr;
     this->neighbors_list[node_name] = {};
     this->nodes_num++;
     this->name_count++;
-    if (this->nodes_num == 1) setStartNode(node);
+    if (this->nodes_num == 1) setStartNode(node_ptr);
 }
 
 
@@ -104,7 +104,7 @@ void Graph::removeEdge(const std::shared_ptr<Edge>& to_delete) {
     }
 }
 
-std::shared_ptr<Node> Graph::getStartNode() const {
+const std::shared_ptr<Node>& Graph::getStartNode() const {
     return this->start_node;
 }
 
@@ -119,6 +119,7 @@ int Graph::getEdgesNum() const {
 bool Graph::containsNode(const std::string& node_name) {
     return (this->nodes_list.find(node_name) != this->nodes_list.end());
 }
+
 
 
 bool Graph::containsEdge(const std::shared_ptr<Edge>& edge) {
