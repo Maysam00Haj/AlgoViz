@@ -35,7 +35,7 @@ public:
     void removeNode(const std::string& node_name);
     void addEdge(const std::shared_ptr<Edge>& edge);
     void removeEdge(const std::shared_ptr<Edge>& edge);
-    std::shared_ptr<Node> getStartNode() const;
+    const std::shared_ptr<Node>& getStartNode() const;
     int getNodesNum() const;
     int getEdgesNum() const;
     bool containsNode(const std::string& node_name);
