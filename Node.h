@@ -5,12 +5,18 @@
 #include <string>
 #include <memory>
 
+#define START_NODE_COLOR        (sf::Color::Cyan)
+#define CURRENT_NODE_COLOR      (sf::Color::Yellow)
+#define UNDISCOVERED_NODE_COLOR (sf::Color::White)
+#define DISCOVERED_NODE_COLOR   (sf::Color::Red)
+#define DONE_NODE_COLOR         (sf::Color::Blue)
+
+
+enum node_state {NODE_CURRENT, NODE_START, NODE_UNDISCOVERED, NODE_DISCOVERED, NODE_DONE};
 
 class Node {
-    enum node_state {CURRENT, UNDISCOVERED, DISCOVERED, DONE};
-
     std::string name;
-    node_state state = UNDISCOVERED;
+    node_state state = NODE_UNDISCOVERED;
     int distance = INT_MAX;
     int path_weight = INT_MAX;
     std::vector<std::shared_ptr<Node>> neighbors;
@@ -27,7 +33,7 @@ public:
     int getDistance() const;
     void setPathWeight(int path_weight);
     int getPathWeight() const;
-    bool operator==(const Node& node) const;
+    bool operator==(const std::shared_ptr<Node>& node) const;
     void setColor(const sf::Color& color);
     sf::Color getColor() const;
     void setState(node_state state);

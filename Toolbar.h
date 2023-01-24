@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 enum button_states {BUTTON_IDLE = 0, BUTTON_ACTIVE};
-enum button_id {ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, START, PAUSE, END, CLEAN};
+enum button_id {ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, START, PAUSE, END, RESET, CLEAR_WINDOW};
 
 class Button {
     button_states buttonState;
@@ -14,7 +14,7 @@ class Button {
 
 public:
     Button(float x, float y, float width, float height, const std::string& txt, button_id id);
-    ~Button() = default;
+    ~Button();
     bool isPressed() const;
     button_id getId() const;
     void setId(button_id id);

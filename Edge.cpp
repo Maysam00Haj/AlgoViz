@@ -3,6 +3,8 @@
 
 #define NODE_RADIUS 30
 
+#define UNDISCOVERED_EDGE_COLOR (sf::Color(192,192,192,70))
+
 static float getAngle(float x1, float y1, float x2, float y2);
 static float getDistance(float x1, float y1, float x2, float y2);
 static float getCorrectedX1(float x1, float x2, float angle);
@@ -10,25 +12,25 @@ static float getCorrectedY1(float y1, float y2, float angle);
 
 
 
-Edge::Edge(const Node& node1, const Node& node2): node1(node1), node2(node2){
-    float x1 = node1.getShape().getPosition().x+NODE_RADIUS;
-    float y1 = node1.getShape().getPosition().y+NODE_RADIUS;
-    float x2 = node2.getShape().getPosition().x+NODE_RADIUS;
-    float y2 = node2.getShape().getPosition().y+NODE_RADIUS;
+Edge::Edge(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2): node1(node1), node2(node2){
+    float x1 = node1->getShape().getPosition().x+NODE_RADIUS;
+    float y1 = node1->getShape().getPosition().y+NODE_RADIUS;
+    float x2 = node2->getShape().getPosition().x+NODE_RADIUS;
+    float y2 = node2->getShape().getPosition().y+NODE_RADIUS;
     float rotation_angle = getAngle(x1,y1,x2,y2);
     float corrected_x1 = getCorrectedX1(x1,x2,rotation_angle);
     float corrected_y1 = getCorrectedY1(y1,y2,rotation_angle);
     this->shape.setRotation(rotation_angle);
     this->shape.setPosition(corrected_x1, corrected_y1);
     this->shape.setSize(sf::Vector2f(3, getDistance(x1,y1,x2,y2) - 2*NODE_RADIUS));
-    this->shape.setFillColor(sf::Color::Green);
+    this->shape.setFillColor(UNDISCOVERED_EDGE_COLOR);
 }
 
-Node Edge::getNode1() const {
+std::shared_ptr<Node> Edge::getNode1() const {
     return this->node1;
 }
 
-Node Edge::getNode2() const {
+std::shared_ptr<Node> Edge::getNode2() const {
     return this->node2;
 }
 
@@ -37,15 +39,17 @@ sf::RectangleShape Edge::getShape() const {
 }
 
 void Edge::render(sf::RenderTarget& target) {
+    if (this->getState() == EDGE_UNDISCOVERED) this->setColor(UNDISCOVERED_EDGE_COLOR);
+    else this->setColor(DISCOVERED_EDGE_COLOR);
     target.draw(this->shape);
 }
 
-bool Edge::operator<(const Edge &other) const {
-    return this->weight < other.weight;
+bool Edge::operator<(const std::shared_ptr<Edge> &other) const {
+    return this->weight < other->weight;
 }
 
-bool Edge::operator==(const Edge &other) const {
-    return this->weight == other.weight;
+bool Edge::operator==(const std::shared_ptr<Edge> &other) const {
+    return this->weight == other->weight;
 }
 
 void Edge::setColor(const sf::Color &color) {
@@ -56,11 +60,11 @@ sf::Color Edge::getColor() const {
     return this->shape.getFillColor();
 }
 
-Edge::edge_state Edge::getState() const {
+edge_state Edge::getState() const {
     return this->state;
 }
 
-void Edge::setState(Edge::edge_state state) {
+void Edge::setState(edge_state state) {
     this->state = state;
 }
 

@@ -1,20 +1,19 @@
 #include "Visualizer.h"
 #include <iostream>
+#include <thread>
 
 #define MOUSE_X (this->sfEvent.mouseButton.x)
 #define MOUSE_Y (this->sfEvent.mouseButton.y)
 
-// use these only for drawing shapes (shapes drawn to wrong part of cursor)
+// Use these only for drawing shapes (shapes drawn to wrong part of cursor)
 #define MOUSE_X_CORRECTED (this->sfEvent.mouseButton.x-30)
 #define MOUSE_Y_CORRECTED (this->sfEvent.mouseButton.y-30)
 
-void Visualizer::initWindow() {
-    this->window = new sf::RenderWindow(sf::VideoMode(1000, 600), "Graph Visualizer");
-    this->window->setFramerateLimit(60);
-}
+bool algo_thread_is_running = false;
 
 Visualizer::Visualizer() {
-    this->initWindow();
+    this->window = new sf::RenderWindow(sf::VideoMode(1000, 600), "Graph Visualizer");
+    this->window->setFramerateLimit(60);
 }
 
 Visualizer::~Visualizer() {
@@ -29,11 +28,11 @@ void Visualizer::update() {
                 break;
             }
             case sf::Event::MouseButtonPressed: {
-                executeClickAction(MOUSE_X, MOUSE_Y);
+                executeClickAction();
                 break;
             }
             case sf::Event::Resized: {
-                sf::FloatRect view(0, 0, this->sfEvent.size.width, this->sfEvent.size.height);
+                sf::FloatRect view(0, 0, (float)this->sfEvent.size.width, (float)this->sfEvent.size.height);
                 this->window->setView(sf::View(view));
                 break;
             }
@@ -59,7 +58,7 @@ void Visualizer::run() {
 }
 
 
-void Visualizer::executeClickAction(float pos_x, float pos_y) {
+void Visualizer::executeClickAction() {
     bool button_pressed = false;
     for (const auto &button: this->toolbar.buttons) {
         if (button->update(sf::Vector2i(MOUSE_X, MOUSE_Y))) {
@@ -71,7 +70,7 @@ void Visualizer::executeClickAction(float pos_x, float pos_y) {
     button_id id = this->toolbar.getActiveButtonId();
 
     if (button_pressed) {
-        if (id == CLEAN) {
+        if (id == CLEAR_WINDOW) {
             this->graph = Graph();
             this->node_is_clicked = false;
             this->clicked_node = nullptr;
@@ -93,7 +92,7 @@ void Visualizer::executeClickAction(float pos_x, float pos_y) {
             else {
                 std::shared_ptr<Node> dst = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
                 if (dst) {
-                    Edge to_add(*this->clicked_node, *dst);
+                    std::shared_ptr<Edge> to_add = std::make_shared<Edge>(this->clicked_node, dst);
                     this->graph.addEdge(to_add);
                 }
                 this->node_is_clicked = false;
@@ -106,7 +105,7 @@ void Visualizer::executeClickAction(float pos_x, float pos_y) {
                 this->graph.removeNode(node_to_delete->getName());
             std::shared_ptr<Edge> edge_to_delete = this->graph.getEdgeByPosition(MOUSE_X, MOUSE_Y);
             if (edge_to_delete)
-                this->graph.removeEdge(*edge_to_delete);
+                this->graph.removeEdge(edge_to_delete);
             break;
         }
         case CHANGE_START_NODE: {
@@ -130,41 +129,26 @@ void Visualizer::executeClickAction(float pos_x, float pos_y) {
 
 }
 
-void Visualizer::runBFS() {
-    sf::Clock clock;
-
-}
-
-void Visualizer::runDFS() {
-
-}
-
-void Visualizer::runMST() {
-
-}
-
-void Visualizer::runDijkstra() {
-
-}
 
 void Visualizer::runAlgorithm() {
     if (!this->graph.getStartNode()) return;
     vis_mode current_mode = this->mode;
     switch (current_mode) {
         case BFS: {
-            runBFS();
+            std::thread algo_runner(&Graph::runBFS, this->graph);
+            algo_runner.join();
             break;
         }
         case DFS: {
-            runDFS();
+            std::thread algo_runner(&Graph::runDFS, this->graph);
             break;
         }
         case MST: {
-            runMST();
+            std::thread algo_runner(&Graph::runMST, this->graph);
             break;
         }
         case DIJKSTRA: {
-            runDijkstra();
+            std::thread algo_runner(&Graph::runDijkstra, this->graph);
             break;
         }
     }

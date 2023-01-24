@@ -20,6 +20,32 @@ sf::Rect<float> Node::getShapeLocalBounds() const {
 }
 
 void Node::render(sf::RenderTarget& target) {
+    node_state current_state = this->getState();
+    switch (current_state) {
+        case NODE_START: {
+            this->setColor(START_NODE_COLOR);
+            break;
+        }
+        case NODE_CURRENT: {
+            this->setColor(CURRENT_NODE_COLOR);
+            break;
+        }
+        case NODE_DISCOVERED: {
+            this->setColor(DISCOVERED_NODE_COLOR);
+            break;
+        }
+        case NODE_UNDISCOVERED: {
+            this->setColor(UNDISCOVERED_NODE_COLOR);
+            break;
+        }
+        case NODE_DONE: {
+            this->setColor(DONE_NODE_COLOR);
+            break;
+        }
+        default: {
+            break;
+        }
+    }
     target.draw(this->shape);
 }
 
@@ -49,8 +75,8 @@ int Node::getPathWeight() const {
     return this->path_weight;
 }
 
-bool Node::operator==(const Node& node) const {
-    return (this->getName() == node.getName());
+bool Node::operator==(const std::shared_ptr<Node>& node) const {
+    return (this->getName() == node->getName());
 }
 
 void Node::setColor(const sf::Color &color) {
@@ -61,11 +87,11 @@ sf::Color Node::getColor() const {
     return this->shape.getFillColor();
 }
 
-void Node::setState(Node::node_state state) {
+void Node::setState(node_state state) {
     this->state = state;
 }
 
-Node::node_state Node::getState() const {
+node_state Node::getState() const {
     return this->state;
 }
 
