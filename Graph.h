@@ -11,6 +11,7 @@
 #include "Node.h"
 #include "Edge.h"
 #include <SFML/Graphics.hpp>
+#include <thread>
 
 class Graph {
     int nodes_num = 0;
@@ -28,19 +29,23 @@ class Graph {
 public:
     explicit Graph() = default;
     ~Graph() = default;
-    void setStartNode(std::shared_ptr<Node> newStartNode);
+    void setStartNode(const std::shared_ptr<Node>& newStartNode);
     void render(sf::RenderTarget& target);
     void addNode(float pos_x, float pos_y);
     void removeNode(const std::string& node_name);
-    void addEdge(const Edge& edge);
-    void removeEdge(const Edge& edge);
-    const std::shared_ptr<Node>& getStartNode() const;
+    void addEdge(const std::shared_ptr<Edge>& edge);
+    void removeEdge(const std::shared_ptr<Edge>& edge);
+    std::shared_ptr<Node> getStartNode() const;
     int getNodesNum() const;
     int getEdgesNum() const;
     bool containsNode(const std::string& node_name);
-    bool containsEdge(const Edge& edge);
+    bool containsEdge(const std::shared_ptr<Edge>& edge);
     bool hasNegativeCircle();
     std::shared_ptr<Node> getNodeByPosition(float pos_x, float pos_y);
     std::shared_ptr<Edge> getEdgeByPosition(float pos_x, float pos_y);
+    void runBFS();
+    void runDFS();
+    void runMST();
+    void runDijkstra();
 };
 #endif //ALGOVIZ_GRAPH_H

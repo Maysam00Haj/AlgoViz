@@ -4,6 +4,11 @@
 #include <queue>
 #include "Graph.h"
 #include "Node.h"
+#include <thread>
+#include <mutex>
+
+std::mutex m1;
+extern bool algo_thread_is_running;
 
 void Graph::render(sf::RenderTarget& target) {
     for (auto &node: this->nodes_list) {
@@ -74,29 +79,28 @@ void Graph::removeNode(const std::string& node_name) {
 }
 
 
-void Graph::addEdge(const Edge& edge) {
+void Graph::addEdge(const std::shared_ptr<Edge>& edge) {
     if (this->containsEdge(edge)) return;
-    std::string node1_name = edge.getNode1()->getName();
-    std::string node2_name = edge.getNode2()->getName();
-    std::shared_ptr<Edge> edge_ptr = std::make_shared<Edge>(edge);
+    std::string node1_name = edge->getNode1()->getName();
+    std::string node2_name = edge->getNode2()->getName();
     this->edges_num++;
-    this->edges_list[edge.getNode1()->getName()].insert(edge_ptr);
-    this->edges_list[edge.getNode2()->getName()].insert(edge_ptr); // done twice because each edge exists in 2 lists, one for each node it connects
-    this->neighbors_list[node1_name].insert(edge.getNode2());
-    this->neighbors_list[node2_name].insert(edge.getNode1());
+    this->edges_list[edge->getNode1()->getName()].insert(edge);
+    this->edges_list[edge->getNode2()->getName()].insert(edge); // done twice because each edge exists in 2 lists, one for each node it connects
+    this->neighbors_list[node1_name].insert(edge->getNode2());
+    this->neighbors_list[node2_name].insert(edge->getNode1());
 }
 
 
-void Graph::removeEdge(const Edge& to_delete) {
+void Graph::removeEdge(const std::shared_ptr<Edge>& to_delete) {
     this->edges_num--;
-    for (const auto& edge : this->edges_list[to_delete.getNode1()->getName()]) {
-        if (edge->getNode1()->getName() == to_delete.getNode1()->getName())
-            this->edges_list[to_delete.getNode1()->getName()].erase(edge);
+    for (const auto& edge : this->edges_list[to_delete->getNode1()->getName()]) {
+        if (edge->getNode1()->getName() == to_delete->getNode1()->getName())
+            this->edges_list[to_delete->getNode1()->getName()].erase(edge);
     }
 
-    for (const auto& edge : this->edges_list[to_delete.getNode2()->getName()]) {
-        if (edge->getNode2()->getName() == to_delete.getNode2()->getName())
-            this->edges_list[to_delete.getNode2()->getName()].erase(edge);
+    for (const auto& edge : this->edges_list[to_delete->getNode2()->getName()]) {
+        if (edge->getNode2()->getName() == to_delete->getNode2()->getName())
+            this->edges_list[to_delete->getNode2()->getName()].erase(edge);
     }
 }
 
@@ -117,16 +121,17 @@ bool Graph::containsNode(const std::string& node_name) {
 }
 
 
-bool Graph::containsEdge(const Edge& edge) {
-    std::string node1_name = edge.getNode1()->getName();
-    std::string node2_name = edge.getNode2()->getName();
-    Edge reverse_edge(edge.getNode2(), edge.getNode1());
+
+bool Graph::containsEdge(const std::shared_ptr<Edge>& edge) {
+    std::string node1_name = edge->getNode1()->getName();
+    std::string node2_name = edge->getNode2()->getName();
+    Edge reverse_edge(edge->getNode2(), edge->getNode1());
 
     if (this->edges_list.find(node1_name) == this->edges_list.end() ||
         this->edges_list.find(node2_name) == this->edges_list.end())
         return false;
 
-    for (const auto& current_edge: edges_list[edge.getNode1()->getName()]) {
+    for (const auto& current_edge: edges_list[edge->getNode1()->getName()]) {
         if (current_edge->getNode1()->getName() == node1_name && current_edge->getNode2()->getName() == node2_name ||
             current_edge->getNode2()->getName() == node1_name && current_edge->getNode1()->getName() == node2_name)
             return true;
@@ -135,12 +140,13 @@ bool Graph::containsEdge(const Edge& edge) {
     return false;
 }
 
-void Graph::setStartNode(std::shared_ptr<Node> new_start_node) {
+void Graph::setStartNode(const std::shared_ptr<Node>& new_start_node) {
     if (!new_start_node) return;
-    if (this->start_node) this->start_node->setColor(sf::Color::White);
+    if (this->start_node) this->start_node->setState(NODE_UNDISCOVERED);
     this->start_node = new_start_node;
     this->start_node->setDistance(0);
     this->start_node->setPathWeight(0);
+    this->start_node->setState(NODE_START);
     this->start_node->setColor(sf::Color::Yellow);
 }
 
@@ -166,4 +172,34 @@ std::shared_ptr<Edge> Graph::getEdgeByPosition(float pos_x, float pos_y) {
         }
     }
     return nullptr;
+}
+
+void Graph::runBFS() {
+//    m1.lock();
+//    algo_thread_is_running = true;
+//    std::queue<std::shared_ptr<Node>> bfs_q;
+//
+//
+//    bfs_q.push(this->start_node);
+//    bfs_q.front()->setState(NODE_CURRENT);
+//    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+//    while (!bfs_q.empty()) {
+//        std::shared_ptr current_node = bfs_q.front();
+//        for (const auto& node: this->neighbors_list[current_node->getName()]) {
+//
+//        }
+//    }
+//    m1.unlock();
+}
+
+void Graph::runDFS() {
+
+}
+
+void Graph::runMST() {
+
+}
+
+void Graph::runDijkstra() {
+
 }

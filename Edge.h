@@ -7,18 +7,21 @@
 #include "Node.h"
 #include "SFML/Graphics.hpp"
 
+#define UNDISCOVERED_EDGE_COLOR (sf::Color(192,192,192,70))
+#define DISCOVERED_EDGE_COLOR   (sf::Color::White)
+
+enum edge_state {EDGE_DISCOVERED, EDGE_UNDISCOVERED};
 
 class Edge{
-    enum edge_state {DISCOVERED, UNDISCOVERED};
     std::string literal;
-    std::shared_ptr<Node> node1;
-    std::shared_ptr<Node> node2;
+    const std::shared_ptr<Node> node1;
+    const std::shared_ptr<Node> node2;
     int weight = 0;
-    edge_state state = UNDISCOVERED;
+    edge_state state = EDGE_UNDISCOVERED;
     sf::RectangleShape shape;
 
 public:
-    explicit Edge(std::shared_ptr<Node> node1, std::shared_ptr<Node> node2);
+    explicit Edge(const std::shared_ptr<Node> node1, const std::shared_ptr<Node> node2);
     ~Edge() = default;
     const std::shared_ptr<Node>& getNode1() const;
     const std::shared_ptr<Node>& getNode2() const;
@@ -28,8 +31,8 @@ public:
     sf::Color getColor() const;
     void setState(edge_state state);
     edge_state getState() const;
-    bool operator<(const Edge& other) const;
-    bool operator==(const Edge& other) const;
+    bool operator<(const std::shared_ptr<Edge>& other) const;
+    bool operator==(const std::shared_ptr<Edge>& other) const;
 };
 
 #endif //ALGOVIZ_EDGE_H

@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 enum button_states {BUTTON_IDLE = 0, BUTTON_ACTIVE};
-enum button_id {ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, START, PAUSE, END, CLEAN};
+enum button_id {ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, START, PAUSE, END, RESET, CLEAR_WINDOW};
 
 class Button {
     button_states buttonState;
