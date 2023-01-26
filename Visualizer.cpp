@@ -1,6 +1,7 @@
 #include "Visualizer.h"
 #include <iostream>
 #include <thread>
+#include <queue>
 
 #define MOUSE_X (this->sfEvent.mouseButton.x)
 #define MOUSE_Y (this->sfEvent.mouseButton.y)
@@ -70,11 +71,29 @@ void Visualizer::executeClickAction() {
     button_id id = this->toolbar.getActiveButtonId();
 
     if (button_pressed) {
-        if (id == CLEAR_WINDOW) {
-            this->graph = Graph();
-            this->node_is_clicked = false;
-            this->clicked_node = nullptr;
-            this->toolbar.updateActiveButton();
+        switch (id) {
+            case START: {
+                runAlgorithm();
+                break;
+            }
+            case PAUSE: {
+                break;
+            }
+            case END: {
+                break;
+            }
+            case CLEAR_WINDOW: {
+                this->graph = Graph();
+                this->node_is_clicked = false;
+                this->clicked_node = nullptr;
+                this->toolbar.updateActiveButton();
+                break;
+            }
+            default: {
+                break;
+            }
+
+
         }
         return;
     }
@@ -112,16 +131,6 @@ void Visualizer::executeClickAction() {
             this->graph.setStartNode(this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y));
             break;
         }
-        case START: {
-            runAlgorithm();
-            break;
-        }
-        case PAUSE: {
-            break;
-        }
-        case END: {
-            break;
-        }
         default: {
             break;
         }
@@ -135,20 +144,24 @@ void Visualizer::runAlgorithm() {
     vis_mode current_mode = this->mode;
     switch (current_mode) {
         case BFS: {
-            std::thread algo_runner(&Graph::runBFS, this->graph);
+            this->window->setActive(false);
+            std::thread algo_runner(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window));
             algo_runner.join();
             break;
         }
         case DFS: {
-            std::thread algo_runner(&Graph::runDFS, this->graph);
+            std::thread algo_runner(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window));
+            algo_runner.join();
             break;
         }
         case MST: {
-            std::thread algo_runner(&Graph::runMST, this->graph);
+            std::thread algo_runner(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window));
+            algo_runner.join();
             break;
         }
         case DIJKSTRA: {
-            std::thread algo_runner(&Graph::runDijkstra, this->graph);
+            std::thread algo_runner(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window));
+            algo_runner.join();
             break;
         }
     }

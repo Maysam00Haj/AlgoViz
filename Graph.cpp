@@ -174,32 +174,59 @@ std::shared_ptr<Edge> Graph::getEdgeByPosition(float pos_x, float pos_y) {
     return nullptr;
 }
 
-void Graph::runBFS() {
-//    m1.lock();
-//    algo_thread_is_running = true;
-//    std::queue<std::shared_ptr<Node>> bfs_q;
-//
-//
-//    bfs_q.push(this->start_node);
-//    bfs_q.front()->setState(NODE_CURRENT);
-//    std::this_thread::sleep_for(std::chrono::milliseconds(150));
-//    while (!bfs_q.empty()) {
-//        std::shared_ptr current_node = bfs_q.front();
-//        for (const auto& node: this->neighbors_list[current_node->getName()]) {
-//
-//        }
-//    }
-//    m1.unlock();
+void Graph::runBFS(sf::RenderWindow& window) {
+    algo_thread_is_running = true;
+    m1.lock();
+    window.setActive(true);
+    if (!this->start_node) return;
+
+    std::queue<std::shared_ptr<Node>> bfs_q;
+    std::shared_ptr<Node> previous_node, current_node;
+    bfs_q.push(this->start_node);
+    bfs_q.front()->setState(NODE_CURRENT);
+    window.clear();
+    this->render(window);
+    window.display();
+    window.setActive(false);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    window.setActive(true);
+
+    while (!bfs_q.empty()) {
+        current_node = bfs_q.front();
+        current_node->setState(NODE_DISCOVERED);
+        for (auto& node: this->neighbors_list[current_node->getName()]) {
+            if (node->getState() == NODE_DISCOVERED || node->getState() == NODE_DONE) continue;
+            bfs_q.push(node);
+            node->setState(NODE_CURRENT);
+            window.clear();
+            this->render(window);
+            window.display();
+            window.setActive(false);
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            window.setActive(true);
+            node->setState(NODE_DISCOVERED);
+        }
+        current_node->setState(NODE_DONE);
+        bfs_q.pop();
+        window.clear();
+        this->render(window);
+        window.display();
+        window.setActive(false);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        window.setActive(true);
+    }
+    window.setActive(false);
+    m1.unlock();
 }
 
-void Graph::runDFS() {
+void Graph::runDFS(sf::RenderTarget& target) {
 
 }
 
-void Graph::runMST() {
+void Graph::runMST(sf::RenderTarget& target) {
 
 }
 
-void Graph::runDijkstra() {
+void Graph::runDijkstra(sf::RenderTarget& target) {
 
 }

@@ -17,9 +17,9 @@ class Graph {
     int nodes_num = 0;
     int edges_num = 0;
     int name_count = 0;
-    std::shared_ptr<Node> start_node = nullptr;
+//    std::shared_ptr<Node> start_node = nullptr;
     std::unordered_map<std::string, std::shared_ptr<Node>> nodes_list; // enables us to find node pointer by its name string
-    std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Node>>> neighbors_list;
+//    std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Node>>> neighbors_list;
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Edge>>> edges_list; // for each node there's a set of edges that touch it (2 copies of each edge)
     bool directed = false;
 
@@ -43,9 +43,11 @@ public:
     bool hasNegativeCircle();
     std::shared_ptr<Node> getNodeByPosition(float pos_x, float pos_y);
     std::shared_ptr<Edge> getEdgeByPosition(float pos_x, float pos_y);
-    void runBFS();
-    void runDFS();
-    void runMST();
-    void runDijkstra();
+    void runBFS(sf::RenderWindow& window);
+    void runDFS(sf::RenderTarget& target);
+    void runMST(sf::RenderTarget& target);
+    void runDijkstra(sf::RenderTarget& target);
+    std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Node>>> neighbors_list;
+    std::shared_ptr<Node> start_node = nullptr;
 };
 #endif //ALGOVIZ_GRAPH_H
