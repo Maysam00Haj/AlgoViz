@@ -10,6 +10,7 @@
 std::mutex m1;
 extern bool algo_thread_is_running;
 
+
 void Graph::render(sf::RenderTarget& target) {
     for (auto &node: this->nodes_list) {
         node.second->render(target);
@@ -19,17 +20,6 @@ void Graph::render(sf::RenderTarget& target) {
     }
 }
 
-std::string Graph::generateName() const {
-    return "node_" + std::to_string(this->name_count);
-}
-
-bool Graph::checkValidPos(const Node& node) const {
-    for (auto& pair : this->nodes_list) {
-        if (node.checkCollision(pair.second)) return false;
-    }
-    //Todo: set x and y limits
-    return true;
-}
 
 void Graph::addNode(float pos_x, float pos_y) {
     std::string node_name = generateName();
@@ -181,39 +171,31 @@ void Graph::runBFS(sf::RenderWindow& window) {
     if (!this->start_node) return;
 
     std::queue<std::shared_ptr<Node>> bfs_q;
-    std::shared_ptr<Node> previous_node, current_node;
+    std::shared_ptr<Node> previous_node;
+    std::shared_ptr<Edge> current_edge;
     bfs_q.push(this->start_node);
     bfs_q.front()->setState(NODE_CURRENT);
-    window.clear();
-    this->render(window);
-    window.display();
-    window.setActive(false);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    window.setActive(true);
+    this->renderAndWait(window);
 
     while (!bfs_q.empty()) {
-        current_node = bfs_q.front();
-        current_node->setState(NODE_DISCOVERED);
-        for (auto& node: this->neighbors_list[current_node->getName()]) {
-            if (node->getState() == NODE_DISCOVERED || node->getState() == NODE_DONE) continue;
-            bfs_q.push(node);
-            node->setState(NODE_CURRENT);
-            window.clear();
-            this->render(window);
-            window.display();
-            window.setActive(false);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            window.setActive(true);
-            node->setState(NODE_DISCOVERED);
+        previous_node = bfs_q.front();
+        if (previous_node->getState() == NODE_DONE) {
+            bfs_q.pop();
+            continue;
         }
-        current_node->setState(NODE_DONE);
+        previous_node->setState(NODE_CURRENT);
+        for (auto& current_node: this->neighbors_list[previous_node->getName()]) {
+            current_edge = getEdgeByNodes(previous_node, current_node);
+            current_edge->setState(EDGE_DISCOVERED);
+            if (current_node->getState() != NODE_DONE) {
+                bfs_q.push(current_node);
+                current_node->setState(NODE_DISCOVERED);
+                this->renderAndWait(window);
+            }
+        }
+        previous_node->setState(NODE_DONE);
         bfs_q.pop();
-        window.clear();
-        this->render(window);
-        window.display();
-        window.setActive(false);
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        window.setActive(true);
+        this->renderAndWait(window);
     }
     window.setActive(false);
     m1.unlock();
@@ -229,4 +211,55 @@ void Graph::runMST(sf::RenderTarget& target) {
 
 void Graph::runDijkstra(sf::RenderTarget& target) {
 
+}
+
+void Graph::reset() {
+    for (const auto& node: nodes_list) {
+        if (node.second == this->start_node) {
+            node.second->setState(NODE_START);
+        }
+        else {
+            node.second->setState(NODE_UNDISCOVERED);
+        }
+    }
+
+    for (const auto& node: edges_list) {
+        for (const auto& edge: node.second) {
+            edge->setState(EDGE_UNDISCOVERED);
+        }
+    }
+}
+
+//**********************************************************************************************************************
+// private helper functions:
+void Graph::renderAndWait(sf::RenderWindow& window, bool wait) {
+    window.clear();
+    this->render(window);
+    window.display();
+    if (wait) {
+        window.setActive(false);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        window.setActive(true);
+    }
+}
+
+std::string Graph::generateName() const {
+    return "node_" + std::to_string(this->name_count);
+}
+
+bool Graph::checkValidPos(const Node& node) const {
+    for (auto& pair : this->nodes_list) {
+        if (node.checkCollision(pair.second)) return false;
+    }
+    //Todo: set x and y limits
+    return true;
+}
+
+
+std::shared_ptr<Edge> Graph::getEdgeByNodes(const std::shared_ptr<Node> &node1, const std::shared_ptr<Node> &node2) {
+    for (const auto& edge: this->edges_list[node1->getName()]) {
+        if (edge->getNode2()->getName() == node2->getName() || edge->getNode1()->getName() == node2->getName())
+            return edge;
+    }
+    return nullptr;
 }
