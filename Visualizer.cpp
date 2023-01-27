@@ -82,6 +82,10 @@ void Visualizer::executeClickAction() {
             case END: {
                 break;
             }
+            case RESET: {
+                this->graph.reset();
+                break;
+            }
             case CLEAR_WINDOW: {
                 this->graph = Graph();
                 this->node_is_clicked = false;
