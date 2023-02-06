@@ -21,10 +21,10 @@ class Edge{
     sf::RectangleShape shape;
 
 public:
-    explicit Edge(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2);
+    explicit Edge(std::shared_ptr<Node> node1, std::shared_ptr<Node> node2);
     ~Edge() = default;
-    const std::shared_ptr<Node>& getNode1() const;
-    const std::shared_ptr<Node>& getNode2() const;
+    std::shared_ptr<Node> getNode1() const;
+    std::shared_ptr<Node> getNode2() const;
     sf::RectangleShape getShape() const;
     void render(sf::RenderTarget& target);
     void setColor(const sf::Color& color);

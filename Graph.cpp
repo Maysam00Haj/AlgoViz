@@ -1,6 +1,7 @@
 //
 // Created by User on 12/23/2022.
 //
+#include <iostream>
 #include <queue>
 #include "Graph.h"
 #include "Node.h"
@@ -35,63 +36,61 @@ void Graph::addNode(float pos_x, float pos_y) {
 
 void Graph::removeNode(const std::string& node_name) {
     if (this->nodes_list.find(node_name) == this->nodes_list.end()) return;
+    bool start_node_isChanged;
 
-    this->nodes_list.erase(node_name);
-    this->nodes_num--;
+    std::shared_ptr<Node> node_to_delete = this->nodes_list[node_name];
 
     // update the start node if it's the deleted node
-    if (!this->nodes_list.contains(this->start_node->getName())) {
-        if (this->nodes_list.empty()) this->start_node = nullptr;
-        else setStartNode(nodes_list.begin()->second);
+    if (node_name == this->start_node->getName()) {
+        start_node_isChanged = true;
     }
 
     // go over all the nodes' neighbors and delete the edges between them
-    for (const auto& neighbor : this->neighbors_list[node_name]) { // for every neighbor of the node with the given name
-        for (const auto& edge : this->edges_list[neighbor->getName()]) { // for every edge touching the neighbor
-            if (edge->getNode1()->getName() == node_name || edge->getNode2()->getName() == node_name) { // if it also touches the node with the given name
-                this->edges_list[neighbor->getName()].erase(edge); // delete the edge
-                this->edges_num--;
-            }
+    for (const std::shared_ptr<Edge>& edge : this->edges_list[node_name]) {
+        if (edge->getNode1()->getName() == node_name) {
+            this->edges_list[edge->getNode2()->getName()].erase(edge);
+        }
+        else {
+            this->edges_list[edge->getNode1()->getName()].erase(edge);
         }
     }
-
-    this->edges_list.erase(node_name); // delete edges list entry
-
-    this->neighbors_list.erase(node_name); // erase the node's neighbors entry from hashmap
 
     // erase the node from every neighboring node's list
-    for (auto neighbors: neighbors_list) { // tried to use structured binding which requires c++20, but didn't work for some reason
-        for (const auto& node : neighbors.second) {
-            if (node->getName() == node_name) neighbors.second.erase(node);
-        }
+    for (const std::shared_ptr<Node>& neighbor_node : this->neighbors_list[node_name]) {
+        neighbors_list[neighbor_node->getName()].erase(node_to_delete);
     }
 
+    this->nodes_list.erase(node_name);
+    this->edges_list.erase(node_name); // delete edges list entry
+    this->neighbors_list.erase(node_name); // erase the node's neighbors entry from hashmap
+    if (start_node_isChanged) {
+        if (this->nodes_list.empty()) this->start_node = nullptr;
+        else setStartNode(nodes_list.begin()->second);
+    }
+    this->nodes_num--;
 }
 
 
-void Graph::addEdge(const std::shared_ptr<Edge>& edge) {
+void Graph::addEdge(std::shared_ptr<Edge> edge) {
     if (this->containsEdge(edge)) return;
-    std::string node1_name = edge->getNode1()->getName();
-    std::string node2_name = edge->getNode2()->getName();
+    std::shared_ptr<Node> node1 = edge->getNode1();
+    std::shared_ptr<Node> node2 = edge->getNode2();
     this->edges_num++;
     this->edges_list[edge->getNode1()->getName()].insert(edge);
     this->edges_list[edge->getNode2()->getName()].insert(edge); // done twice because each edge exists in 2 lists, one for each node it connects
-    this->neighbors_list[node1_name].insert(edge->getNode2());
-    this->neighbors_list[node2_name].insert(edge->getNode1());
+    this->neighbors_list[node1->getName()].insert(node2);
+    this->neighbors_list[node2->getName()].insert(node1);
 }
 
 
 void Graph::removeEdge(const std::shared_ptr<Edge>& to_delete) {
+    this->edges_list[to_delete->getNode1()->getName()].erase(to_delete);
+    this->edges_list[to_delete->getNode2()->getName()].erase(to_delete);
+    std::shared_ptr<Node> firstNode = to_delete->getNode1();
+    std::shared_ptr<Node> secondNode = to_delete->getNode2();
+    this->neighbors_list[firstNode->getName()].erase(secondNode);
+    this->neighbors_list[secondNode->getName()].erase(firstNode);
     this->edges_num--;
-    for (const auto& edge : this->edges_list[to_delete->getNode1()->getName()]) {
-        if (edge->getNode1()->getName() == to_delete->getNode1()->getName())
-            this->edges_list[to_delete->getNode1()->getName()].erase(edge);
-    }
-
-    for (const auto& edge : this->edges_list[to_delete->getNode2()->getName()]) {
-        if (edge->getNode2()->getName() == to_delete->getNode2()->getName())
-            this->edges_list[to_delete->getNode2()->getName()].erase(edge);
-    }
 }
 
 const std::shared_ptr<Node>& Graph::getStartNode() const {
@@ -110,12 +109,9 @@ bool Graph::containsNode(const std::string& node_name) {
     return (this->nodes_list.find(node_name) != this->nodes_list.end());
 }
 
-
-
 bool Graph::containsEdge(const std::shared_ptr<Edge>& edge) {
     std::string node1_name = edge->getNode1()->getName();
     std::string node2_name = edge->getNode2()->getName();
-    Edge reverse_edge(edge->getNode2(), edge->getNode1());
 
     if (this->edges_list.find(node1_name) == this->edges_list.end() ||
         this->edges_list.find(node2_name) == this->edges_list.end())
@@ -184,12 +180,13 @@ void Graph::runBFS(sf::RenderWindow& window) {
             continue;
         }
         previous_node->setState(NODE_CURRENT);
-        for (auto& current_node: this->neighbors_list[previous_node->getName()]) {
+        for (const std::shared_ptr<Node>& current_node: this->neighbors_list[previous_node->getName()]) {
             current_edge = getEdgeByNodes(previous_node, current_node);
             current_edge->setState(EDGE_DISCOVERED);
             if (current_node->getState() != NODE_DONE) {
                 bfs_q.push(current_node);
                 current_node->setState(NODE_DISCOVERED);
+                current_node->setDistance(1);
                 this->renderAndWait(window);
             }
         }
@@ -256,7 +253,7 @@ bool Graph::checkValidPos(const Node& node) const {
 }
 
 
-std::shared_ptr<Edge> Graph::getEdgeByNodes(const std::shared_ptr<Node> &node1, const std::shared_ptr<Node> &node2) {
+std::shared_ptr<Edge> Graph::getEdgeByNodes(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2) {
     for (const auto& edge: this->edges_list[node1->getName()]) {
         if (edge->getNode2()->getName() == node2->getName() || edge->getNode1()->getName() == node2->getName())
             return edge;

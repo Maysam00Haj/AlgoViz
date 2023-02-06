@@ -114,21 +114,24 @@ void Visualizer::executeClickAction() {
             }
             else {
                 std::shared_ptr<Node> dst = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
-                if (dst) {
+                if (dst && dst != clicked_node) {
                     std::shared_ptr<Edge> to_add = std::make_shared<Edge>(this->clicked_node, dst);
                     this->graph.addEdge(to_add);
                 }
                 this->node_is_clicked = false;
+                this->clicked_node = nullptr;
             }
             break;
         }
         case ERASE: {
             std::shared_ptr<Node> node_to_delete = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
-            if (node_to_delete)
-                this->graph.removeNode(node_to_delete->getName());
             std::shared_ptr<Edge> edge_to_delete = this->graph.getEdgeByPosition(MOUSE_X, MOUSE_Y);
-            if (edge_to_delete)
+            if (node_to_delete) {
+                this->graph.removeNode(node_to_delete->getName());
+            }
+            else if (edge_to_delete) {
                 this->graph.removeEdge(edge_to_delete);
+            }
             break;
         }
         case CHANGE_START_NODE: {

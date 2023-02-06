@@ -29,6 +29,37 @@ int main() {
     assert(graph.getNodesNum() == 2);
     graph.addEdge(e2);
     assert(graph.getEdgesNum() == 1);
+
+
+    float windowHeight = 1000;
+    float windowWidth = 400;
+
+    sf::RenderWindow window(sf::VideoMode(1000, 600), "Graph Visualizer");
+
+    sf::Text* text = new sf::Text();
+    sf::Font font;
+    if (!font.loadFromFile("arial.ttf")) std::cout << "Couldn't load font file!" << std::endl;
+    text->setFont(font);
+    text->setFillColor(sf::Color::Yellow);
+    text->setCharacterSize(23);
+    text->setStyle(sf::Text::Bold | sf::Text::Underlined);
+    text->setPosition(500,10);
+    text->setString("33");
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            }
+        }
+
+        window.clear();
+        window.draw(*text);
+        window.display();
+    }
+
+
 */
 
     Visualizer algoViz;
