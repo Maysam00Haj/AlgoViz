@@ -19,7 +19,6 @@ class Node {
     node_state state = NODE_UNDISCOVERED;
     int distance = INT_MAX;
     int path_weight = INT_MAX;
-    std::vector<std::shared_ptr<Node>> neighbors;
     sf::CircleShape shape;
 
 public:

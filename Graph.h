@@ -34,7 +34,7 @@ public:
     void render(sf::RenderTarget& target);
     void addNode(float pos_x, float pos_y);
     void removeNode(const std::string& node_name);
-    void addEdge(const std::shared_ptr<Edge>& edge);
+    void addEdge(std::shared_ptr<Edge> edge);
     void removeEdge(const std::shared_ptr<Edge>& edge);
     const std::shared_ptr<Node>& getStartNode() const;
     int getNodesNum() const;

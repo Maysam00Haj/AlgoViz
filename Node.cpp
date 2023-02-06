@@ -23,7 +23,7 @@ void Node::render(sf::RenderTarget& target) {
     node_state current_state = this->getState();
     switch (current_state) {
         case NODE_START: {
-            this->setColor(START_NODE_COLOR);
+            this->setColor(START_NODE_COLOR); // Todo: why is it in render?
             break;
         }
         case NODE_CURRENT: {
@@ -47,6 +47,7 @@ void Node::render(sf::RenderTarget& target) {
         }
     }
     target.draw(this->shape);
+  //  target.draw(*this->text);
 }
 
 std::string Node::getName() const {
