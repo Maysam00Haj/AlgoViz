@@ -47,11 +47,11 @@ void Graph::removeNode(const std::string& node_name) {
 
     // go over all the nodes' neighbors and delete the edges between them
     for (const std::shared_ptr<Edge>& edge : this->edges_list[node_name]) {
-        if (edge->getNode1()->getName() == node_name) {
-            this->edges_list[edge->getNode2()->getName()].erase(edge);
+        if (edge->getFirstNode()->getName() == node_name) {
+            this->edges_list[edge->getSecondNode()->getName()].erase(edge);
         }
         else {
-            this->edges_list[edge->getNode1()->getName()].erase(edge);
+            this->edges_list[edge->getFirstNode()->getName()].erase(edge);
         }
     }
 
@@ -73,21 +73,21 @@ void Graph::removeNode(const std::string& node_name) {
 
 void Graph::addEdge(std::shared_ptr<Edge> edge) {
     if (this->containsEdge(edge)) return;
-    std::shared_ptr<Node> node1 = edge->getNode1();
-    std::shared_ptr<Node> node2 = edge->getNode2();
+    std::shared_ptr<Node> node1 = edge->getFirstNode();
+    std::shared_ptr<Node> node2 = edge->getSecondNode();
     this->edges_num++;
-    this->edges_list[edge->getNode1()->getName()].insert(edge);
-    this->edges_list[edge->getNode2()->getName()].insert(edge); // done twice because each edge exists in 2 lists, one for each node it connects
+    this->edges_list[edge->getFirstNode()->getName()].insert(edge);
+    this->edges_list[edge->getSecondNode()->getName()].insert(edge); // done twice because each edge exists in 2 lists, one for each node it connects
     this->neighbors_list[node1->getName()].insert(node2);
     this->neighbors_list[node2->getName()].insert(node1);
 }
 
 
 void Graph::removeEdge(const std::shared_ptr<Edge>& to_delete) {
-    this->edges_list[to_delete->getNode1()->getName()].erase(to_delete);
-    this->edges_list[to_delete->getNode2()->getName()].erase(to_delete);
-    std::shared_ptr<Node> firstNode = to_delete->getNode1();
-    std::shared_ptr<Node> secondNode = to_delete->getNode2();
+    this->edges_list[to_delete->getFirstNode()->getName()].erase(to_delete);
+    this->edges_list[to_delete->getSecondNode()->getName()].erase(to_delete);
+    std::shared_ptr<Node> firstNode = to_delete->getFirstNode();
+    std::shared_ptr<Node> secondNode = to_delete->getSecondNode();
     this->neighbors_list[firstNode->getName()].erase(secondNode);
     this->neighbors_list[secondNode->getName()].erase(firstNode);
     this->edges_num--;
@@ -110,16 +110,16 @@ bool Graph::containsNode(const std::string& node_name) {
 }
 
 bool Graph::containsEdge(const std::shared_ptr<Edge>& edge) {
-    std::string node1_name = edge->getNode1()->getName();
-    std::string node2_name = edge->getNode2()->getName();
+    std::string node1_name = edge->getFirstNode()->getName();
+    std::string node2_name = edge->getSecondNode()->getName();
 
     if (this->edges_list.find(node1_name) == this->edges_list.end() ||
         this->edges_list.find(node2_name) == this->edges_list.end())
         return false;
 
-    for (const auto& current_edge: edges_list[edge->getNode1()->getName()]) {
-        if (current_edge->getNode1()->getName() == node1_name && current_edge->getNode2()->getName() == node2_name ||
-            current_edge->getNode2()->getName() == node1_name && current_edge->getNode1()->getName() == node2_name)
+    for (const auto& current_edge: edges_list[edge->getFirstNode()->getName()]) {
+        if (current_edge->getFirstNode()->getName() == node1_name && current_edge->getSecondNode()->getName() == node2_name ||
+            current_edge->getSecondNode()->getName() == node1_name && current_edge->getFirstNode()->getName() == node2_name)
             return true;
     }
 
@@ -255,7 +255,7 @@ bool Graph::checkValidPos(const Node& node) const {
 
 std::shared_ptr<Edge> Graph::getEdgeByNodes(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2) {
     for (const auto& edge: this->edges_list[node1->getName()]) {
-        if (edge->getNode2()->getName() == node2->getName() || edge->getNode1()->getName() == node2->getName())
+        if (edge->getSecondNode()->getName() == node2->getName() || edge->getFirstNode()->getName() == node2->getName())
             return edge;
     }
     return nullptr;
