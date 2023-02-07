@@ -8,13 +8,18 @@
 #include <thread>
 #include <mutex>
 
-std::mutex m1;
+extern std::mutex run_lock;
+extern std::mutex window_lock;
 extern bool algo_thread_is_running;
+extern bool is_finished;
 
 
 void Graph::render(sf::RenderTarget& target) {
     for (auto &node: this->nodes_list) {
         node.second->render(target);
+    }
+// rendered nodes first then edges to show edges when they cross nodes
+    for (auto &node: this->nodes_list) {
         for (auto &edge: this->edges_list[node.first]) {
             edge->render(target);
         }
@@ -160,10 +165,9 @@ std::shared_ptr<Edge> Graph::getEdgeByPosition(float pos_x, float pos_y) {
     return nullptr;
 }
 
-void Graph::runBFS(sf::RenderWindow& window) {
+void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar) {
+    run_lock.lock();
     algo_thread_is_running = true;
-    m1.lock();
-    window.setActive(true);
     if (!this->start_node) return;
 
     std::queue<std::shared_ptr<Node>> bfs_q;
@@ -171,7 +175,7 @@ void Graph::runBFS(sf::RenderWindow& window) {
     std::shared_ptr<Edge> current_edge;
     bfs_q.push(this->start_node);
     bfs_q.front()->setState(NODE_CURRENT);
-    this->renderAndWait(window);
+    this->renderAndWait(window, toolbar);
 
     while (!bfs_q.empty()) {
         previous_node = bfs_q.front();
@@ -187,15 +191,17 @@ void Graph::runBFS(sf::RenderWindow& window) {
                 bfs_q.push(current_node);
                 current_node->setState(NODE_DISCOVERED);
                 current_node->setDistance(1);
-                this->renderAndWait(window);
+                this->renderAndWait(window, toolbar);
             }
         }
         previous_node->setState(NODE_DONE);
         bfs_q.pop();
-        this->renderAndWait(window);
+        this->renderAndWait(window, toolbar);
     }
-    window.setActive(false);
-    m1.unlock();
+    run_lock.unlock();
+
+    algo_thread_is_running = false;
+    is_finished = true;
 }
 
 void Graph::runDFS(sf::RenderTarget& target) {
@@ -229,16 +235,20 @@ void Graph::reset() {
 
 //**********************************************************************************************************************
 // private helper functions:
-void Graph::renderAndWait(sf::RenderWindow& window, bool wait) {
+void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
+    window_lock.lock();
+    window.setActive(true);
     window.clear();
     this->render(window);
+    toolbar.render(window);
     window.display();
+    window.setActive(false);
+    window_lock.unlock();
     if (wait) {
-        window.setActive(false);
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        window.setActive(true);
     }
 }
+
 
 std::string Graph::generateName() const {
     return "node_" + std::to_string(this->name_count);

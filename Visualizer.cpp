@@ -1,6 +1,7 @@
 #include "Visualizer.h"
 #include <iostream>
 #include <thread>
+#include <mutex>
 #include <queue>
 
 #define MOUSE_X (this->sfEvent.mouseButton.x)
@@ -10,7 +11,12 @@
 #define MOUSE_X_CORRECTED (this->sfEvent.mouseButton.x-30)
 #define MOUSE_Y_CORRECTED (this->sfEvent.mouseButton.y-30)
 
-bool algo_thread_is_running = false;
+std::mutex run_lock; // prevents multiple threads from executing runBfs method at the same time
+std::mutex window_lock; // prevents multiple threads from accessing window resource
+bool algo_thread_is_running = false; // true when a thread is currently running runBfs
+bool is_finished = false; // true when a thread ran and ended execution of runBfs, so we need to call join()
+
+std::thread algo_thread; // the thread we use to execute runBfs
 
 Visualizer::Visualizer() {
     this->window = new sf::RenderWindow(sf::VideoMode(1000, 600), "Graph Visualizer");
@@ -22,9 +28,18 @@ Visualizer::~Visualizer() {
 }
 
 void Visualizer::update() {
-    while(this->window->pollEvent(this->sfEvent)) {
+    window_lock.lock();
+    int event_type = this->window->pollEvent(this->sfEvent);
+    window_lock.unlock();
+    while(event_type) {
+        if (is_finished) {
+            algo_thread.join();
+        }
         switch (this->sfEvent.type) {
             case sf::Event::Closed: {
+                if (is_finished) {
+                    algo_thread.join();
+                }
                 this->window->close();
                 break;
             }
@@ -33,74 +48,91 @@ void Visualizer::update() {
                 break;
             }
             case sf::Event::Resized: {
+                window_lock.lock();
+                window->setActive(true);
                 sf::FloatRect view(0, 0, (float)this->sfEvent.size.width, (float)this->sfEvent.size.height);
                 this->window->setView(sf::View(view));
+                window->setActive(false);
+                window_lock.unlock();
                 break;
             }
             default: {
                 break;
             }
         }
+        window_lock.lock();
+        event_type = this->window->pollEvent(this->sfEvent);
+        window_lock.unlock();
     }
 }
 
 void Visualizer::render() {
+    window_lock.lock();
+    window->setActive(true);
     this->window->clear();
     this->toolbar.render(*this->window);
     this->graph.render(*this->window);
     this->window->display();
+    window->setActive(false);
+    window_lock.unlock();
 }
 
 void Visualizer::run() {
     while (this->window->isOpen()) {
         this->update();
-        this->render();
+        if (!algo_thread_is_running) {
+            this->render();
+        }
     }
 }
 
 
 void Visualizer::executeClickAction() {
-    bool button_pressed = false;
+    bool is_immediate = false;
     for (const auto &button: this->toolbar.buttons) {
         if (button->update(sf::Vector2i(MOUSE_X, MOUSE_Y))) {
             this->toolbar.update(sf::Vector2i(MOUSE_X, MOUSE_Y));
-            button_pressed = true;
+            is_immediate = true;
             break;
         }
     }
     button_id id = this->toolbar.getActiveButtonId();
 
-    if (button_pressed) {
-        switch (id) {
-            case START: {
-                runAlgorithm();
-                break;
-            }
-            case PAUSE: {
-                break;
-            }
-            case END: {
-                break;
-            }
-            case RESET: {
-                this->graph.reset();
-                break;
-            }
-            case CLEAR_WINDOW: {
-                this->graph = Graph();
-                this->node_is_clicked = false;
-                this->clicked_node = nullptr;
-                this->toolbar.updateActiveButton();
-                break;
-            }
-            default: {
-                break;
-            }
-
-
+    switch (id) {
+        case START: {
+            if (algo_thread_is_running) break;
+            runAlgorithm();
+            break;
         }
-        return;
+        case END: {
+            //TODO: change implementation so that it ends runBFS immediately suggestion: use global variable to end algo_thread, and run runBFS without stop
+            if (algo_thread_is_running) {
+                algo_thread.join();
+                is_finished = false;
+            }
+            break;
+        }
+        case RESET: {
+            //TODO: same concept and end and clear_window
+            this->graph.reset();
+            break;
+        }
+        case CLEAR_WINDOW: {
+            //TODO: end thread run and clear window immediately, same concept and end.
+            this->graph = Graph();
+            this->node_is_clicked = false;
+            this->clicked_node = nullptr;
+            this->toolbar.updateActiveButton();
+            break;
+        }
+        default: {
+            break;
+        }
+
     }
+
+    if (is_immediate || algo_thread_is_running) return;
+    // the following cases are not allowed while an algorithm is running
 
     switch (id) {
         case ADD_NODE: {
@@ -151,24 +183,26 @@ void Visualizer::runAlgorithm() {
     vis_mode current_mode = this->mode;
     switch (current_mode) {
         case BFS: {
-            this->window->setActive(false);
-            std::thread algo_runner(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window));
-            algo_runner.join();
+            if (!algo_thread_is_running) {
+                this->window->setActive(false);
+                algo_thread = std::thread(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window),
+                                          std::ref(this->toolbar));
+            }
             break;
         }
         case DFS: {
-            std::thread algo_runner(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window));
-            algo_runner.join();
+            algo_thread = std::thread(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window), std::ref(this->toolbar));
+            algo_thread.join();
             break;
         }
         case MST: {
-            std::thread algo_runner(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window));
-            algo_runner.join();
+            algo_thread = std::thread(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window), std::ref(this->toolbar));
+            algo_thread.join();
             break;
         }
         case DIJKSTRA: {
-            std::thread algo_runner(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window));
-            algo_runner.join();
+            algo_thread = std::thread(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window), std::ref(this->toolbar));
+            algo_thread.join();
             break;
         }
     }

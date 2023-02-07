@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include "Node.h"
 #include "Edge.h"
+#include "Toolbar.h"
 #include <SFML/Graphics.hpp>
 #include <thread>
 
@@ -25,7 +26,7 @@ class Graph {
 
     std::string generateName() const;
     bool checkValidPos(const Node& node) const;
-    void renderAndWait(sf::RenderWindow& window, bool wait = true);
+    void renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, bool wait = true);
 
 public:
     explicit Graph() = default;
@@ -44,7 +45,7 @@ public:
     bool hasNegativeCircle();
     std::shared_ptr<Node> getNodeByPosition(float pos_x, float pos_y);
     std::shared_ptr<Edge> getEdgeByPosition(float pos_x, float pos_y);
-    void runBFS(sf::RenderWindow& window);
+    void runBFS(sf::RenderWindow& window, Toolbar& toolbar);
     void runDFS(sf::RenderTarget& target);
     void runMST(sf::RenderTarget& target);
     void runDijkstra(sf::RenderTarget& target);
