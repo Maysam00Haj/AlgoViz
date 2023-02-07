@@ -20,7 +20,7 @@ sf::Rect<float> Node::getShapeLocalBounds() const {
 }
 
 void Node::render(sf::RenderTarget& target) {
-    node_state current_state = this->getState();
+    NodeState current_state = this->getState();
     switch (current_state) {
         case NODE_START: {
             this->setColor(START_NODE_COLOR); // Todo: why is it in render?
@@ -47,14 +47,13 @@ void Node::render(sf::RenderTarget& target) {
         }
     }
     target.draw(this->shape);
-  //  target.draw(*this->text);
 }
 
 std::string Node::getName() const {
     return this->name;
 }
 
-bool Node::checkCollision(const std::shared_ptr<Node>& node) const {
+bool Node::checkBoundsCollision(const std::shared_ptr<Node>& node) const {
     sf::Vector2<float> first_center = this->getShape().getPosition();
     sf::Vector2<float> second_center = node->getShape().getPosition();
     return std::abs(pow(first_center.x - second_center.x, 2) + pow(first_center.y - second_center.y, 2)) < pow(2 * RADIUS, 2);
@@ -88,11 +87,11 @@ sf::Color Node::getColor() const {
     return this->shape.getFillColor();
 }
 
-void Node::setState(node_state state) {
+void Node::setState(NodeState state) {
     this->state = state;
 }
 
-node_state Node::getState() const {
+NodeState Node::getState() const {
     return this->state;
 }
 
