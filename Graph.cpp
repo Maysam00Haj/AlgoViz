@@ -8,10 +8,22 @@
 #include <thread>
 #include <mutex>
 
+
+#ifndef CHECK_IF_SHOULD_END
+#define CHECK_IF_SHOULD_END \
+if (should_end) {           \
+    run_lock.unlock();      \
+    algo_thread_is_running = false; \
+    is_finished = true;\
+    return;                 \
+    }
+#endif
+
 extern std::mutex run_lock;
 extern std::mutex window_lock;
 extern bool algo_thread_is_running;
 extern bool is_finished;
+extern bool should_end;
 
 
 void Graph::render(sf::RenderTarget& target) {
@@ -165,7 +177,7 @@ std::shared_ptr<Edge> Graph::getEdgeByPosition(float pos_x, float pos_y) {
     return nullptr;
 }
 
-void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar) {
+void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
     run_lock.lock();
     algo_thread_is_running = true;
     if (!this->start_node) return;
@@ -175,9 +187,11 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar) {
     std::shared_ptr<Edge> current_edge;
     bfs_q.push(this->start_node);
     bfs_q.front()->setState(NODE_CURRENT);
-    this->renderAndWait(window, toolbar);
+    CHECK_IF_SHOULD_END
+    this->renderAndWait(window, toolbar, wait);
 
     while (!bfs_q.empty()) {
+        CHECK_IF_SHOULD_END
         previous_node = bfs_q.front();
         if (previous_node->getState() == NODE_DONE) {
             bfs_q.pop();
@@ -185,34 +199,38 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar) {
         }
         previous_node->setState(NODE_CURRENT);
         for (const std::shared_ptr<Node>& current_node: this->neighbors_list[previous_node->getName()]) {
+            CHECK_IF_SHOULD_END
             current_edge = getEdgeByNodes(previous_node, current_node);
             current_edge->setState(EDGE_DISCOVERED);
             if (current_node->getState() != NODE_DONE) {
                 bfs_q.push(current_node);
                 current_node->setState(NODE_DISCOVERED);
                 current_node->setDistance(1);
-                this->renderAndWait(window, toolbar);
+                this->renderAndWait(window, toolbar, wait);
             }
         }
         previous_node->setState(NODE_DONE);
         bfs_q.pop();
-        this->renderAndWait(window, toolbar);
+        CHECK_IF_SHOULD_END
+        this->renderAndWait(window, toolbar, wait);
     }
     run_lock.unlock();
 
     algo_thread_is_running = false;
-    is_finished = true;
+    if (wait) {
+        is_finished = true;
+    }
 }
 
-void Graph::runDFS(sf::RenderTarget& target) {
+void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
 
 }
 
-void Graph::runMST(sf::RenderTarget& target) {
+void Graph::runMST(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
 
 }
 
-void Graph::runDijkstra(sf::RenderTarget& target) {
+void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
 
 }
 
@@ -236,6 +254,7 @@ void Graph::reset() {
 //**********************************************************************************************************************
 // private helper functions:
 void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
+    if (!wait) return;
     window_lock.lock();
     window.setActive(true);
     window.clear();
@@ -244,9 +263,7 @@ void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, bool wait)
     window.display();
     window.setActive(false);
     window_lock.unlock();
-    if (wait) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 

@@ -45,10 +45,10 @@ public:
     bool hasNegativeCircle();
     std::shared_ptr<Node> getNodeByPosition(float pos_x, float pos_y);
     std::shared_ptr<Edge> getEdgeByPosition(float pos_x, float pos_y);
-    void runBFS(sf::RenderWindow& window, Toolbar& toolbar);
-    void runDFS(sf::RenderTarget& target);
-    void runMST(sf::RenderTarget& target);
-    void runDijkstra(sf::RenderTarget& target);
+    void runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
+    void runDFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
+    void runMST(sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
+    void runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
     std::shared_ptr<Edge> getEdgeByNodes(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2);
     void reset();
 };
