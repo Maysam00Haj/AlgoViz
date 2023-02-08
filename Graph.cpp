@@ -26,6 +26,19 @@ extern bool is_finished;
 extern bool should_end;
 
 
+
+
+Graph::Graph(const Graph &other) {
+    this->nodes_num = other.nodes_num;
+    this->edges_num = other.edges_num;
+    this->name_count = other.name_count;
+    this->start_node = other.start_node;
+    this->nodes_list = other.nodes_list;
+    this->neighbors_list = other.neighbors_list;
+    this->edges_list = other.edges_list;
+    this->directed = other.directed;
+}
+
 void Graph::render(sf::RenderTarget& target) {
     for (auto &node: this->nodes_list) {
         node.second->render(target);
@@ -39,15 +52,16 @@ void Graph::render(sf::RenderTarget& target) {
 }
 
 
-void Graph::addNode(float pos_x, float pos_y) {
+std::shared_ptr<Node> Graph::addNode(float pos_x, float pos_y) {
     std::string node_name = generateName();
     std::shared_ptr<Node> node_ptr = std::make_shared<Node>(node_name, pos_x, pos_y);
-    if (!checkValidPos(*node_ptr)) return; //TODO: exception
+    if (!checkValidPos(*node_ptr)) return nullptr; //TODO: exception
     this->nodes_list[node_name] = node_ptr;
     this->neighbors_list[node_name] = {};
     this->nodes_num++;
     this->name_count++;
     if (this->nodes_num == 1) setStartNode(node_ptr);
+    return node_ptr;
 }
 
 
