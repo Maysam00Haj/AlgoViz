@@ -11,6 +11,14 @@
 #define MOUSE_X_CORRECTED (this->sfEvent.mouseButton.x-30)
 #define MOUSE_Y_CORRECTED (this->sfEvent.mouseButton.y-30)
 
+#ifndef CHECK_THREAD_AND_JOIN
+#define CHECK_THREAD_AND_JOIN \
+if (is_finished) {            \
+    algo_thread.join();       \
+    is_finished = false;      \
+}
+#endif
+
 std::mutex run_lock; // prevents multiple threads from executing runBfs method at the same time
 std::mutex window_lock; // prevents multiple threads from accessing window resource
 bool algo_thread_is_running = false; // true when a thread is currently running runBfs
@@ -32,24 +40,17 @@ Visualizer::~Visualizer() {
 }
 
 void Visualizer::update() {
-    if (is_finished) {
-        algo_thread.join();
-        is_finished = false;
-    }
+    CHECK_THREAD_AND_JOIN
     window_lock.lock();
     int event_type = this->window->pollEvent(this->sfEvent);
     window_lock.unlock();
     while(event_type) {
-        if (is_finished) {
-            algo_thread.join();
-            is_finished = false;
-        }
+        CHECK_THREAD_AND_JOIN
         switch (this->sfEvent.type) {
             case sf::Event::Closed: {
-                if (is_finished) {
+                should_end = true;
+                if (algo_thread_is_running || is_finished)
                     algo_thread.join();
-                    is_finished = false;
-                }
                 this->window->close();
                 break;
             }
@@ -111,17 +112,19 @@ void Visualizer::executeClickAction() {
     switch (id) {
         case START: {
             if (algo_thread_is_running) break;
+            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE)
+                this->graph.reset();
             runAlgorithm();
             break;
         }
         case END: {
-            if (algo_thread_is_running) {
-                should_end = true;
-                algo_thread.join();
-                is_finished = false;
-                should_end = false;
-                this->graph.runBFS(*this->window, this->toolbar, false);
-            }
+            if (!algo_thread_is_running) break;
+            should_end = true;
+            algo_thread.join();
+            is_finished = false;
+            should_end = false;
+            this->graph.runBFS(*this->window, this->toolbar, false);
+
             break;
         }
         case RESET: {
@@ -153,30 +156,38 @@ void Visualizer::executeClickAction() {
 
     }
 
+
     if (is_immediate || algo_thread_is_running) return;
-    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE)
-        this->graph.reset();
 
     // the following cases are not allowed while an algorithm is running
     switch (id) {
         case ADD_NODE: {
-            this->graph.addNode(MOUSE_X_CORRECTED, MOUSE_Y_CORRECTED);
+            std::shared_ptr<Node> node_exists = this->graph.addNode(MOUSE_X_CORRECTED, MOUSE_Y_CORRECTED);
+            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists)
+                this->graph.reset();
             break;
         }
         case ADD_EDGE: {
+            bool action_was_performed = false;
             if (!this->node_is_clicked) {
                 this->clicked_node = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
-                if (clicked_node) this->node_is_clicked = true;
+                if (clicked_node) {
+                    this->node_is_clicked = true;
+                    action_was_performed = true;
+                }
             }
             else {
                 std::shared_ptr<Node> dst = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
                 if (dst && dst != clicked_node) {
                     std::shared_ptr<Edge> to_add = std::make_shared<Edge>(this->clicked_node, dst);
                     this->graph.addEdge(to_add);
+                    action_was_performed = true;
                 }
                 this->node_is_clicked = false;
                 this->clicked_node = nullptr;
             }
+            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && action_was_performed)
+                this->graph.reset();
             break;
         }
         case ERASE: {
@@ -188,9 +199,15 @@ void Visualizer::executeClickAction() {
             else if (edge_to_delete) {
                 this->graph.removeEdge(edge_to_delete);
             }
+            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && (node_to_delete || edge_to_delete))
+                this->graph.reset();
             break;
         }
         case CHANGE_START_NODE: {
+            std::shared_ptr<Node> node_exists = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
+            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists)
+                this->graph.reset();
+
             this->graph.setStartNode(this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y));
             break;
         }
@@ -203,31 +220,32 @@ void Visualizer::executeClickAction() {
 
 
 void Visualizer::runAlgorithm() {
-    if (!this->graph.getStartNode()) return;
+    if (!this->graph.getStartNode() || algo_thread_is_running) return;
     vis_mode current_mode = this->mode;
     bool should_wait = true;
     switch (current_mode) {
         case BFS: {
-            if (!algo_thread_is_running) {
-                this->window->setActive(false);
-                algo_thread = std::thread(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window),
-                                          std::ref(this->toolbar), should_wait);
-            }
+            this->window->setActive(false);
+            algo_thread = std::thread(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window),
+                                      std::ref(this->toolbar), should_wait);
             break;
         }
         case DFS: {
-            algo_thread = std::thread(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window), std::ref(this->toolbar), should_wait);
-            algo_thread.join();
+            this->window->setActive(false);
+            algo_thread = std::thread(&Graph::runDFS, std::ref(this->graph), std::ref(*this->window),
+                                      std::ref(this->toolbar), should_wait);
             break;
         }
         case MST: {
-            algo_thread = std::thread(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window), std::ref(this->toolbar), should_wait);
-            algo_thread.join();
+            this->window->setActive(false);
+            algo_thread = std::thread(&Graph::runMST, std::ref(this->graph), std::ref(*this->window),
+                                      std::ref(this->toolbar), should_wait);
             break;
         }
         case DIJKSTRA: {
-            algo_thread = std::thread(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window), std::ref(this->toolbar), should_wait);
-            algo_thread.join();
+            this->window->setActive(false);
+            algo_thread = std::thread(&Graph::runDijkstra, std::ref(this->graph), std::ref(*this->window),
+                                      std::ref(this->toolbar), should_wait);
             break;
         }
     }
