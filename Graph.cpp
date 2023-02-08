@@ -51,7 +51,6 @@ void Graph::render(sf::RenderTarget& target) {
     }
 }
 
-
 std::shared_ptr<Node> Graph::addNode(float pos_x, float pos_y) {
     std::string node_name = generateNodeName();
     std::shared_ptr<Node> node_ptr = std::make_shared<Node>(node_name, pos_x, pos_y);

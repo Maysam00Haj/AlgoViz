@@ -3,22 +3,27 @@
 #include <memory>
 #include <SFML/Graphics.hpp>
 
-enum button_states {BUTTON_IDLE = 0, BUTTON_ACTIVE};
-enum button_id {ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, START, END, RESET, CLEAR_WINDOW};
+#define CLICKED_BUTTON_COLOR (sf::Color(189, 195, 199, 100))
+#define DEFAULT_BUTTON_COLOR (sf::Color::White)
+
+enum ButtonStates {BUTTON_IDLE = 0, BUTTON_ACTIVE};
+enum ButtonId {ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, START, END, RESET, CLEAR_WINDOW};
 
 class Button {
-    button_states buttonState;
+    ButtonStates buttonState;
     sf::RectangleShape shape;
     sf::Text text;
-    button_id id;
+    ButtonId id;
 
 public:
-    Button(float x, float y, float width, float height, const std::string& txt, button_id id);
+    Button(float x, float y, float width, float height, const std::string& txt, ButtonId id);
     ~Button();
     bool isPressed() const;
-    button_id getId() const;
-    void setId(button_id id);
+    ButtonId getId() const;
+    void setId(ButtonId id);
     bool update(const sf::Vector2i& mousePosWindow);
+    void setButtonDisabled();
+    void setButtonEnabled();
     void render(sf::RenderTarget& target);
 };
 
@@ -30,10 +35,10 @@ private:
 public:
     Toolbar();
     ~Toolbar() = default;
-    button_id getActiveButtonId() const;
-    void update(const sf::Vector2i& mousePosWindow);
+    ButtonId getActiveButtonId() const;
+    void updateActiveButton(const sf::Vector2i& mousePosWindow);
     void render(sf::RenderTarget& target);
-    void updateActiveButton(); //used after 'CLEAN'
+    void resetActiveButton(); //used after 'CLEAN'
 
     std::vector<std::shared_ptr<Button>> buttons;
 };
