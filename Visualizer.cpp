@@ -102,12 +102,12 @@ void Visualizer::executeClickAction() {
     bool is_immediate = false;
     for (const auto &button: this->toolbar.buttons) {
         if (button->update(sf::Vector2i(MOUSE_X, MOUSE_Y))) {
-            this->toolbar.update(sf::Vector2i(MOUSE_X, MOUSE_Y));
+            this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y));
             is_immediate = true;
             break;
         }
     }
-    button_id id = this->toolbar.getActiveButtonId();
+    ButtonId id = this->toolbar.getActiveButtonId();
 
     switch (id) {
         case START: {
@@ -147,7 +147,7 @@ void Visualizer::executeClickAction() {
             this->graph = Graph();
             this->node_is_clicked = false;
             this->clicked_node = nullptr;
-            this->toolbar.updateActiveButton();
+            this->toolbar.resetActiveButton();
             break;
         }
         default: {
