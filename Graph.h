@@ -25,8 +25,8 @@ class Graph {
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Edge>>> edges_list; // for each node there's a set of edges that touch it (2 copies of each edge)
     bool directed = false;
 
-    std::string generateName() const;
-    bool checkValidPos(const Node& node) const;
+    std::string generateNodeName() const;
+    bool checkValidPosition(const Node& node) const;
     void renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, bool wait = true);
 
 public:
