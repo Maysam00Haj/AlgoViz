@@ -9,7 +9,7 @@ static float getCorrectedY1(float y1, float angle);
 
 
 
-Edge::Edge(std::shared_ptr<Node> first_node, std::shared_ptr<Node> second_node): first_node(first_node), second_node(second_node){
+Edge::Edge(std::shared_ptr<Node> first_node, std::shared_ptr<Node> second_node): first_node(first_node), second_node(second_node) {
     float x1 = first_node->getShape().getPosition().x + NODE_RADIUS;
     float y1 = first_node->getShape().getPosition().y + NODE_RADIUS;
     float x2 = second_node->getShape().getPosition().x + NODE_RADIUS;

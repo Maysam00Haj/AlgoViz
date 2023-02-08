@@ -281,13 +281,13 @@ void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, bool wait)
 }
 
 
-std::string Graph::generateName() const {
+std::string Graph::generateNodeName() const {
     return "node_" + std::to_string(this->name_count);
 }
 
-bool Graph::checkValidPos(const Node& node) const {
+bool Graph::checkValidPosition(const Node& node) const {
     for (auto& pair : this->nodes_list) {
-        if (node.checkCollision(pair.second)) return false;
+        if (node.checkBoundsCollision(pair.second)) return false;
     }
     //Todo: set x and y limits
     return true;

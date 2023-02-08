@@ -8,7 +8,7 @@
 #include "SFML/Graphics.hpp"
 
 #define UNDISCOVERED_EDGE_COLOR (sf::Color(192, 192, 192, 70))
-#define DISCOVERED_EDGE_COLOR (sf::Color::White)
+#define DISCOVERED_EDGE_COLOR   (sf::Color::White)
 #define NODE_RADIUS 30
 
 enum EdgeState {EDGE_DISCOVERED, EDGE_UNDISCOVERED};

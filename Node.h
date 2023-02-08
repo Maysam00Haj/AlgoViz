@@ -12,11 +12,11 @@
 #define DONE_NODE_COLOR         (sf::Color::Blue)
 
 
-enum node_state {NODE_CURRENT, NODE_START, NODE_UNDISCOVERED, NODE_DISCOVERED, NODE_DONE};
+enum NodeState {NODE_CURRENT, NODE_START, NODE_UNDISCOVERED, NODE_DISCOVERED, NODE_DONE};
 
 class Node {
     std::string name;
-    node_state state = NODE_UNDISCOVERED;
+    NodeState state = NODE_UNDISCOVERED;
     int distance = INT_MAX;
     int path_weight = INT_MAX;
     sf::CircleShape shape;
@@ -27,7 +27,7 @@ public:
     sf::Rect<float> getShapeLocalBounds() const;
     void render(sf::RenderTarget& target);
     std::string getName() const;
-    bool checkCollision(const std::shared_ptr<Node>& node) const;
+    bool checkBoundsCollision(const std::shared_ptr<Node>& node) const;
     void setDistance(int distance);
     int getDistance() const;
     void setPathWeight(int path_weight);
@@ -35,8 +35,8 @@ public:
     bool operator==(const std::shared_ptr<Node>& node) const;
     void setColor(const sf::Color& color);
     sf::Color getColor() const;
-    void setState(node_state state);
-    node_state getState() const;
+    void setState(NodeState state);
+    NodeState getState() const;
 
 };
 
