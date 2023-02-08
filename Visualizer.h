@@ -15,7 +15,7 @@ class Visualizer {
     vis_mode mode = BFS;
 
 public:
-    Visualizer();
+    explicit Visualizer(const Graph& graph = Graph());
     ~Visualizer();
     void update();
     void render();

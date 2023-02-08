@@ -14,6 +14,7 @@
 #include <SFML/Graphics.hpp>
 #include <thread>
 
+
 class Graph {
     int nodes_num = 0;
     int edges_num = 0;
@@ -30,10 +31,11 @@ class Graph {
 
 public:
     explicit Graph() = default;
+    Graph(const Graph& other);
     ~Graph() = default;
     void setStartNode(const std::shared_ptr<Node>& newStartNode);
     void render(sf::RenderTarget& target);
-    void addNode(float pos_x, float pos_y);
+    std::shared_ptr<Node> addNode(float pos_x, float pos_y);
     void removeNode(const std::string& node_name);
     void addEdge(std::shared_ptr<Edge> edge);
     void removeEdge(const std::shared_ptr<Edge>& edge);

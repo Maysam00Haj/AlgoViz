@@ -19,7 +19,10 @@ bool should_end = false;
 
 std::thread algo_thread; // the thread we use to execute runBfs
 
-Visualizer::Visualizer() {
+
+
+
+Visualizer::Visualizer(const Graph& graph): graph(graph) {
     this->window = new sf::RenderWindow(sf::VideoMode(1000, 600), "Graph Visualizer");
     this->window->setFramerateLimit(60);
 }
@@ -151,8 +154,10 @@ void Visualizer::executeClickAction() {
     }
 
     if (is_immediate || algo_thread_is_running) return;
-    // the following cases are not allowed while an algorithm is running
+    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE)
+        this->graph.reset();
 
+    // the following cases are not allowed while an algorithm is running
     switch (id) {
         case ADD_NODE: {
             this->graph.addNode(MOUSE_X_CORRECTED, MOUSE_Y_CORRECTED);
