@@ -53,9 +53,9 @@ void Graph::render(sf::RenderTarget& target) {
 
 
 std::shared_ptr<Node> Graph::addNode(float pos_x, float pos_y) {
-    std::string node_name = generateName();
+    std::string node_name = generateNodeName();
     std::shared_ptr<Node> node_ptr = std::make_shared<Node>(node_name, pos_x, pos_y);
-    if (!checkValidPos(*node_ptr)) return nullptr; //TODO: exception
+    if (!checkValidPosition(*node_ptr)) return nullptr;
     this->nodes_list[node_name] = node_ptr;
     this->neighbors_list[node_name] = {};
     this->nodes_num++;
@@ -289,7 +289,6 @@ bool Graph::checkValidPosition(const Node& node) const {
     for (auto& pair : this->nodes_list) {
         if (node.checkBoundsCollision(pair.second)) return false;
     }
-    //Todo: set x and y limits
     return true;
 }
 
