@@ -111,7 +111,7 @@ void Visualizer::executeClickAction() {
 
     switch (id) {
         case START: {
-            if (algo_thread_is_running) break;
+            if (algo_thread_is_running || !is_immediate) break;
             if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE)
                 this->graph.reset();
             runAlgorithm();
