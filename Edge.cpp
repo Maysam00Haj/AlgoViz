@@ -36,8 +36,6 @@ sf::RectangleShape Edge::getShape() const {
 }
 
 void Edge::render(sf::RenderTarget& target) {
-    if (this->getState() == EDGE_UNDISCOVERED) this->setColor(UNDISCOVERED_EDGE_COLOR);
-    else this->setColor(DISCOVERED_EDGE_COLOR);
     target.draw(this->shape);
 }
 
@@ -63,6 +61,10 @@ EdgeState Edge::getState() const {
 
 void Edge::setState(EdgeState state) {
     this->state = state;
+    if (this->getState() == EDGE_UNDISCOVERED) {
+        this->setColor(UNDISCOVERED_EDGE_COLOR);
+    }
+    else this->setColor(DISCOVERED_EDGE_COLOR);
 }
 
 

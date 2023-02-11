@@ -20,32 +20,6 @@ sf::Rect<float> Node::getShapeLocalBounds() const {
 }
 
 void Node::render(sf::RenderTarget& target) {
-    NodeState current_state = this->getState();
-    switch (current_state) {
-        case NODE_START: {
-            this->setColor(START_NODE_COLOR); // Todo: why is it in render?
-            break;
-        }
-        case NODE_CURRENT: {
-            this->setColor(CURRENT_NODE_COLOR);
-            break;
-        }
-        case NODE_DISCOVERED: {
-            this->setColor(DISCOVERED_NODE_COLOR);
-            break;
-        }
-        case NODE_UNDISCOVERED: {
-            this->setColor(UNDISCOVERED_NODE_COLOR);
-            break;
-        }
-        case NODE_DONE: {
-            this->setColor(DONE_NODE_COLOR);
-            break;
-        }
-        default: {
-            break;
-        }
-    }
     target.draw(this->shape);
 }
 
@@ -89,6 +63,31 @@ sf::Color Node::getColor() const {
 
 void Node::setState(NodeState state) {
     this->state = state;
+    switch (this->state) {
+        case NODE_START: {
+            this->setColor(START_NODE_COLOR);
+            break;
+        }
+        case NODE_CURRENT: {
+            this->setColor(CURRENT_NODE_COLOR);
+            break;
+        }
+        case NODE_DISCOVERED: {
+            this->setColor(DISCOVERED_NODE_COLOR);
+            break;
+        }
+        case NODE_UNDISCOVERED: {
+            this->setColor(UNDISCOVERED_NODE_COLOR);
+            break;
+        }
+        case NODE_DONE: {
+            this->setColor(DONE_NODE_COLOR);
+            break;
+        }
+        default: {
+            break;
+        }
+    }
 }
 
 NodeState Node::getState() const {

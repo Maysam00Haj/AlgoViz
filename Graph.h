@@ -51,6 +51,7 @@ public:
     void runDFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
     void runMST(sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
     void runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
+    void dfs(const std::shared_ptr<Node>& prev, const std::shared_ptr<Node>& start, sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
     std::shared_ptr<Edge> getEdgeByNodes(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2);
     void reset();
 };

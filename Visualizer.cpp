@@ -110,12 +110,19 @@ void Visualizer::executeClickAction() {
     ButtonId id = this->toolbar.getActiveButtonId();
 
     switch (id) {
-        case START: {
+        case RUN_BFS: {
             if (algo_thread_is_running || !is_immediate) break;
             if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE)
                 this->graph.reset();
+            this->mode = BFS;
             runAlgorithm();
-            break;
+        }
+        case RUN_DFS: {
+            if (algo_thread_is_running || !is_immediate) break;
+            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE)
+                this->graph.reset();
+            this->mode = DFS;
+            runAlgorithm();
         }
         case END: {
             if (!algo_thread_is_running) break;
@@ -123,7 +130,13 @@ void Visualizer::executeClickAction() {
             algo_thread.join();
             is_finished = false;
             should_end = false;
-            this->graph.runBFS(*this->window, this->toolbar, false);
+
+            this->graph.reset();
+
+            if (this->mode == BFS)
+                this->graph.runBFS(*this->window, this->toolbar, false);
+            else if (this->mode == DFS)
+                this->graph.runDFS(*this->window, this->toolbar, false);
 
             break;
         }
@@ -221,7 +234,7 @@ void Visualizer::executeClickAction() {
 
 void Visualizer::runAlgorithm() {
     if (!this->graph.getStartNode() || algo_thread_is_running) return;
-    vis_mode current_mode = this->mode;
+    VisMode current_mode = this->mode;
     bool should_wait = true;
     switch (current_mode) {
         case BFS: {

@@ -3,16 +3,16 @@
 #include "Graph.h"
 #include "Toolbar.h"
 
+enum VisMode {BFS, DFS, MST, DIJKSTRA};
 
 class Visualizer {
-    enum vis_mode {BFS, DFS, MST, DIJKSTRA};
     sf::RenderWindow* window;
     sf::Event sfEvent{};
     Graph graph;
     Toolbar toolbar;
     bool node_is_clicked = false;
     std::shared_ptr<Node> clicked_node;
-    vis_mode mode = BFS;
+    VisMode mode = BFS;
 
 public:
     explicit Visualizer(const Graph& graph = Graph());

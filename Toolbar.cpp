@@ -58,8 +58,8 @@ void Button::render(sf::RenderTarget& target) {
 //----------------------------------------Toolbar Methods---------------------------------------------
 
 Toolbar::Toolbar() {
-    std::vector<std::string> icons = {"add_node", "add_edge", "erase", "change_start_node", "start", "end", "reset", "clear_window"};
-    std::vector<ButtonId> id_list = {ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, START, END, RESET, CLEAR_WINDOW};
+    std::vector<std::string> icons = {"add_node", "add_edge", "erase", "change_start_node", "run_bfs", "run_dfs", "end", "reset", "clear_window"};
+    std::vector<ButtonId> id_list = {ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, RUN_BFS, RUN_DFS, END, RESET, CLEAR_WINDOW};
     for (unsigned int i = 0; i < icons.size(); i++) {
         this->buttons.push_back(std::make_shared<Button>(20, 20 + ((40 + 20) * i), 150, 40, "./icons/" + icons[i] + ".png", id_list[i]));
     }

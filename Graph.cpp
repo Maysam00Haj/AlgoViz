@@ -213,9 +213,9 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
         previous_node->setState(NODE_CURRENT);
         for (const std::shared_ptr<Node>& current_node: this->neighbors_list[previous_node->getName()]) {
             CHECK_IF_SHOULD_END
-            current_edge = getEdgeByNodes(previous_node, current_node);
-            current_edge->setState(EDGE_DISCOVERED);
-            if (current_node->getState() != NODE_DONE) {
+            if (current_node->getState() != NODE_DONE && current_node->getState() != NODE_DISCOVERED) {
+                current_edge = getEdgeByNodes(previous_node, current_node);
+                current_edge->setState(EDGE_DISCOVERED);
                 bfs_q.push(current_node);
                 current_node->setState(NODE_DISCOVERED);
                 current_node->setDistance(1);
@@ -236,7 +236,34 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
 }
 
 void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
+    run_lock.lock();
+    algo_thread_is_running = true;
+    if (!this->start_node) return;
 
+    dfs(nullptr, this->start_node, window, toolbar, wait);
+
+    run_lock.unlock();
+    algo_thread_is_running = false;
+    if (wait) {
+        is_finished = true;
+    }
+}
+
+void Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<Node>& curr_node, sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
+    CHECK_IF_SHOULD_END
+    if (prev_node) {
+        getEdgeByNodes(prev_node, curr_node)->setState(EDGE_DISCOVERED);
+    }
+    curr_node->setState(NODE_DISCOVERED);
+    this->renderAndWait(window, toolbar, wait);
+    for (const std::shared_ptr<Node>& neighbor_node : this->neighbors_list[curr_node->getName()]) {
+        CHECK_IF_SHOULD_END
+        if (neighbor_node->getState() != NODE_DISCOVERED && neighbor_node->getState() != NODE_DONE)
+            dfs(curr_node, neighbor_node, window, toolbar, wait);
+    }
+    curr_node->setState(NODE_DONE);
+    CHECK_IF_SHOULD_END
+    this->renderAndWait(window, toolbar, wait);
 }
 
 void Graph::runMST(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
