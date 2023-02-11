@@ -164,7 +164,6 @@ void Graph::setStartNode(const std::shared_ptr<Node>& new_start_node) {
     this->start_node->setDistance(0);
     this->start_node->setPathWeight(0);
     this->start_node->setState(NODE_START);
-    this->start_node->setColor(sf::Color::Yellow);
 }
 
 bool Graph::hasNegativeCircle() {
