@@ -116,6 +116,7 @@ void Visualizer::executeClickAction() {
                 this->graph.reset();
             this->mode = BFS;
             runAlgorithm();
+            break;
         }
         case RUN_DFS: {
             if (algo_thread_is_running || !is_immediate) break;
@@ -123,6 +124,7 @@ void Visualizer::executeClickAction() {
                 this->graph.reset();
             this->mode = DFS;
             runAlgorithm();
+            break;
         }
         case END: {
             if (!algo_thread_is_running) break;

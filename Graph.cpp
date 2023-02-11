@@ -8,6 +8,7 @@
 #include <thread>
 #include <mutex>
 
+#define WAIT_TIME_MS 100
 
 #ifndef CHECK_IF_SHOULD_END
 #define CHECK_IF_SHOULD_END \
@@ -303,7 +304,7 @@ void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, bool wait)
     window.display();
     window.setActive(false);
     window_lock.unlock();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_TIME_MS));
 }
 
 
