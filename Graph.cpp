@@ -200,11 +200,11 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
     std::shared_ptr<Edge> current_edge;
     bfs_q.push(this->start_node);
     bfs_q.front()->setState(NODE_CURRENT);
-    CHECK_IF_SHOULD_END
+    CHECK_IF_SHOULD_END;
     this->renderAndWait(window, toolbar, wait);
 
     while (!bfs_q.empty()) {
-        CHECK_IF_SHOULD_END
+        CHECK_IF_SHOULD_END;
         previous_node = bfs_q.front();
         if (previous_node->getState() == NODE_DONE) {
             bfs_q.pop();
@@ -212,7 +212,7 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
         }
         previous_node->setState(NODE_CURRENT);
         for (const std::shared_ptr<Node>& current_node: this->neighbors_list[previous_node->getName()]) {
-            CHECK_IF_SHOULD_END
+            CHECK_IF_SHOULD_END;
             if (current_node->getState() != NODE_DONE && current_node->getState() != NODE_DISCOVERED) {
                 current_edge = getEdgeByNodes(previous_node, current_node);
                 current_edge->setState(EDGE_DISCOVERED);
@@ -224,15 +224,15 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
         }
         previous_node->setState(NODE_DONE);
         bfs_q.pop();
-        CHECK_IF_SHOULD_END
+        CHECK_IF_SHOULD_END;
         this->renderAndWait(window, toolbar, wait);
     }
     run_lock.unlock();
 
-    algo_thread_is_running = false;
     if (wait) {
         is_finished = true;
     }
+    algo_thread_is_running = false;
 }
 
 void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
@@ -243,10 +243,10 @@ void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
     dfs(nullptr, this->start_node, window, toolbar, wait);
 
     run_lock.unlock();
-    algo_thread_is_running = false;
     if (wait) {
         is_finished = true;
     }
+    algo_thread_is_running = false;
 }
 
 void Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<Node>& curr_node, sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
@@ -297,7 +297,7 @@ void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, bool wait)
     if (!wait) return;
     window_lock.lock();
     window.setActive(true);
-    window.clear();
+    window.clear(BG_COLOR);
     this->render(window);
     toolbar.render(window);
     window.display();

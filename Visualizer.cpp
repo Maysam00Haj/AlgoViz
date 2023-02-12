@@ -11,6 +11,7 @@
 #define MOUSE_X_CORRECTED (this->sfEvent.mouseButton.x-30)
 #define MOUSE_Y_CORRECTED (this->sfEvent.mouseButton.y-30)
 
+
 #ifndef CHECK_THREAD_AND_JOIN
 #define CHECK_THREAD_AND_JOIN \
 if (is_finished) {            \
@@ -31,7 +32,7 @@ std::thread algo_thread; // the thread we use to execute runBfs
 
 
 Visualizer::Visualizer(const Graph& graph): graph(graph) {
-    this->window = new sf::RenderWindow(sf::VideoMode(1000, 600), "Graph Visualizer");
+    this->window = new sf::RenderWindow(sf::VideoMode(1000, 600), "Graph Visualizer", sf::Style::Fullscreen);
     this->window->setFramerateLimit(60);
 }
 
@@ -40,12 +41,9 @@ Visualizer::~Visualizer() {
 }
 
 void Visualizer::update() {
-    CHECK_THREAD_AND_JOIN
-    window_lock.lock();
-    int event_type = this->window->pollEvent(this->sfEvent);
-    window_lock.unlock();
-    while(event_type) {
-        CHECK_THREAD_AND_JOIN
+    CHECK_THREAD_AND_JOIN;
+    while(this->window->pollEvent(this->sfEvent)) {
+        CHECK_THREAD_AND_JOIN;
         switch (this->sfEvent.type) {
             case sf::Event::Closed: {
                 should_end = true;
@@ -71,16 +69,13 @@ void Visualizer::update() {
                 break;
             }
         }
-        window_lock.lock();
-        event_type = this->window->pollEvent(this->sfEvent);
-        window_lock.unlock();
     }
 }
 
 void Visualizer::render() {
     window_lock.lock();
     window->setActive(true);
-    this->window->clear();
+    this->window->clear(BG_COLOR);
     this->toolbar.render(*this->window);
     this->graph.render(*this->window);
     this->window->display();

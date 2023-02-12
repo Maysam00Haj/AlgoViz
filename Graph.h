@@ -15,6 +15,8 @@
 #include <thread>
 
 
+#define BG_COLOR (sf::Color(163,158,240,255))
+
 class Graph {
     int nodes_num = 0;
     int edges_num = 0;
