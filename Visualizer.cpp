@@ -136,20 +136,7 @@ void Visualizer::executeClickAction() {
             break;
         }
         case RUN_DIJKSTRA: {
-            if (algo_thread_is_running || !is_immediate) break;
-            sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
-            while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-                this->window->pollEvent(this->sfEvent);
-            }
-            if (!this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_DIJKSTRA) {
-                this->toolbar.updateActiveButton(original_active_button_coordinates);
-                break;
-            }
-            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
-                this->graph.reset();
-            }
-            this->mode = DIJKSTRA;
-            runAlgorithm();
+            runDijkstraRoutine();
             break;
         }
         case END: {
@@ -212,6 +199,9 @@ void Visualizer::executeClickAction() {
 
 }
 
+
+
+
 void Visualizer::runAlgorithm() {
     if (!this->graph.getStartNode() || algo_thread_is_running) return;
     VisMode current_mode = this->mode;
@@ -248,7 +238,17 @@ void Visualizer::runAlgorithm() {
 
 
 void Visualizer::cursorRoutine() {
-
+    std::shared_ptr<Node> moving_node = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
+    if (!moving_node) return;
+    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
+        if (!this->graph.checkValidPosition(*moving_node)) continue;
+        moving_node->setCoordinates(MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED);
+        this->window->clear(BG_COLOR);
+        this->toolbar.render(*this->window);
+        this->graph.render(*this->window);
+        this->window->display();
+        this->window->pollEvent(this->sfEvent);
+    }
 }
 
 
@@ -395,6 +395,29 @@ void Visualizer::runDfSRoutine() {
     this->mode = DFS;
     runAlgorithm();
 }
+
+
+
+
+
+void Visualizer::runDijkstraRoutine() {
+    if (algo_thread_is_running || !is_immediate) return;
+    sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
+    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
+        this->window->pollEvent(this->sfEvent);
+    }
+    if (!this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_DIJKSTRA) {
+        this->toolbar.updateActiveButton(original_active_button_coordinates);
+        return;
+    }
+    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
+        this->graph.reset();
+    }
+    this->mode = DIJKSTRA;
+    runAlgorithm();
+}
+
+
 
 
 void Visualizer::endRoutine() {

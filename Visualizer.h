@@ -22,11 +22,11 @@ class Visualizer {
     void cursorRoutine();
     void addNodeRoutine();
     void addEdgeRoutine();
-    void addEdgeAux();
     void eraseRoutine();
     void changeStartNodeRoutine();
     void runBFSRoutine();
     void runDfSRoutine();
+    void runDijkstraRoutine();
     void endRoutine();
     void resetRoutine();
     void clearWindowRoutine();
