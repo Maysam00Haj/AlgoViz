@@ -18,6 +18,17 @@ class Visualizer {
     void render();
     void executeClickAction();
     void runAlgorithm();
+    void cursorRoutine();
+    void addNodeRoutine();
+    void addEdgeRoutine();
+    void addEdgeAux();
+    void eraseRoutine();
+    void changeStartNodeRoutine();
+    void runBFSRoutine();
+    void runDfSRoutine();
+    void endRoutine();
+    void resetRoutine();
+    void clearWindowRoutine();
 
 public:
     explicit Visualizer(const Graph& graph = Graph());
