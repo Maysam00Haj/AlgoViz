@@ -13,6 +13,7 @@ class Visualizer {
     bool node_is_clicked = false;
     std::shared_ptr<Node> clicked_node;
     VisMode mode = BFS;
+    std::vector<sf::RectangleShape> userInput;
 
     void update();
     void render();

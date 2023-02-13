@@ -195,15 +195,22 @@ void Visualizer::executeClickAction() {
             changeStartNodeRoutine();
             break;
         }
+        case CHANGE_EDGE_WEIGHT: {
+            std::shared_ptr<Edge> edge = this->graph.getEdgeByPosition(MOUSE_X, MOUSE_Y);
+            if (!edge) break;
+            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE)
+                this->graph.reset();
+            int weight = 5;
+            edge->setState(EDGE_SELECTED);
+            edge->setWeight(weight);
+            break;
+        }
         default: {
             break;
         }
     }
 
 }
-
-
-
 
 void Visualizer::runAlgorithm() {
     if (!this->graph.getStartNode() || algo_thread_is_running) return;
@@ -391,7 +398,7 @@ void Visualizer::runDfSRoutine() {
 
 
 void Visualizer::endRoutine() {
-    if (!algo_thread_is_running) break;
+    if (!algo_thread_is_running) return;
     should_end = true;
     algo_thread.join();
     is_finished = false;

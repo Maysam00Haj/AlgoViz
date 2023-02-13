@@ -64,12 +64,32 @@ EdgeState Edge::getState() const {
     return this->state;
 }
 
+int Edge::getWeight() const {
+    return this->weight;
+}
+
 void Edge::setState(EdgeState state) {
     this->state = state;
-    if (this->getState() == EDGE_UNDISCOVERED) {
-        this->setColor(UNDISCOVERED_EDGE_COLOR);
+    switch (state) {
+        case EDGE_UNDISCOVERED: {
+            this->setColor(UNDISCOVERED_EDGE_COLOR);
+            break;
+        }
+        case EDGE_DISCOVERED: {
+            this->setColor(DISCOVERED_EDGE_COLOR);
+            break;
+        }
+        case EDGE_SELECTED: {
+            this->setColor(SELECTED_EDGE_COLOR);
+        }
+        default: {
+            break;
+        }
     }
-    else this->setColor(DISCOVERED_EDGE_COLOR);
+}
+
+void Edge::setWeight(int weight) {
+    this->weight = weight;
 }
 
 void Edge::toggle() {

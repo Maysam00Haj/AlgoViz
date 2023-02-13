@@ -300,23 +300,25 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
     this->untoggle();
     if (!this->start_node) return;
 
-    std::unordered_map<std::shared_ptr<Node>, std::shared_ptr<Node>> discovered_edges;
+    std::unordered_map<std::shared_ptr<Node>, std::shared_ptr<Edge>> discovered_edges;
     this->start_node->setDistance(0);
 
     for (int i = 0; i < nodes_list.size(); i++) {
         std::shared_ptr<Node> current_node = dijkstraMinDistance();
         current_node->setState(NODE_DISCOVERED);
         if (current_node != this->start_node) {
-           getEdgeByNodes(current_node, discovered_edges[current_node])->setState(EDGE_DISCOVERED);
+            discovered_edges[current_node]->setState(EDGE_DISCOVERED);
         }
         CHECK_IF_SHOULD_END
         this->renderAndWait(window, toolbar, wait);
         if (current_node->getDistance() < INT_MAX) {
             for (const std::shared_ptr<Node> &neighbor_node: this->neighbors_list[current_node->getName()]) {
                 // updating the distance of neighboring nodes
-                if (neighbor_node->getState() == NODE_UNDISCOVERED && current_node->getDistance() + 1 < neighbor_node->getDistance()) {
-                    neighbor_node->setDistance(current_node->getDistance() + 1);
-                    discovered_edges[neighbor_node] = current_node;
+                std::shared_ptr<Edge> edge = getEdgeByNodes(current_node, neighbor_node);
+                int edge_weight = edge->getWeight();
+                if (neighbor_node->getState() == NODE_UNDISCOVERED && current_node->getDistance() + edge_weight < neighbor_node->getDistance()) {
+                    neighbor_node->setDistance(current_node->getDistance() + edge_weight);
+                    discovered_edges[neighbor_node] = edge;
                 }
             }
         }
