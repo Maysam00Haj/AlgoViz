@@ -20,6 +20,7 @@ if (should_end) {           \
     }
 #endif
 
+
 extern std::mutex run_lock;
 extern std::mutex window_lock;
 extern bool algo_thread_is_running;
@@ -279,8 +280,54 @@ void Graph::runMST(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
 
 }
 
-void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
 
+std::shared_ptr<Node> Graph::dijkstraMinDistance() const {
+    int min = INT_MAX;
+    std::shared_ptr<Node> min_distance_node;
+    // finding the node with the min distance
+    for (const auto& node: nodes_list) {
+        if (node.second->getState() != NODE_DONE && node.second->getState() != NODE_DISCOVERED && node.second->getDistance() <= min) {
+            min = node.second->getDistance();
+            min_distance_node = node.second;
+        }
+    }
+    return min_distance_node;
+}
+
+void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
+    run_lock.lock();
+    algo_thread_is_running = true;
+    this->untoggle();
+    if (!this->start_node) return;
+
+    std::unordered_map<std::shared_ptr<Node>, std::shared_ptr<Node>> discovered_edges;
+    this->start_node->setDistance(0);
+
+    for (int i = 0; i < nodes_list.size(); i++) {
+        std::shared_ptr<Node> current_node = dijkstraMinDistance();
+        current_node->setState(NODE_DISCOVERED);
+        if (current_node != this->start_node) {
+           getEdgeByNodes(current_node, discovered_edges[current_node])->setState(EDGE_DISCOVERED);
+        }
+        CHECK_IF_SHOULD_END
+        this->renderAndWait(window, toolbar, wait);
+        if (current_node->getDistance() < INT_MAX) {
+            for (const std::shared_ptr<Node> &neighbor_node: this->neighbors_list[current_node->getName()]) {
+                // updating the distance of neighboring nodes
+                if (neighbor_node->getState() == NODE_UNDISCOVERED && current_node->getDistance() + 1 < neighbor_node->getDistance()) {
+                    neighbor_node->setDistance(current_node->getDistance() + 1);
+                    discovered_edges[neighbor_node] = current_node;
+                }
+            }
+        }
+        current_node->setState(NODE_DONE);
+        CHECK_IF_SHOULD_END
+        this->renderAndWait(window, toolbar, wait);
+    }
+
+    run_lock.unlock();
+    if (wait) is_finished = true;
+    algo_thread_is_running = false;
 }
 
 void Graph::reset() {
@@ -292,6 +339,7 @@ void Graph::reset() {
         else {
             node.second->setState(NODE_UNDISCOVERED);
         }
+        node.second->setDistance(INT_MAX);
     }
 
     for (const auto& node: edges_list) {
