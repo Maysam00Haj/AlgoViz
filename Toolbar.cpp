@@ -60,8 +60,8 @@ void Button::render(sf::RenderTarget& target) {
 //----------------------------------------Toolbar Methods---------------------------------------------
 
 Toolbar::Toolbar() {
-    std::vector<std::string> icons = {"cursor", "add_node", "add_edge", "erase", "change_start_node", "run_bfs", "run_dfs", "end", "reset", "clear_window"};
-    std::vector<ButtonId> id_list = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, RUN_BFS, RUN_DFS, END, RESET, CLEAR_WINDOW};
+    std::vector<std::string> icons = {"cursor", "add_node", "add_edge", "erase", "change_start_node", "run_bfs", "run_dfs", "run_dijkstra", "end", "reset", "clear_window"};
+    std::vector<ButtonId> id_list = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, RUN_BFS, RUN_DFS, RUN_DIJKSTRA, END, RESET, CLEAR_WINDOW};
     for (unsigned int i = 0; i < icons.size(); i++) {
         this->buttons.push_back(std::make_shared<Button>(20, 20 + ((60 + 20) * i), 60, 60, "./icons/" + icons[i] + ".png", id_list[i]));
     }
@@ -86,7 +86,7 @@ bool Toolbar::updateActiveButton(const sf::Vector2i& mousePosWindow) {
 }
 
 void Toolbar::render(sf::RenderTarget& target) {
-    std::vector<ButtonId> not_to_render_while_running = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, RUN_BFS, RUN_DFS};
+    std::vector<ButtonId> not_to_render_while_running = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, RUN_BFS, RUN_DFS, RUN_DIJKSTRA};
     for (const auto& button : this->buttons) {
         if (    algo_thread_is_running &&
                 find(not_to_render_while_running.begin(), not_to_render_while_running.end(), button->getId()) !=
