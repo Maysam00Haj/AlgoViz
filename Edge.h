@@ -7,7 +7,8 @@
 #include "Node.h"
 #include "SFML/Graphics.hpp"
 
-#define UNDISCOVERED_EDGE_COLOR (sf::Color(192, 192, 192, 70))
+#define UNDISCOVERED_EDGE_COLOR (sf::Color(150, 150, 150, 70))
+//#define UNDISCOVERED_EDGE_COLOR (sf::Color::White)
 #define DISCOVERED_EDGE_COLOR   (sf::Color::White)
 #define NODE_RADIUS 30
 
@@ -20,9 +21,10 @@ class Edge {
     sf::RectangleShape shape;
     std::string literal;
     int weight = 0;
+    bool is_toggled = false;
 
 public:
-    explicit Edge(std::shared_ptr<Node> first_node, std::shared_ptr<Node> second_node);
+    explicit Edge(std::shared_ptr<Node> first_node, std::shared_ptr<Node> second_node, bool do_correct = true);
     ~Edge() = default;
     std::shared_ptr<Node> getFirstNode() const;
     std::shared_ptr<Node> getSecondNode() const;
@@ -34,6 +36,8 @@ public:
     EdgeState getState() const;
     bool operator<(const std::shared_ptr<Edge>& other) const;
     bool operator==(const std::shared_ptr<Edge>& other) const;
+    void toggle();
+    void untoggle();
 };
 
 #endif //ALGOVIZ_EDGE_H

@@ -14,14 +14,15 @@ class Visualizer {
     std::shared_ptr<Node> clicked_node;
     VisMode mode = BFS;
 
+    void update();
+    void render();
+    void executeClickAction();
+    void runAlgorithm();
+
 public:
     explicit Visualizer(const Graph& graph = Graph());
     ~Visualizer();
-    void update();
-    void render();
     void run();
-    void executeClickAction();
-    void runAlgorithm();
 };
 
 #endif //ALGOVIZ_VISUALIZER_H
