@@ -29,7 +29,6 @@ class Graph {
     bool directed = false;
 
     std::string generateNodeName() const;
-    bool checkValidPosition(const Node& node) const;
     void renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, bool wait = true);
 
 public:
@@ -60,5 +59,6 @@ public:
     void reset();
     void setToggledNode(std::shared_ptr<Node>& to_toggle);
     void untoggle();
+    bool checkValidPosition(const Node& node) const;
 };
 #endif //ALGOVIZ_GRAPH_H

@@ -25,7 +25,7 @@ class Edge {
     bool is_toggled = false;
 
 public:
-    explicit Edge(std::shared_ptr<Node> first_node, std::shared_ptr<Node> second_node, bool do_correct = true);
+    explicit Edge(std::shared_ptr<Node> first_node, const std::shared_ptr<Node>& second_node, bool do_correct = true);
     ~Edge() = default;
     std::shared_ptr<Node> getFirstNode() const;
     std::shared_ptr<Node> getSecondNode() const;

@@ -373,7 +373,7 @@ std::string Graph::generateNodeName() const {
 
 bool Graph::checkValidPosition(const Node& node) const {
     for (auto& pair : this->nodes_list) {
-        if (node.checkBoundsCollision(pair.second)) return false;
+        if (node.checkBoundsCollision(pair.second) && node.getName() != pair.second->getName()) return false;
     }
     return true;
 }

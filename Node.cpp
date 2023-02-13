@@ -94,6 +94,12 @@ NodeState Node::getState() const {
     return this->state;
 }
 
+
+void Node::setCoordinates(float pos_x, float pos_y) {
+    this->shape.setPosition(pos_x, pos_y);
+}
+
+
 void Node::toggle() {
     this->is_toggled = true;
     int r = this->shape.getFillColor().r;
