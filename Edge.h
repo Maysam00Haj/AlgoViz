@@ -10,9 +10,10 @@
 #define UNDISCOVERED_EDGE_COLOR (sf::Color(150, 150, 150, 70))
 //#define UNDISCOVERED_EDGE_COLOR (sf::Color::White)
 #define DISCOVERED_EDGE_COLOR   (sf::Color::White)
+#define SELECTED_EDGE_COLOR   (sf::Color::Red)
 #define NODE_RADIUS 30
 
-enum EdgeState {EDGE_DISCOVERED, EDGE_UNDISCOVERED};
+enum EdgeState {EDGE_DISCOVERED, EDGE_UNDISCOVERED, EDGE_SELECTED};
 
 class Edge {
     EdgeState state = EDGE_UNDISCOVERED;
@@ -20,7 +21,7 @@ class Edge {
     const std::shared_ptr<Node> second_node;
     sf::RectangleShape shape;
     std::string literal;
-    int weight = 0;
+    int weight = 1;
     bool is_toggled = false;
 
 public:
@@ -33,6 +34,8 @@ public:
     void setColor(const sf::Color& color);
     sf::Color getColor() const;
     void setState(EdgeState state);
+    int getWeight() const;
+    void setWeight(int weight);
     EdgeState getState() const;
     bool operator<(const std::shared_ptr<Edge>& other) const;
     bool operator==(const std::shared_ptr<Edge>& other) const;
