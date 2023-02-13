@@ -147,6 +147,23 @@ void Visualizer::executeClickAction() {
             runAlgorithm();
             break;
         }
+        case RUN_DIJKSTRA: {
+            if (algo_thread_is_running || !is_immediate) break;
+            sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
+            while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
+                this->window->pollEvent(this->sfEvent);
+            }
+            if (!this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_DIJKSTRA) {
+                this->toolbar.updateActiveButton(original_active_button_coordinates);
+                break;
+            }
+            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
+                this->graph.reset();
+            }
+            this->mode = DIJKSTRA;
+            runAlgorithm();
+            break;
+        }
         case END: {
             if (!algo_thread_is_running) break;
             should_end = true;
@@ -155,11 +172,15 @@ void Visualizer::executeClickAction() {
             should_end = false;
 
             this->graph.reset();
-
-            if (this->mode == BFS)
+            if (this->mode == BFS) {
                 this->graph.runBFS(*this->window, this->toolbar, false);
-            else
+            }
+            else if (this->mode == DFS) {
                 this->graph.runDFS(*this->window, this->toolbar, false);
+            }
+            else {
+                this->graph.runDijkstra(*this->window, this->toolbar, false);
+            }
 
             break;
         }
