@@ -9,7 +9,7 @@ static float getCorrectedY1(float y1, float angle);
 
 
 
-Edge::Edge(std::shared_ptr<Node> first_node, std::shared_ptr<Node> second_node): first_node(first_node), second_node(second_node) {
+Edge::Edge(std::shared_ptr<Node> first_node, std::shared_ptr<Node> second_node, bool do_correct): first_node(first_node), second_node(second_node) {
     float x1 = first_node->getShape().getPosition().x + NODE_RADIUS;
     float y1 = first_node->getShape().getPosition().y + NODE_RADIUS;
     float x2 = second_node->getShape().getPosition().x + NODE_RADIUS;
@@ -19,7 +19,12 @@ Edge::Edge(std::shared_ptr<Node> first_node, std::shared_ptr<Node> second_node):
     float corrected_y1 = getCorrectedY1(y1, rotation_angle);
     this->shape.setRotation(rotation_angle);
     this->shape.setPosition(corrected_x1, corrected_y1);
-    this->shape.setSize(sf::Vector2f(3, getDistance(x1, y1, x2, y2) - 2 * NODE_RADIUS));
+    if (do_correct) {
+        this->shape.setSize(sf::Vector2f(3, getDistance(x1, y1, x2, y2) - 2 * NODE_RADIUS));
+    }
+    else {
+        this->shape.setSize(sf::Vector2f(3, getDistance(x1, y1, x2, y2) - NODE_RADIUS));
+    }
     this->shape.setFillColor(UNDISCOVERED_EDGE_COLOR);
 }
 
@@ -65,6 +70,14 @@ void Edge::setState(EdgeState state) {
         this->setColor(UNDISCOVERED_EDGE_COLOR);
     }
     else this->setColor(DISCOVERED_EDGE_COLOR);
+}
+
+void Edge::toggle() {
+    this->is_toggled = true;
+}
+
+void Edge::untoggle() {
+    this->is_toggled = false;
 }
 
 

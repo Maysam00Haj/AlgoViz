@@ -15,13 +15,14 @@
 #include <thread>
 
 
-#define BG_COLOR (sf::Color(163,158,240,255))
+#define BG_COLOR (sf::Color(0,0,50,255))
 
 class Graph {
     int nodes_num = 0;
     int edges_num = 0;
     int name_count = 0;
     std::shared_ptr<Node> start_node = nullptr;
+    std::shared_ptr<Node> toggled_node = nullptr;
     std::unordered_map<std::string, std::shared_ptr<Node>> nodes_list; // enables us to find node pointer by its name string
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Node>>> neighbors_list;
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Edge>>> edges_list; // for each node there's a set of edges that touch it (2 copies of each edge)
@@ -56,5 +57,7 @@ public:
     void dfs(const std::shared_ptr<Node>& prev, const std::shared_ptr<Node>& start, sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
     std::shared_ptr<Edge> getEdgeByNodes(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2);
     void reset();
+    void setToggledNode(std::shared_ptr<Node>& to_toggle);
+    void untoggle();
 };
 #endif //ALGOVIZ_GRAPH_H

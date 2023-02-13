@@ -20,6 +20,7 @@ class Node {
     int distance = INT_MAX;
     int path_weight = INT_MAX;
     sf::CircleShape shape;
+    bool is_toggled = false;
 
 public:
     explicit Node(std::string name, float pos_x, float pos_y);
@@ -37,6 +38,8 @@ public:
     sf::Color getColor() const;
     void setState(NodeState state);
     NodeState getState() const;
+    void toggle();
+    void untoggle();
 
 };
 

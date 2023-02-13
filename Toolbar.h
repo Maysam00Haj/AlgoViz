@@ -36,7 +36,7 @@ public:
     Toolbar();
     ~Toolbar() = default;
     ButtonId getActiveButtonId() const;
-    void updateActiveButton(const sf::Vector2i& mousePosWindow);
+    bool updateActiveButton(const sf::Vector2i& mousePosWindow);
     void render(sf::RenderTarget& target);
     void resetActiveButton(); //used after 'CLEAN'
 

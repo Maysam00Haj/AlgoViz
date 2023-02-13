@@ -7,7 +7,7 @@
 
 Node::Node(std::string name, float pos_x, float pos_y): name(std::move(name)) {
     this->shape.setRadius(RADIUS);
-    this->shape.setOutlineColor(sf::Color::Black);
+    this->shape.setOutlineColor(sf::Color::Yellow);
     this->shape.setPosition(pos_x, pos_y);
 }
 
@@ -92,6 +92,24 @@ void Node::setState(NodeState state) {
 
 NodeState Node::getState() const {
     return this->state;
+}
+
+void Node::toggle() {
+    this->is_toggled = true;
+    int r = this->shape.getFillColor().r;
+    int g = this->shape.getFillColor().g;
+    int b = this->shape.getFillColor().b;
+    this->shape.setOutlineThickness(3);
+    this->shape.setFillColor(sf::Color(r, b, g, 150));
+}
+
+void Node::untoggle() {
+    this->is_toggled = false;
+    int r = this->shape.getFillColor().r;
+    int g = this->shape.getFillColor().g;
+    int b = this->shape.getFillColor().b;
+    this->shape.setOutlineThickness(0);
+    this->shape.setFillColor(sf::Color(r, b, g, 255));
 }
 
 

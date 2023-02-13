@@ -190,9 +190,17 @@ std::shared_ptr<Edge> Graph::getEdgeByPosition(float pos_x, float pos_y) {
     return nullptr;
 }
 
+void Graph::setToggledNode(std::shared_ptr<Node>& to_toggle) {
+    this->untoggle();
+    if (to_toggle)
+        to_toggle->toggle();
+    this->toggled_node = to_toggle;
+}
+
 void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
     run_lock.lock();
     algo_thread_is_running = true;
+    this->untoggle();
     if (!this->start_node) return;
 
     std::queue<std::shared_ptr<Node>> bfs_q;
@@ -238,6 +246,7 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
 void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
     run_lock.lock();
     algo_thread_is_running = true;
+    this->untoggle();
     if (!this->start_node) return;
 
     dfs(nullptr, this->start_node, window, toolbar, wait);
@@ -275,6 +284,7 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
 }
 
 void Graph::reset() {
+    this->untoggle();
     for (const auto& node: nodes_list) {
         if (node.second == this->start_node) {
             node.second->setState(NODE_START);
@@ -326,3 +336,10 @@ std::shared_ptr<Edge> Graph::getEdgeByNodes(const std::shared_ptr<Node>& node1, 
     }
     return nullptr;
 }
+
+void Graph::untoggle() {
+    if (this->toggled_node)
+        this->toggled_node->untoggle();
+    this->toggled_node = nullptr;
+}
+

@@ -2,11 +2,13 @@
 #include <iostream>
 #include <filesystem>
 
+extern bool algo_thread_is_running;
+
 Button::Button(float x, float y, float width, float height, const std::string& txt, ButtonId id) {
     this->buttonState = BUTTON_IDLE;
     this->id = id;
-    sf::Texture* texture = new sf::Texture(); //Todo: exception in case it fails
-    texture->loadFromFile(txt); //Todo: exception in case it fails
+    auto* texture = new sf::Texture();
+    texture->loadFromFile(txt);
     this->shape.setTexture(texture);
     this->shape.setPosition(sf::Vector2f(x, y));
     this->shape.setSize(sf::Vector2f(width, height));
@@ -70,18 +72,27 @@ ButtonId Toolbar::getActiveButtonId() const {
     return this->active_button->getId();
 }
 
-void Toolbar::updateActiveButton(const sf::Vector2i& mousePosWindow) {
+bool Toolbar::updateActiveButton(const sf::Vector2i& mousePosWindow) {
     for (auto& button : this->buttons) {
         if (button->update(mousePosWindow)) {
             this->active_button->setButtonDisabled();
             this->active_button = button;
             this->active_button->setButtonEnabled();
+            return true;
         }
     }
+
+    return false;
 }
 
 void Toolbar::render(sf::RenderTarget& target) {
+    std::vector<ButtonId> not_to_render_while_running = {ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, RUN_BFS, RUN_DFS};
     for (const auto& button : this->buttons) {
+        if (
+                algo_thread_is_running &&
+                find(not_to_render_while_running.begin(), not_to_render_while_running.end(), button->getId()) !=
+                not_to_render_while_running.end()
+                ) { continue;}
         button->render(target);
     }
 }
