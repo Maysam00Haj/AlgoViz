@@ -30,19 +30,36 @@ bool algo_thread_is_running = false; // true when a thread is currently running 
 bool is_finished = false; // true when a thread ran and ended execution of runBfs, so we need to call join()
 bool should_end = false;
 
+bool is_immediate = false;
+
 std::thread algo_thread; // the thread we use to execute runBfs
 
 
 
 
 Visualizer::Visualizer(const Graph& graph): graph(graph) {
-    this->window = new sf::RenderWindow(sf::VideoMode(1000, 600), "Graph Visualizer");
+    this->window = new sf::RenderWindow(sf::VideoMode(1400, 1000), "Graph Visualizer");
     this->window->setFramerateLimit(60);
 }
+
+
 
 Visualizer::~Visualizer() {
   delete this->window;
 }
+
+
+
+void Visualizer::run() {
+    while (this->window->isOpen()) {
+        this->update();
+        if (!algo_thread_is_running) {
+            this->render();
+        }
+    }
+}
+
+
 
 void Visualizer::update() {
     CHECK_THREAD_AND_JOIN;
@@ -76,6 +93,10 @@ void Visualizer::update() {
     }
 }
 
+
+
+
+
 void Visualizer::render() {
     window_lock.lock();
     window->setActive(true);
@@ -98,92 +119,32 @@ void Visualizer::render() {
     window_lock.unlock();
 }
 
-void Visualizer::run() {
-    while (this->window->isOpen()) {
-        this->update();
-        if (!algo_thread_is_running) {
-            this->render();
-        }
-    }
-}
+
 
 
 void Visualizer::executeClickAction() {
-    bool is_immediate = this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y));
+    is_immediate = this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y));
     ButtonId id = this->toolbar.getActiveButtonId();
 
     switch (id) {
         case RUN_BFS: {
-            if (algo_thread_is_running || !is_immediate) break;
-            sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
-            while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-                this->window->pollEvent(this->sfEvent);
-            }
-            if (!this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_BFS) {
-                this->toolbar.updateActiveButton(original_active_button_coordinates);
-                break;
-            }
-            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
-                this->graph.reset();
-            }
-            this->mode = BFS;
-            runAlgorithm();
+            runBFSRoutine();
             break;
         }
         case RUN_DFS: {
-            if (algo_thread_is_running || !is_immediate) break;
-            sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
-            while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-                this->window->pollEvent(this->sfEvent);
-            }
-            if (!this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_DFS) {
-                this->toolbar.updateActiveButton(original_active_button_coordinates);
-                break;
-            }
-            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
-                this->graph.reset();
-            }
-            this->mode = DFS;
-            runAlgorithm();
+            runDfSRoutine();
             break;
         }
         case END: {
-            if (!algo_thread_is_running) break;
-            should_end = true;
-            algo_thread.join();
-            is_finished = false;
-            should_end = false;
-
-            this->graph.reset();
-
-            if (this->mode == BFS)
-                this->graph.runBFS(*this->window, this->toolbar, false);
-            else
-                this->graph.runDFS(*this->window, this->toolbar, false);
-
+            endRoutine();
             break;
         }
         case RESET: {
-            if (algo_thread_is_running) {
-                should_end = true;
-                algo_thread.join();
-                is_finished = false;
-                should_end = false;
-            }
-            this->graph.reset();
+            resetRoutine();
             break;
         }
         case CLEAR_WINDOW: {
-            if (algo_thread_is_running) {
-                should_end = true;
-                algo_thread.join();
-                is_finished = false;
-                should_end = false;
-            }
-            this->graph = Graph();
-            this->node_is_clicked = false;
-            this->clicked_node = nullptr;
-            this->toolbar.resetActiveButton();
+            clearWindowRoutine();
             break;
         }
         default: {
@@ -192,76 +153,29 @@ void Visualizer::executeClickAction() {
 
     }
 
-
     if (is_immediate || algo_thread_is_running) return;
-
     // the following cases are not allowed while an algorithm is running
     std::shared_ptr<Node> to_toggle = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
     this->graph.setToggledNode(to_toggle);
     switch (id) {
+        case CURSOR: {
+            cursorRoutine();
+            break;
+        }
         case ADD_NODE: {
-            std::shared_ptr<Node> node_exists = this->graph.addNode(MOUSE_X_CORRECTED, MOUSE_Y_CORRECTED);
-            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists)
-                this->graph.reset();
+            addNodeRoutine();
             break;
         }
         case ADD_EDGE: {
-            bool action_was_performed = false;
-            if (!this->node_is_clicked) {
-                this->clicked_node = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
-                if (clicked_node) {
-                    this->node_is_clicked = true;
-                }
-                while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-                    std::shared_ptr<Node> dst = this->graph.getNodeByPosition(MOUSE_HOVER_X, MOUSE_HOVER_Y);
-                    if (dst && dst != clicked_node) {
-                        std::shared_ptr<Edge> to_add = std::make_shared<Edge>(this->clicked_node, dst);
-                        this->graph.addEdge(to_add);
-                        action_was_performed = true;
-                        this->clicked_node = dst;
-                        this->graph.setToggledNode(dst);
-                    }
-                    this->window->pollEvent(this->sfEvent);
-                }
-                if (action_was_performed) {
-                    this->node_is_clicked = false;
-                    this->clicked_node = nullptr;
-                }
-            }
-            else {
-                std::shared_ptr<Node> dst = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
-                if (dst && dst != clicked_node) {
-                    std::shared_ptr<Edge> to_add = std::make_shared<Edge>(this->clicked_node, dst);
-                    this->graph.addEdge(to_add);
-                    action_was_performed = true;
-                }
-                this->node_is_clicked = false;
-                this->clicked_node = nullptr;
-            }
-
-            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && action_was_performed)
-                this->graph.reset();
+            addEdgeRoutine();
             break;
         }
         case ERASE: {
-            std::shared_ptr<Node> node_to_delete = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
-            std::shared_ptr<Edge> edge_to_delete = this->graph.getEdgeByPosition(MOUSE_X, MOUSE_Y);
-            if (node_to_delete) {
-                this->graph.removeNode(node_to_delete->getName());
-            }
-            else if (edge_to_delete) {
-                this->graph.removeEdge(edge_to_delete);
-            }
-            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && (node_to_delete || edge_to_delete))
-                this->graph.reset();
+            eraseRoutine();
             break;
         }
         case CHANGE_START_NODE: {
-            std::shared_ptr<Node> node_exists = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
-            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists)
-                this->graph.reset();
-
-            this->graph.setStartNode(this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y));
+            changeStartNodeRoutine();
             break;
         }
         default: {
@@ -270,6 +184,8 @@ void Visualizer::executeClickAction() {
     }
 
 }
+
+
 
 
 void Visualizer::runAlgorithm() {
@@ -304,4 +220,196 @@ void Visualizer::runAlgorithm() {
     }
 }
 
+
+
+
+void Visualizer::cursorRoutine() {
+
+}
+
+
+void Visualizer::addNodeRoutine() {
+    std::shared_ptr<Node> node_exists = this->graph.addNode(MOUSE_X_CORRECTED, MOUSE_Y_CORRECTED);
+    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists) {
+        this->graph.reset();
+    }
+}
+
+
+void Visualizer::addEdgeRoutine() {
+    bool edge_was_added = false;
+    std::shared_ptr<Node> dst = nullptr;
+    if (!this->node_is_clicked) {
+        this->clicked_node = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
+        if (clicked_node) {
+            this->node_is_clicked = true;
+        }
+        else {
+            return;
+        }
+        while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
+            while (!dst || dst == clicked_node) {
+                std::shared_ptr<Node> tmp_node = std::make_shared<Node>(Node("tmp", MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED));
+                std::shared_ptr<Edge> tmp_edge = std::make_shared<Edge>(Edge(this->clicked_node, tmp_node, false));
+                this->window->clear(BG_COLOR);
+                this->toolbar.render(*this->window);
+                this->graph.render(*this->window);
+                tmp_edge->render(*this->window);
+                this->window->display();
+                dst = this->graph.getNodeByPosition(MOUSE_HOVER_X, MOUSE_HOVER_Y);
+                this->window->pollEvent(this->sfEvent);
+                if (this->sfEvent.type == sf::Event::MouseButtonReleased) {
+                    if (dst == clicked_node) {
+                        if (edge_was_added) {
+                            this->clicked_node = nullptr;
+                            this->node_is_clicked = false;
+                        }
+                        return;
+                    }
+                    else if (!dst) {
+                        edge_was_added = false;
+                    }
+                    else {
+                        edge_was_added = true;
+                    }
+                    break;
+                }
+            }
+            if (!edge_was_added && !dst) {
+                this->clicked_node = nullptr;
+                this->node_is_clicked = false;
+                return;
+            }
+            if (dst && dst != clicked_node) {
+                std::shared_ptr<Edge> to_add = std::make_shared<Edge>(this->clicked_node, dst);
+                this->graph.addEdge(to_add);
+                this->clicked_node = dst;
+                this->graph.setToggledNode(dst);
+                this->window->clear(BG_COLOR);
+                this->toolbar.render(*this->window);
+                this->graph.render(*this->window);
+                to_add->render(*this->window);
+                this->window->display();
+                edge_was_added = true;
+            }
+            this->window->pollEvent(this->sfEvent);
+        }
+    }
+    else {
+        dst = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
+        if (dst && dst != clicked_node) {
+            std::shared_ptr<Edge> to_add = std::make_shared<Edge>(this->clicked_node, dst);
+            this->graph.addEdge(to_add);
+            edge_was_added = true;
+        }
+        this->node_is_clicked = false;
+        this->clicked_node = nullptr;
+    }
+    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && edge_was_added) {
+        this->graph.reset();
+    }
+}
+
+
+
+
+void Visualizer::eraseRoutine() {
+    std::shared_ptr<Node> node_to_delete = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
+    std::shared_ptr<Edge> edge_to_delete = this->graph.getEdgeByPosition(MOUSE_X, MOUSE_Y);
+    if (node_to_delete) {
+        this->graph.removeNode(node_to_delete->getName());
+    }
+    else if (edge_to_delete) {
+        this->graph.removeEdge(edge_to_delete);
+    }
+    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && (node_to_delete || edge_to_delete)) {
+        this->graph.reset();
+    }
+}
+
+
+void Visualizer::changeStartNodeRoutine() {
+    std::shared_ptr<Node> node_exists = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
+    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists) {
+        this->graph.reset();
+    }
+    this->graph.setStartNode(this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y));
+}
+
+
+void Visualizer::runBFSRoutine() {
+    if (algo_thread_is_running || !is_immediate) return;
+    sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
+    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
+        this->window->pollEvent(this->sfEvent);
+    }
+    if (!this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_BFS) {
+        this->toolbar.updateActiveButton(original_active_button_coordinates);
+        return;
+    }
+    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
+        this->graph.reset();
+    }
+    this->mode = BFS;
+    runAlgorithm();
+}
+
+
+void Visualizer::runDfSRoutine() {
+    if (algo_thread_is_running || !is_immediate) return;
+    sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
+    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
+        this->window->pollEvent(this->sfEvent);
+    }
+    if (!this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_DFS) {
+        this->toolbar.updateActiveButton(original_active_button_coordinates);
+        return;
+    }
+    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
+        this->graph.reset();
+    }
+    this->mode = DFS;
+    runAlgorithm();
+}
+
+
+void Visualizer::endRoutine() {
+    if (!algo_thread_is_running) return;
+    should_end = true;
+    algo_thread.join();
+    is_finished = false;
+    should_end = false;
+
+    this->graph.reset();
+
+    if (this->mode == BFS)
+        this->graph.runBFS(*this->window, this->toolbar, false);
+    else
+        this->graph.runDFS(*this->window, this->toolbar, false);
+}
+
+
+void Visualizer::resetRoutine() {
+    if (algo_thread_is_running) {
+        should_end = true;
+        algo_thread.join();
+        is_finished = false;
+        should_end = false;
+    }
+    this->graph.reset();
+}
+
+
+void Visualizer::clearWindowRoutine() {
+    if (algo_thread_is_running) {
+        should_end = true;
+        algo_thread.join();
+        is_finished = false;
+        should_end = false;
+    }
+    this->graph = Graph();
+    this->node_is_clicked = false;
+    this->clicked_node = nullptr;
+    this->toolbar.resetActiveButton();
+}
 
