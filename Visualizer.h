@@ -15,6 +15,8 @@ class Visualizer {
     VisMode mode = BFS;
     std::vector<sf::RectangleShape> userInput;
 
+
+
     void update();
     void render();
     void executeClickAction();
@@ -24,6 +26,7 @@ class Visualizer {
     void addEdgeRoutine();
     void eraseRoutine();
     void changeStartNodeRoutine();
+    void changeEdgeWeightRoutine();
     void runBFSRoutine();
     void runDfSRoutine();
     void runDijkstraRoutine();

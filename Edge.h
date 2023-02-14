@@ -20,9 +20,10 @@ class Edge {
     const std::shared_ptr<Node> first_node;
     const std::shared_ptr<Node> second_node;
     sf::RectangleShape shape;
-    std::string literal;
-    int weight = 1;
     bool is_toggled = false;
+    std::string literal;
+    float length;
+
 
 public:
     explicit Edge(const std::shared_ptr<Node>& first_node, const std::shared_ptr<Node>& second_node, bool do_correct = true);
@@ -34,12 +35,11 @@ public:
     void setColor(const sf::Color& color);
     sf::Color getColor() const;
     void setState(EdgeState state);
-    int getWeight() const;
-    void setWeight(int weight);
+    float getLength() const;
     EdgeState getState() const;
     bool operator<(const std::shared_ptr<Edge>& other) const;
     bool operator==(const std::shared_ptr<Edge>& other) const;
-    void correctEdgeCoordinates();
+    std::vector<float> correctEdgeCoordinates();
     void toggle();
     void untoggle();
 };
