@@ -58,7 +58,6 @@ void Visualizer::run() {
 }
 
 
-
 void Visualizer::update() {
     CHECK_THREAD_AND_JOIN;
     while(this->window->pollEvent(this->sfEvent)) {
