@@ -308,7 +308,7 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
             for (const std::shared_ptr<Node> &neighbor_node: this->neighbors_list[current_node->getName()]) {
                 // updating the distance of neighboring nodes
                 std::shared_ptr<Edge> edge = getEdgeByNodes(current_node, neighbor_node);
-                int edge_weight = edge->getWeight();
+                int edge_weight = edge->getLength();
                 if (neighbor_node->getState() == NODE_UNDISCOVERED && current_node->getDistance() + edge_weight < neighbor_node->getDistance()) {
                     neighbor_node->setDistance(current_node->getDistance() + edge_weight);
                     discovered_edges[neighbor_node] = edge;

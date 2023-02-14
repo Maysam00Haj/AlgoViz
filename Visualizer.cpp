@@ -91,10 +91,6 @@ void Visualizer::update() {
     }
 }
 
-
-
-
-
 void Visualizer::render() {
     window_lock.lock();
     window->setActive(true);
@@ -178,16 +174,6 @@ void Visualizer::executeClickAction() {
         }
         case CHANGE_START_NODE: {
             changeStartNodeRoutine();
-            break;
-        }
-        case CHANGE_EDGE_WEIGHT: {
-            std::shared_ptr<Edge> edge = this->graph.getEdgeByPosition(MOUSE_X, MOUSE_Y);
-            if (!edge) break;
-            if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE)
-                this->graph.reset();
-            int weight = 5;
-            edge->setState(EDGE_SELECTED);
-            edge->setWeight(weight);
             break;
         }
         default: {
@@ -395,28 +381,6 @@ void Visualizer::runBFSRoutine() {
     runAlgorithm();
 }
 
-
-void Visualizer::runDfSRoutine() {
-    if (algo_thread_is_running || !is_immediate) return;
-    sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
-    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-        this->window->pollEvent(this->sfEvent);
-    }
-    if (!this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_DFS) {
-        this->toolbar.updateActiveButton(original_active_button_coordinates);
-        return;
-    }
-    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
-        this->graph.reset();
-    }
-    this->mode = DFS;
-    runAlgorithm();
-}
-
-
-
-
-
 void Visualizer::runDijkstraRoutine() {
     if (algo_thread_is_running || !is_immediate) return;
     sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
@@ -435,6 +399,22 @@ void Visualizer::runDijkstraRoutine() {
 }
 
 
+void Visualizer::runDfSRoutine() {
+    if (algo_thread_is_running || !is_immediate) return;
+    sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
+    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
+        this->window->pollEvent(this->sfEvent);
+    }
+    if (!this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_DFS) {
+        this->toolbar.updateActiveButton(original_active_button_coordinates);
+        return;
+    }
+    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
+        this->graph.reset();
+    }
+    this->mode = DFS;
+    runAlgorithm();
+}
 
 
 void Visualizer::endRoutine() {
