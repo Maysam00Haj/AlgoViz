@@ -249,11 +249,14 @@ void Visualizer::cursorRoutine() {
             moving_node->setPosition(prev_x, prev_y);
             std::shared_ptr<Node> collided_node = this->graph.getNodeByPosition(MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED);
             if (collided_node) {
-                float angle = getAngle(MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED, collided_node->getPosition().x,
-                                       collided_node->getPosition().y);
-                std::cout << angle << std::endl;
+                float collided_x = collided_node->getPosition().x;
+                float collided_y = collided_node->getPosition().y;
+                std::vector<float> closest_pos = getClosestNonCollision(collided_x, collided_y, MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED);
+                moving_node->setPosition(closest_pos[0], closest_pos[1]);
             }
-            continue;
+            else {
+                break;
+            }
         }
         prev_x = MOUSE_HOVER_X_CORRECTED;
         prev_y = MOUSE_HOVER_Y_CORRECTED;

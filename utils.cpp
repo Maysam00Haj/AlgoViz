@@ -33,3 +33,12 @@ float getCorrectedY1(float y1, float angle) {
     float offset = NODE_RADIUS * std::sin(rads);
     return y1 + offset;
 }
+
+std::vector<float> getClosestNonCollision(float node_x, float node_y, float cursor_x, float cursor_y) {
+    std::vector<float> res(2);
+    float dist = std::sqrt(std::pow(cursor_x-node_x,2) + std::pow(cursor_y-node_y,2));
+    float coefficient = (2 * NODE_RADIUS) / dist;
+    res[0] = node_x + ((cursor_x-node_x) * coefficient);
+    res[1] = node_y + ((cursor_y-node_y) * coefficient);
+    return res;
+}
