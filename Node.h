@@ -38,7 +38,8 @@ public:
     sf::Color getColor() const;
     void setState(NodeState state);
     NodeState getState() const;
-    void setCoordinates(float pos_x, float pos_y);
+    sf::Vector2f getPosition() const;
+    void setPosition(float pos_x, float pos_y);
     void toggle();
     void untoggle();
 

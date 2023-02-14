@@ -1,4 +1,5 @@
 #include "Visualizer.h"
+#include "utils.h"
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -16,15 +17,13 @@
 #define MOUSE_HOVER_Y_CORRECTED ((float)sf::Mouse::getPosition(*this->window).y-30)
 
 
-#ifndef CHECK_THREAD_AND_JOIN
 #define CHECK_THREAD_AND_JOIN \
 if (is_finished) {            \
     algo_thread.join();       \
     is_finished = false;      \
 }
-#endif
 
-std::mutex run_lock; // prevents multiple threads from executing runBfs method at the same time
+
 std::mutex window_lock; // prevents multiple threads from accessing window resource
 bool algo_thread_is_running = false; // true when a thread is currently running runBfs
 bool is_finished = false; // true when a thread ran and ended execution of runBfs, so we need to call join()
@@ -33,7 +32,6 @@ bool should_end = false;
 bool is_immediate = false;
 
 std::thread algo_thread; // the thread we use to execute runBfs
-
 
 
 
@@ -240,9 +238,25 @@ void Visualizer::runAlgorithm() {
 void Visualizer::cursorRoutine() {
     std::shared_ptr<Node> moving_node = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
     if (!moving_node) return;
+    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
+        this->graph.reset();
+    }
+    float prev_x = MOUSE_HOVER_X_CORRECTED;
+    float prev_y = MOUSE_HOVER_Y_CORRECTED;
     while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-        if (!this->graph.checkValidPosition(*moving_node)) continue;
-        moving_node->setCoordinates(MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED);
+        moving_node->setPosition(MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED);
+        if (!this->graph.checkValidPosition(*moving_node)) {
+            moving_node->setPosition(prev_x, prev_y);
+            std::shared_ptr<Node> collided_node = this->graph.getNodeByPosition(MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED);
+            if (collided_node) {
+                float angle = getAngle(MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED, collided_node->getPosition().x,
+                                       collided_node->getPosition().y);
+                std::cout << angle << std::endl;
+            }
+            continue;
+        }
+        prev_x = MOUSE_HOVER_X_CORRECTED;
+        prev_y = MOUSE_HOVER_Y_CORRECTED;
         this->window->clear(BG_COLOR);
         this->toolbar.render(*this->window);
         this->graph.render(*this->window);

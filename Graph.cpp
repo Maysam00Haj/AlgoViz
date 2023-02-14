@@ -10,18 +10,15 @@
 
 #define WAIT_TIME_MS 100
 
-#ifndef CHECK_IF_SHOULD_END
 #define CHECK_IF_SHOULD_END \
 if (should_end) {           \
-    run_lock.unlock();      \
     algo_thread_is_running = false; \
     is_finished = true;\
     return;                 \
     }
-#endif
 
 
-extern std::mutex run_lock;
+
 extern std::mutex window_lock;
 extern bool algo_thread_is_running;
 extern bool is_finished;
@@ -48,10 +45,12 @@ void Graph::render(sf::RenderTarget& target) {
 // rendered nodes first then edges to show edges when they cross nodes
     for (auto &node: this->nodes_list) {
         for (auto &edge: this->edges_list[node.first]) {
+            edge->correctEdgeCoordinates();
             edge->render(target);
         }
     }
 }
+
 
 std::shared_ptr<Node> Graph::addNode(float pos_x, float pos_y) {
     std::string node_name = generateNodeName();
@@ -103,7 +102,7 @@ void Graph::removeNode(const std::string& node_name) {
 }
 
 
-void Graph::addEdge(std::shared_ptr<Edge> edge) {
+void Graph::addEdge(std::shared_ptr<Edge>& edge) {
     if (this->containsEdge(edge)) return;
     std::shared_ptr<Node> node1 = edge->getFirstNode();
     std::shared_ptr<Node> node2 = edge->getSecondNode();
@@ -167,9 +166,6 @@ void Graph::setStartNode(const std::shared_ptr<Node>& new_start_node) {
     this->start_node->setState(NODE_START);
 }
 
-bool Graph::hasNegativeCircle() {
-    return false;
-}
 
 std::shared_ptr<Node> Graph::getNodeByPosition(float pos_x, float pos_y) {
     for (const auto& node: this->nodes_list) {
@@ -199,7 +195,6 @@ void Graph::setToggledNode(std::shared_ptr<Node>& to_toggle) {
 }
 
 void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
-    run_lock.lock();
     algo_thread_is_running = true;
     this->untoggle();
     if (!this->start_node) return;
@@ -236,7 +231,6 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
         CHECK_IF_SHOULD_END;
         this->renderAndWait(window, toolbar, wait);
     }
-    run_lock.unlock();
 
     if (wait) {
         is_finished = true;
@@ -244,20 +238,20 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
     algo_thread_is_running = false;
 }
 
+
 void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
-    run_lock.lock();
     algo_thread_is_running = true;
     this->untoggle();
     if (!this->start_node) return;
 
     dfs(nullptr, this->start_node, window, toolbar, wait);
 
-    run_lock.unlock();
     if (wait) {
         is_finished = true;
     }
     algo_thread_is_running = false;
 }
+
 
 void Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<Node>& curr_node, sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
     CHECK_IF_SHOULD_END
@@ -295,7 +289,6 @@ std::shared_ptr<Node> Graph::dijkstraMinDistance() const {
 }
 
 void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
-    run_lock.lock();
     algo_thread_is_running = true;
     this->untoggle();
     if (!this->start_node) return;
@@ -327,7 +320,6 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
         this->renderAndWait(window, toolbar, wait);
     }
 
-    run_lock.unlock();
     if (wait) is_finished = true;
     algo_thread_is_running = false;
 }
@@ -373,7 +365,9 @@ std::string Graph::generateNodeName() const {
 
 bool Graph::checkValidPosition(const Node& node) const {
     for (auto& pair : this->nodes_list) {
-        if (node.checkBoundsCollision(pair.second) && node.getName() != pair.second->getName()) return false;
+        if (node.checkBoundsCollision(pair.second) && node.getName() != pair.second->getName()) {
+            return false;
+        }
     }
     return true;
 }
