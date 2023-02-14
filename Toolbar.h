@@ -6,8 +6,25 @@
 #define CLICKED_BUTTON_COLOR (sf::Color(189, 195, 199, 100))
 #define DEFAULT_BUTTON_COLOR (sf::Color::White)
 
-enum ButtonStates {BUTTON_IDLE = 0, BUTTON_ACTIVE};
-enum ButtonId {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, CHANGE_EDGE_WEIGHT, RUN_BFS, RUN_DFS, RUN_DIJKSTRA, END, RESET, CLEAR_WINDOW};
+enum ButtonStates
+{
+    BUTTON_IDLE = 0,
+    BUTTON_ACTIVE
+};
+
+enum ButtonId
+{
+    CURSOR,
+    ADD_NODE,
+    ADD_EDGE,
+    ERASE,
+    CHANGE_START_NODE,
+    RUN_BFS, RUN_DFS,
+    RUN_DIJKSTRA,
+    END,
+    RESET,
+    CLEAR_WINDOW
+};
 
 class Button {
     ButtonStates buttonState;
@@ -31,6 +48,7 @@ public:
 class Toolbar {
 private:
     std::shared_ptr<Button> active_button;
+    sf::RectangleShape rectangle;
 
 public:
     Toolbar();

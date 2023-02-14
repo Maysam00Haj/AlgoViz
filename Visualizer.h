@@ -3,7 +3,13 @@
 #include "Graph.h"
 #include "Toolbar.h"
 
-enum VisMode {BFS, DFS, MST, DIJKSTRA};
+enum VisMode
+{
+    BFS,
+    DFS,
+    MST,
+    DIJKSTRA
+};
 
 class Visualizer {
     sf::RenderWindow* window;
@@ -13,7 +19,6 @@ class Visualizer {
     bool node_is_clicked = false;
     std::shared_ptr<Node> clicked_node;
     VisMode mode = BFS;
-    std::vector<sf::RectangleShape> userInput;
 
 
 
@@ -26,7 +31,6 @@ class Visualizer {
     void addEdgeRoutine();
     void eraseRoutine();
     void changeStartNodeRoutine();
-    void changeEdgeWeightRoutine();
     void runBFSRoutine();
     void runDfSRoutine();
     void runDijkstraRoutine();

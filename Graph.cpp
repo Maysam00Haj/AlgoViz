@@ -298,26 +298,26 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
 
     for (int i = 0; i < nodes_list.size(); i++) {
         std::shared_ptr<Node> current_node = dijkstraMinDistance();
-        current_node->setState(NODE_DISCOVERED);
-        if (current_node != this->start_node) {
-            discovered_edges[current_node]->setState(EDGE_DISCOVERED);
-        }
-        CHECK_IF_SHOULD_END
-        this->renderAndWait(window, toolbar, wait);
         if (current_node->getDistance() < INT_MAX) {
+            current_node->setState(NODE_DISCOVERED);
+            if (discovered_edges.find(current_node) != discovered_edges.end()) {
+                discovered_edges[current_node]->setState(EDGE_DISCOVERED);
+            }
+            CHECK_IF_SHOULD_END
+            this->renderAndWait(window, toolbar, wait);
             for (const std::shared_ptr<Node> &neighbor_node: this->neighbors_list[current_node->getName()]) {
                 // updating the distance of neighboring nodes
                 std::shared_ptr<Edge> edge = getEdgeByNodes(current_node, neighbor_node);
-                int edge_weight = edge->getLength();
-                if (neighbor_node->getState() == NODE_UNDISCOVERED && current_node->getDistance() + edge_weight < neighbor_node->getDistance()) {
-                    neighbor_node->setDistance(current_node->getDistance() + edge_weight);
+                float new_distance = edge->getLength() + current_node->getDistance();
+                if (neighbor_node->getState() == NODE_UNDISCOVERED && new_distance < neighbor_node->getDistance()) {
+                    neighbor_node->setDistance(new_distance);
                     discovered_edges[neighbor_node] = edge;
                 }
             }
+            current_node->setState(NODE_DONE);
+            CHECK_IF_SHOULD_END
+            this->renderAndWait(window, toolbar, wait);
         }
-        current_node->setState(NODE_DONE);
-        CHECK_IF_SHOULD_END
-        this->renderAndWait(window, toolbar, wait);
     }
 
     if (wait) is_finished = true;
@@ -343,8 +343,9 @@ void Graph::reset() {
     }
 }
 
-//**********************************************************************************************************************
-// private helper functions:
+//***********************************************Private Helper Functions***************************************************************
+
+
 void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
     if (!wait) return;
     window_lock.lock();

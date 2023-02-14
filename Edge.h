@@ -13,7 +13,12 @@
 #define SELECTED_EDGE_COLOR   (sf::Color::Red)
 #define NODE_RADIUS 30
 
-enum EdgeState {EDGE_DISCOVERED, EDGE_UNDISCOVERED, EDGE_SELECTED};
+enum EdgeState
+{
+    EDGE_DISCOVERED,
+    EDGE_UNDISCOVERED,
+    EDGE_SELECTED
+};
 
 class Edge {
     EdgeState state = EDGE_UNDISCOVERED;

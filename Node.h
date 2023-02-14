@@ -12,7 +12,14 @@
 #define DONE_NODE_COLOR         (sf::Color::Blue)
 
 
-enum NodeState {NODE_CURRENT, NODE_START, NODE_UNDISCOVERED, NODE_DISCOVERED, NODE_DONE};
+enum NodeState
+{
+    NODE_CURRENT,
+    NODE_START,
+    NODE_UNDISCOVERED,
+    NODE_DISCOVERED,
+    NODE_DONE
+};
 
 class Node {
     std::string name;
