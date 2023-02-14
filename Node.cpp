@@ -95,7 +95,11 @@ NodeState Node::getState() const {
 }
 
 
-void Node::setCoordinates(float pos_x, float pos_y) {
+sf::Vector2f Node::getPosition() const {
+    return {this->shape.getPosition().x, this->shape.getPosition().y};
+}
+
+void Node::setPosition(float pos_x, float pos_y) {
     this->shape.setPosition(pos_x, pos_y);
 }
 
