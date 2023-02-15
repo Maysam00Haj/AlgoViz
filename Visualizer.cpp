@@ -3,7 +3,6 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
-#include <queue>
 
 #define MOUSE_X (this->sfEvent.mouseButton.x)
 #define MOUSE_Y (this->sfEvent.mouseButton.y)
@@ -15,6 +14,12 @@
 #define MOUSE_Y_CORRECTED (this->sfEvent.mouseButton.y-30)
 #define MOUSE_HOVER_X_CORRECTED ((float)sf::Mouse::getPosition(*this->window).x-30)
 #define MOUSE_HOVER_Y_CORRECTED ((float)sf::Mouse::getPosition(*this->window).y-30)
+
+#define EVENT_POS (this->window->mapPixelToCoords(sf::Vector2i(this->sfEvent.mouseButton.x,this->sfEvent.mouseButton.y)))
+#define MOUSE_POS (this->window->mapPixelToCoords(sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x,(float)sf::Mouse::getPosition(*this->window).y)))
+#define CORRECTED_EVENT_POS (this->window->mapPixelToCoords(sf::Vector2i(this->sfEvent.mouseButton.x-30,this->sfEvent.mouseButton.y-30)))
+#define CORRECTED_MOUSE_POS (this->window->mapPixelToCoords(sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-30,(float)sf::Mouse::getPosition(*this->window).y-30)))
+
 
 
 #define CHECK_THREAD_AND_JOIN \
@@ -38,6 +43,7 @@ std::thread algo_thread; // the thread we use to execute runBfs
 Visualizer::Visualizer(const Graph& graph): graph(graph) {
     this->window = new sf::RenderWindow(sf::VideoMode(1400, 1000), "Graph Visualizer");
     this->window->setFramerateLimit(60);
+    this->current_view = this->window->getView();
 }
 
 
@@ -75,12 +81,13 @@ void Visualizer::update() {
                 break;
             }
             case sf::Event::Resized: {
-                window_lock.lock();
-                window->setActive(true);
                 sf::FloatRect view(0, 0, (float)this->sfEvent.size.width, (float)this->sfEvent.size.height);
-                this->window->setView(sf::View(view));
-                window->setActive(false);
-                window_lock.unlock();
+                this->current_view = sf::View(view);
+                this->window->setView(this->current_view);
+                break;
+            }
+            case sf::Event::MouseWheelScrolled: {
+
                 break;
             }
             default: {
@@ -94,8 +101,11 @@ void Visualizer::render() {
     window_lock.lock();
     window->setActive(true);
     this->window->clear(BG_COLOR);
-    this->toolbar.render(*this->window);
+    window->setView(this->current_view);
     this->graph.render(*this->window);
+    this->window->setView(this->window->getDefaultView());
+    this->toolbar.render(*this->window);
+    this->window->setView(this->current_view);
     if (this->toolbar.getActiveButtonId() == ADD_NODE) {
         sf::CircleShape hover_node(30);
         hover_node.setFillColor(sf::Color(255, 255, 255, 100));
@@ -116,7 +126,7 @@ void Visualizer::render() {
 
 
 void Visualizer::executeClickAction() {
-    is_immediate = this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y));
+    is_immediate = this->toolbar.updateActiveButton(sf::Vector2f(MOUSE_X,MOUSE_Y));
     ButtonId id = this->toolbar.getActiveButtonId();
 
     switch (id) {
@@ -222,27 +232,48 @@ void Visualizer::runAlgorithm() {
 
 void Visualizer::cursorRoutine() {
     std::shared_ptr<Node> moving_node = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
-    if (!moving_node) return;
-    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
-        this->graph.reset();
-    }
-    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-        moving_node->setPosition(MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED);
-        if (!this->graph.checkValidPosition(*moving_node)) {
-            std::shared_ptr<Node> collided_node = this->graph.getCollidedNode(moving_node);
-            if (collided_node) {
-                float collided_x = collided_node->getPosition().x;
-                float collided_y = collided_node->getPosition().y;
-                std::vector<float> closest_pos = getClosestNonCollision(collided_x, collided_y, MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED);
-                moving_node->setPosition(closest_pos[0], closest_pos[1]);
-                if (!this->graph.checkValidPosition(*moving_node)) continue;
-            }
+    if (moving_node) {
+        if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
+            this->graph.reset();
         }
-        this->window->clear(BG_COLOR);
-        this->toolbar.render(*this->window);
-        this->graph.render(*this->window);
-        this->window->display();
-        this->window->pollEvent(this->sfEvent);
+        while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
+            moving_node->setPosition(MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED);
+            if (!this->graph.checkValidPosition(*moving_node)) {
+                std::shared_ptr<Node> collided_node = this->graph.getCollidedNode(moving_node);
+                if (collided_node) {
+                    float collided_x = collided_node->getPosition().x;
+                    float collided_y = collided_node->getPosition().y;
+                    std::vector<float> closest_pos = getClosestNonCollision(collided_x, collided_y,
+                                                                            MOUSE_HOVER_X_CORRECTED,
+                                                                            MOUSE_HOVER_Y_CORRECTED);
+                    moving_node->setPosition(closest_pos[0], closest_pos[1]);
+                    if (!this->graph.checkValidPosition(*moving_node)) continue;
+                }
+            }
+            this->window->clear(BG_COLOR);
+            this->toolbar.render(*this->window);
+            this->graph.render(*this->window);
+            this->window->display();
+            this->window->pollEvent(this->sfEvent);
+        }
+    }
+    else {
+        sf::Vector2f prev_pos = sf::Vector2f (MOUSE_X, MOUSE_Y);
+        sf::Vector2f current_pos, delta_pos;
+        while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
+            current_pos = sf::Vector2f (MOUSE_HOVER_X, MOUSE_HOVER_Y);
+            delta_pos = prev_pos - current_pos; // no idea why it's inverted, probably a quirk of sf::View::move function
+            this->current_view.move(delta_pos);
+            prev_pos = current_pos;
+            this->window->clear(BG_COLOR);
+            window->setView(this->current_view);
+            this->graph.render(*this->window);
+            this->window->setView(this->window->getDefaultView());
+            this->toolbar.render(*this->window);
+            this->window->setView(this->current_view);
+            this->window->display();
+            this->window->pollEvent(this->sfEvent);
+        }
     }
 }
 
@@ -358,11 +389,11 @@ void Visualizer::changeStartNodeRoutine() {
 
 void Visualizer::runBFSRoutine() {
     if (algo_thread_is_running || !is_immediate) return;
-    sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
+    sf::Vector2f original_active_button_coordinates = sf::Vector2f(MOUSE_X, MOUSE_Y);
     while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
         this->window->pollEvent(this->sfEvent);
     }
-    if (!this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_BFS) {
+    if (!this->toolbar.updateActiveButton(sf::Vector2f(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_BFS) {
         this->toolbar.updateActiveButton(original_active_button_coordinates);
         return;
     }
@@ -371,15 +402,16 @@ void Visualizer::runBFSRoutine() {
     }
     this->mode = BFS;
     runAlgorithm();
+    this->toolbar.resetActiveButton();
 }
 
 void Visualizer::runDijkstraRoutine() {
     if (algo_thread_is_running || !is_immediate) return;
-    sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
+    sf::Vector2f original_active_button_coordinates = sf::Vector2f(MOUSE_X, MOUSE_Y);
     while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
         this->window->pollEvent(this->sfEvent);
     }
-    if (!this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_DIJKSTRA) {
+    if (!this->toolbar.updateActiveButton(sf::Vector2f(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_DIJKSTRA) {
         this->toolbar.updateActiveButton(original_active_button_coordinates);
         return;
     }
@@ -388,16 +420,17 @@ void Visualizer::runDijkstraRoutine() {
     }
     this->mode = DIJKSTRA;
     runAlgorithm();
+    this->toolbar.resetActiveButton();
 }
 
 
 void Visualizer::runDfSRoutine() {
     if (algo_thread_is_running || !is_immediate) return;
-    sf::Vector2i original_active_button_coordinates = sf::Vector2i(MOUSE_X, MOUSE_Y);
+    sf::Vector2f original_active_button_coordinates = sf::Vector2f(MOUSE_X, MOUSE_Y);
     while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
         this->window->pollEvent(this->sfEvent);
     }
-    if (!this->toolbar.updateActiveButton(sf::Vector2i(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_DFS) {
+    if (!this->toolbar.updateActiveButton(sf::Vector2f(MOUSE_X, MOUSE_Y)) || this->toolbar.getActiveButtonId() != RUN_DFS) {
         this->toolbar.updateActiveButton(original_active_button_coordinates);
         return;
     }
@@ -406,6 +439,7 @@ void Visualizer::runDfSRoutine() {
     }
     this->mode = DFS;
     runAlgorithm();
+    this->toolbar.resetActiveButton();
 }
 
 
@@ -426,6 +460,7 @@ void Visualizer::endRoutine() {
     else {
         this->graph.runDijkstra(*this->window, this->toolbar, false);
     }
+    this->toolbar.resetActiveButton();
 }
 
 
@@ -437,6 +472,7 @@ void Visualizer::resetRoutine() {
         should_end = false;
     }
     this->graph.reset();
+    this->toolbar.resetActiveButton();
 }
 
 

@@ -14,6 +14,7 @@ enum VisMode
 class Visualizer {
     sf::RenderWindow* window;
     sf::Event sfEvent{};
+    sf::View current_view;
     Graph graph;
     Toolbar toolbar;
     bool node_is_clicked = false;

@@ -32,7 +32,7 @@ void Button::setId(ButtonId id) {
     this->id = id;
 }
 
-bool Button::update(const sf::Vector2i& mousePosWindow) {
+bool Button::update(const sf::Vector2f& mousePosWindow) {
     //Mouse click is in bounds
     if (this->shape.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosWindow))) {
         this->buttonState = BUTTON_ACTIVE;
@@ -97,7 +97,7 @@ ButtonId Toolbar::getActiveButtonId() const {
     return this->active_button->getId();
 }
 
-bool Toolbar::updateActiveButton(const sf::Vector2i& mousePosWindow) {
+bool Toolbar::updateActiveButton(const sf::Vector2f& mousePosWindow) {
     for (auto& button : this->buttons) {
         if (button->update(mousePosWindow)) {
             this->active_button->setButtonDisabled();
