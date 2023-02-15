@@ -49,7 +49,7 @@ class Toolbar {
 private:
     std::shared_ptr<Button> active_button;
     sf::RectangleShape rectangle;
-    std::vector<sf::RectangleShape*> horizontal_separators;
+    std::vector<sf::RectangleShape> horizontal_separators;
 
 public:
     Toolbar();
