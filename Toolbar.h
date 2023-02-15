@@ -49,10 +49,11 @@ class Toolbar {
 private:
     std::shared_ptr<Button> active_button;
     sf::RectangleShape rectangle;
+    std::vector<sf::RectangleShape*> horizontal_separators;
 
 public:
     Toolbar();
-    ~Toolbar() = default;
+    ~Toolbar();
     ButtonId getActiveButtonId() const;
     bool updateActiveButton(const sf::Vector2i& mousePosWindow);
     void render(sf::RenderTarget& target);
