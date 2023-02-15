@@ -205,7 +205,7 @@ void Graph::setToggledNode(std::shared_ptr<Node>& to_toggle) {
     this->toggled_node = to_toggle;
 }
 
-void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
+void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait) {
     algo_thread_is_running = true;
     this->untoggle();
     if (!this->start_node) return;
@@ -216,7 +216,7 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
     bfs_q.push(this->start_node);
     bfs_q.front()->setState(NODE_CURRENT);
     CHECK_IF_SHOULD_END;
-    this->renderAndWait(window, toolbar, wait);
+    this->renderAndWait(window, toolbar, original_view, current_view, wait);
 
     while (!bfs_q.empty()) {
         CHECK_IF_SHOULD_END;
@@ -234,13 +234,13 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
                 bfs_q.push(current_node);
                 current_node->setState(NODE_DISCOVERED);
                 current_node->setDistance(1);
-                this->renderAndWait(window, toolbar, wait);
+                this->renderAndWait(window, toolbar, original_view, current_view, wait);
             }
         }
         previous_node->setState(NODE_DONE);
         bfs_q.pop();
         CHECK_IF_SHOULD_END;
-        this->renderAndWait(window, toolbar, wait);
+        this->renderAndWait(window, toolbar, original_view, current_view, wait);
     }
 
     if (wait) {
@@ -250,12 +250,12 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
 }
 
 
-void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
+void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait) {
     algo_thread_is_running = true;
     this->untoggle();
     if (!this->start_node) return;
 
-    dfs(nullptr, this->start_node, window, toolbar, wait);
+    dfs(nullptr, this->start_node, window, toolbar, original_view, current_view, wait);
 
     if (wait) {
         is_finished = true;
@@ -264,24 +264,24 @@ void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
 }
 
 
-void Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<Node>& curr_node, sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
+void Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<Node>& curr_node, sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait) {
     CHECK_IF_SHOULD_END
     if (prev_node) {
         getEdgeByNodes(prev_node, curr_node)->setState(EDGE_DISCOVERED);
     }
     curr_node->setState(NODE_DISCOVERED);
-    this->renderAndWait(window, toolbar, wait);
+    this->renderAndWait(window, toolbar, original_view, current_view, wait);
     for (const std::shared_ptr<Node>& neighbor_node : this->neighbors_list[curr_node->getName()]) {
         CHECK_IF_SHOULD_END
         if (neighbor_node->getState() != NODE_DISCOVERED && neighbor_node->getState() != NODE_DONE)
-            dfs(curr_node, neighbor_node, window, toolbar, wait);
+            dfs(curr_node, neighbor_node, window, toolbar, original_view, current_view, wait);
     }
     curr_node->setState(NODE_DONE);
     CHECK_IF_SHOULD_END
-    this->renderAndWait(window, toolbar, wait);
+    this->renderAndWait(window, toolbar, original_view, current_view, wait);
 }
 
-void Graph::runMST(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
+void Graph::runMST(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait) {
 
 }
 
@@ -299,7 +299,7 @@ std::shared_ptr<Node> Graph::dijkstraMinDistance() const {
     return min_distance_node;
 }
 
-void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
+void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait) {
     algo_thread_is_running = true;
     this->untoggle();
     if (!this->start_node) return;
@@ -315,7 +315,7 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
                 discovered_edges[current_node]->setState(EDGE_DISCOVERED);
             }
             CHECK_IF_SHOULD_END
-            this->renderAndWait(window, toolbar, wait);
+            this->renderAndWait(window, toolbar, original_view, current_view, wait);
             for (const std::shared_ptr<Node> &neighbor_node: this->neighbors_list[current_node->getName()]) {
                 // updating the distance of neighboring nodes
                 std::shared_ptr<Edge> edge = getEdgeByNodes(current_node, neighbor_node);
@@ -327,7 +327,7 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
             }
             current_node->setState(NODE_DONE);
             CHECK_IF_SHOULD_END
-            this->renderAndWait(window, toolbar, wait);
+            this->renderAndWait(window, toolbar, original_view, current_view, wait);
         }
     }
 
@@ -357,13 +357,16 @@ void Graph::reset() {
 //***********************************************Private Helper Functions***************************************************************
 
 
-void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, bool wait) {
+void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, sf::View original_view, sf::View current_view, bool wait) {
     if (!wait) return;
     window_lock.lock();
     window.setActive(true);
     window.clear(BG_COLOR);
+    window.setView(current_view);
     this->render(window);
+    window.setView(original_view);
     toolbar.render(window);
+    window.setView(original_view);
     window.display();
     window.setActive(false);
     window_lock.unlock();

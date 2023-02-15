@@ -29,7 +29,8 @@ class Graph {
     bool directed = false;
 
     std::string generateNodeName() const;
-    void renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, bool wait = true);
+    void renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, sf::View original_view, sf::View current_view, bool wait = true);
+    void dfs(const std::shared_ptr<Node>& prev, const std::shared_ptr<Node>& start, sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
 
 public:
     explicit Graph() = default;
@@ -48,11 +49,10 @@ public:
     bool containsEdge(const std::shared_ptr<Edge>& edge);
     std::shared_ptr<Node> getNodeByPosition(float pos_x, float pos_y);
     std::shared_ptr<Edge> getEdgeByPosition(float pos_x, float pos_y);
-    void runBFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
-    void runDFS(sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
-    void runMST(sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
-    void runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
-    void dfs(const std::shared_ptr<Node>& prev, const std::shared_ptr<Node>& start, sf::RenderWindow& window, Toolbar& toolbar, bool wait = false);
+    void runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
+    void runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
+    void runMST(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
+    void runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
     std::shared_ptr<Node> dijkstraMinDistance() const;
     std::shared_ptr<Edge> getEdgeByNodes(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2);
     void reset();

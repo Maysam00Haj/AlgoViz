@@ -14,6 +14,7 @@ enum VisMode
 class Visualizer {
     sf::RenderWindow* window;
     sf::Event sfEvent{};
+    sf::View original_view;
     sf::View current_view;
     Graph graph;
     Toolbar toolbar;
