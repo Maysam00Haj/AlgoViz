@@ -472,6 +472,7 @@ void Visualizer::runDijkstraRoutine() {
 
 
 void Visualizer::endRoutine() {
+    this->toolbar.resetActiveButton();
     if (!algo_thread_is_running) return;
     should_end = true;
     algo_thread.join();
