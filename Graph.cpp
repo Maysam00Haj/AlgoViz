@@ -176,6 +176,17 @@ std::shared_ptr<Node> Graph::getNodeByPosition(float pos_x, float pos_y) {
     return nullptr;
 }
 
+
+std::shared_ptr<Node> Graph::getCollidedNode(const std::shared_ptr<Node> &moving_node) const {
+    for (const auto& node: this->nodes_list) {
+        if (node.second->checkBoundsCollision(moving_node) && node.second != moving_node) {
+            return node.second;
+        }
+    }
+    return nullptr;
+}
+
+
 std::shared_ptr<Edge> Graph::getEdgeByPosition(float pos_x, float pos_y) {
     for (const auto& edges: edges_list) {
         for (const auto& edge: edges.second) {

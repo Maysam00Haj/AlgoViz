@@ -59,5 +59,6 @@ public:
     void setToggledNode(std::shared_ptr<Node>& to_toggle);
     void untoggle();
     bool checkValidPosition(const Node& node) const;
+    std::shared_ptr<Node> getCollidedNode(const std::shared_ptr<Node>& moving_node) const;
 };
 #endif //ALGOVIZ_GRAPH_H

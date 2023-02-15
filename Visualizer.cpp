@@ -226,25 +226,18 @@ void Visualizer::cursorRoutine() {
     if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
         this->graph.reset();
     }
-    float prev_x = MOUSE_HOVER_X_CORRECTED;
-    float prev_y = MOUSE_HOVER_Y_CORRECTED;
     while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
         moving_node->setPosition(MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED);
         if (!this->graph.checkValidPosition(*moving_node)) {
-            moving_node->setPosition(prev_x, prev_y);
-            std::shared_ptr<Node> collided_node = this->graph.getNodeByPosition(MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED);
+            std::shared_ptr<Node> collided_node = this->graph.getCollidedNode(moving_node);
             if (collided_node) {
                 float collided_x = collided_node->getPosition().x;
                 float collided_y = collided_node->getPosition().y;
                 std::vector<float> closest_pos = getClosestNonCollision(collided_x, collided_y, MOUSE_HOVER_X_CORRECTED, MOUSE_HOVER_Y_CORRECTED);
                 moving_node->setPosition(closest_pos[0], closest_pos[1]);
-            }
-            else {
-                break;
+                if (!this->graph.checkValidPosition(*moving_node)) continue;
             }
         }
-        prev_x = MOUSE_HOVER_X_CORRECTED;
-        prev_y = MOUSE_HOVER_Y_CORRECTED;
         this->window->clear(BG_COLOR);
         this->toolbar.render(*this->window);
         this->graph.render(*this->window);
