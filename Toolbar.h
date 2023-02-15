@@ -38,7 +38,7 @@ public:
     bool isPressed() const;
     ButtonId getId() const;
     void setId(ButtonId id);
-    bool update(const sf::Vector2i& mousePosWindow);
+    bool update(const sf::Vector2f& mousePosWindow);
     void setButtonDisabled();
     void setButtonEnabled();
     void render(sf::RenderTarget& target);
@@ -55,7 +55,7 @@ public:
     Toolbar();
     ~Toolbar();
     ButtonId getActiveButtonId() const;
-    bool updateActiveButton(const sf::Vector2i& mousePosWindow);
+    bool updateActiveButton(const sf::Vector2f& mousePosWindow);
     void render(sf::RenderTarget& target);
     void resetActiveButton(); //used after 'CLEAN'
 
