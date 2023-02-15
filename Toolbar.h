@@ -3,9 +3,6 @@
 #include <memory>
 #include <SFML/Graphics.hpp>
 
-#define CLICKED_BUTTON_COLOR (sf::Color(189, 195, 199, 100))
-#define DEFAULT_BUTTON_COLOR (sf::Color::White)
-
 enum ButtonStates
 {
     BUTTON_IDLE = 0,
@@ -35,9 +32,7 @@ class Button {
 public:
     Button(float x, float y, float width, float height, const std::string& txt, ButtonId id);
     ~Button();
-    bool isPressed() const;
     ButtonId getId() const;
-    void setId(ButtonId id);
     bool update(const sf::Vector2f& mousePosWindow);
     void setButtonDisabled();
     void setButtonEnabled();
@@ -53,7 +48,7 @@ private:
 
 public:
     Toolbar();
-    ~Toolbar();
+    ~Toolbar() = default;
     ButtonId getActiveButtonId() const;
     bool updateActiveButton(const sf::Vector2f& mousePosWindow);
     void render(sf::RenderTarget& target);
