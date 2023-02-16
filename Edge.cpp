@@ -64,8 +64,13 @@ void Edge::setState(EdgeState state) {
             this->setColor(DISCOVERED_EDGE_COLOR);
             break;
         }
+        case EDGE_NEAREST: {
+            this->setColor(NEAREST_EDGE_COLOR);
+            break;
+        }
         case EDGE_SELECTED: {
             this->setColor(SELECTED_EDGE_COLOR);
+            break;
         }
         default: {
             break;

@@ -10,12 +10,16 @@
 #define UNDISCOVERED_NODE_COLOR (sf::Color::White)
 #define DISCOVERED_NODE_COLOR   (sf::Color::Red)
 #define DONE_NODE_COLOR         (sf::Color::Blue)
+#define TARGET_NODE_COLOR       (sf::Color::Green)
+#define NEAREST_NODE_COLOR      (sf::Color::Magenta)
 
 
 enum NodeState
 {
     NODE_CURRENT,
     NODE_START,
+    NODE_TARGET,
+    NODE_NEAREST,
     NODE_UNDISCOVERED,
     NODE_DISCOVERED,
     NODE_DONE
@@ -26,6 +30,7 @@ class Node {
     NodeState state = NODE_UNDISCOVERED;
     int distance = INT_MAX;
     int path_weight = INT_MAX;
+    std::shared_ptr<Node> parent_node = nullptr;
     sf::CircleShape shape;
     bool is_toggled = false;
 
@@ -47,6 +52,8 @@ public:
     NodeState getState() const;
     sf::Vector2f getPosition() const;
     void setPosition(float pos_x, float pos_y);
+    void setParent(const std::shared_ptr<Node>& parent);
+    std::shared_ptr<Node> getParent() const;
     void toggle();
     void untoggle();
 

@@ -169,6 +169,10 @@ void Visualizer::executeClickAction() {
     ButtonId id = this->toolbar.getActiveButtonId();
 
     switch (id) {
+        case REMOVE_TARGET_NODE: {
+            removeTargetNodeRoutine();
+            break;
+        }
         case RUN_BFS: {
             runBFSRoutine();
             break;
@@ -222,6 +226,10 @@ void Visualizer::executeClickAction() {
         }
         case CHANGE_START_NODE: {
             changeStartNodeRoutine();
+            break;
+        }
+        case CHOOSE_TARGET_NODE: {
+            chooseTargetNodeRoutine();
             break;
         }
         default: {
@@ -434,6 +442,24 @@ void Visualizer::changeStartNodeRoutine() {
     this->graph.setStartNode(this->graph.getNodeByPosition(EVENT_X, EVENT_Y));
 }
 
+void Visualizer::chooseTargetNodeRoutine() {
+    std::shared_ptr<Node> node_exists = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
+    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists) {
+        this->graph.reset();
+    }
+    this->graph.setTargetNode(this->graph.getNodeByPosition(EVENT_X, EVENT_Y));
+}
+
+void Visualizer::removeTargetNodeRoutine() {
+    if (algo_thread_is_running || !is_immediate) return;
+    std::shared_ptr<Node> node_exists = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
+    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists) {
+        this->graph.reset();
+    }
+    this->graph.removeTargetNode();
+    this->toolbar.resetActiveButton();
+}
+
 
 void Visualizer::runBFSRoutine() {
     if (algo_thread_is_running || !is_immediate) return;
@@ -545,5 +571,13 @@ void Visualizer::clearWindowRoutine() {
     this->node_is_clicked = false;
     this->clicked_node = nullptr;
     this->toolbar.resetActiveButton();
+}
+
+void Visualizer::loadFromFile() {
+
+}
+
+void Visualizer::storeInFile() const {
+
 }
 

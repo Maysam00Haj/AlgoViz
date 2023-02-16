@@ -40,6 +40,10 @@ class Visualizer {
     void endRoutine();
     void resetRoutine();
     void clearWindowRoutine();
+    void chooseTargetNodeRoutine();
+    void removeTargetNodeRoutine();
+    void loadFromFile();
+    void storeInFile() const;
 
 public:
     explicit Visualizer(const Graph& graph = Graph());
