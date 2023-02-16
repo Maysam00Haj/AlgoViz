@@ -9,20 +9,42 @@
 //#define MOUSE_HOVER_X ((float)sf::Mouse::getPosition(*this->window).x)
 //#define MOUSE_HOVER_Y ((float)sf::Mouse::getPosition(*this->window).y)
 //
-//// Use these only for drawing shapes (shapes drawn to wrong part of cursor)
+//
 //#define MOUSE_X_CORRECTED       (this->sfEvent.mouseButton.x-30)
 //#define MOUSE_Y_CORRECTED       (this->sfEvent.mouseButton.y-30)
 //#define MOUSE_HOVER_X_CORRECTED ((float)sf::Mouse::getPosition(*this->window).x-30)
 //#define MOUSE_HOVER_Y_CORRECTED ((float)sf::Mouse::getPosition(*this->window).y-30)
 
-#define EVENT_X (this->window->mapPixelToCoords(sf::Vector2i(this->sfEvent.mouseButton.x,this->sfEvent.mouseButton.y)).x)
-#define EVENT_Y (this->window->mapPixelToCoords(sf::Vector2i(this->sfEvent.mouseButton.x,this->sfEvent.mouseButton.y)).y)
-#define MOUSE_X (this->window->mapPixelToCoords(sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x,(float)sf::Mouse::getPosition(*this->window).y)).x)
-#define MOUSE_Y (this->window->mapPixelToCoords(sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x,(float)sf::Mouse::getPosition(*this->window).y)).y)
-#define CORRECTED_EVENT_X (this->window->mapPixelToCoords(sf::Vector2i(this->sfEvent.mouseButton.x-30,this->sfEvent.mouseButton.y-30)).x)
-#define CORRECTED_EVENT_Y (this->window->mapPixelToCoords(sf::Vector2i(this->sfEvent.mouseButton.x-30,this->sfEvent.mouseButton.y-30)).y)
-#define CORRECTED_MOUSE_X (this->window->mapPixelToCoords(sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-30,(float)sf::Mouse::getPosition(*this->window).y-30)).x)
-#define CORRECTED_MOUSE_Y (this->window->mapPixelToCoords(sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-30,(float)sf::Mouse::getPosition(*this->window).y-30)).y)
+#define EVENT_X (this->window->mapPixelToCoords( \
+                sf::Vector2i(this->sfEvent.mouseButton.x,this->sfEvent.mouseButton.y)).x)
+
+#define EVENT_Y (this->window->mapPixelToCoords( \
+                sf::Vector2i(this->sfEvent.mouseButton.x,this->sfEvent.mouseButton.y)).y)
+
+#define MOUSE_X (this->window->mapPixelToCoords( \
+                sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x, \
+                (float)sf::Mouse::getPosition(*this->window).y)).x)
+
+#define MOUSE_Y (this->window->mapPixelToCoords( \
+                sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x, \
+                (float)sf::Mouse::getPosition(*this->window).y)).y)
+
+#define CORRECTED_EVENT_X   (this->window->mapPixelToCoords( \
+                            sf::Vector2i(this->sfEvent.mouseButton.x-(30*this->current_zoom_factor), \
+                            this->sfEvent.mouseButton.y-(30*this->current_zoom_factor))).x)
+
+#define CORRECTED_EVENT_Y   (this->window->mapPixelToCoords( \
+                            sf::Vector2i(this->sfEvent.mouseButton.x-(30*this->current_zoom_factor), \
+                            this->sfEvent.mouseButton.y-(30*this->current_zoom_factor))).y)
+
+#define CORRECTED_MOUSE_X   (this->window->mapPixelToCoords( \
+                            sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zoom_factor), \
+                            (float)sf::Mouse::getPosition(*this->window).y-(30*this->current_zoom_factor))).x)
+
+#define CORRECTED_MOUSE_Y   (this->window->mapPixelToCoords( \
+                            sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zoom_factor), \
+                            (float)sf::Mouse::getPosition(*this->window).y-(30*this->current_zoom_factor))).y)
+
 
 
 #define CHECK_THREAD_AND_JOIN \
@@ -92,7 +114,14 @@ void Visualizer::update() {
                 break;
             }
             case sf::Event::MouseWheelScrolled: {
-
+                if (this->sfEvent.mouseWheelScroll.delta > 0) {
+                    this->current_view.zoom(0.8);
+                    this->current_zoom_factor *= 1.25;
+                }
+                else if (this->sfEvent.mouseWheelScroll.delta < 0){
+                    this->current_view.zoom(1.25);
+                    this->current_zoom_factor *= 0.8;
+                }
                 break;
             }
             default: {
@@ -110,9 +139,9 @@ void Visualizer::render() {
     this->graph.render(*this->window);
     this->window->setView(this->original_view);
     this->toolbar.render(*this->window);
-    this->window->setView(this->current_view);
     if (this->toolbar.getActiveButtonId() == ADD_NODE) {
-        sf::CircleShape hover_node(30);
+        float corrected_radius = this->current_zoom_factor * NODE_RADIUS;
+        sf::CircleShape hover_node(corrected_radius);
         hover_node.setFillColor(sf::Color(255, 255, 255, 100));
         hover_node.setPosition(CORRECTED_MOUSE_X, CORRECTED_MOUSE_Y);
         this->window->draw(hover_node);
@@ -122,6 +151,7 @@ void Visualizer::render() {
         std::shared_ptr<Edge> tmp_edge = std::make_shared<Edge>(Edge(this->clicked_node, tmp_node, false));
         tmp_edge->render(*this->window);
     }
+    this->window->setView(this->current_view);
     this->window->display();
     window->setActive(false);
     window_lock.unlock();
@@ -242,9 +272,6 @@ void Visualizer::runAlgorithm() {
 void Visualizer::cursorRoutine() {
     std::shared_ptr<Node> moving_node = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
     if (moving_node) {
-        if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
-            this->graph.reset();
-        }
         while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
             moving_node->setPosition(CORRECTED_MOUSE_X, CORRECTED_MOUSE_Y);
             if (!this->graph.checkValidPosition(*moving_node)) {
@@ -279,7 +306,7 @@ void Visualizer::cursorRoutine() {
             window_y = (float)sf::Mouse::getPosition().y;
             current_pos = sf::Vector2f (window_x, window_y);
             delta_pos = prev_pos - current_pos; // inverted because when we "look" to the left things "move" to the right
-            this->current_view.move(delta_pos);
+            this->current_view.move(delta_pos / this->current_zoom_factor);
             prev_pos = current_pos;
             this->window->clear(BG_COLOR);
             window->setView(this->current_view);
