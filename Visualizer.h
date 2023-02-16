@@ -16,6 +16,7 @@ class Visualizer {
     sf::Event sfEvent{};
     sf::View original_view;
     sf::View current_view;
+    float current_zoom_factor = 1.f;
     Graph graph;
     Toolbar toolbar;
     bool node_is_clicked = false;
