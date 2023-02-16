@@ -270,11 +270,15 @@ void Visualizer::cursorRoutine() {
         }
     }
     else {
-        sf::Vector2f prev_pos = sf::Vector2f (EVENT_X, EVENT_Y);
+        float window_x = (float)sf::Mouse::getPosition().x;
+        float window_y = (float)sf::Mouse::getPosition().y;
+        sf::Vector2f prev_pos = sf::Vector2f (window_x, window_y);
         sf::Vector2f current_pos, delta_pos;
         while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-            current_pos = sf::Vector2f (MOUSE_X, MOUSE_Y);
-            delta_pos = prev_pos - current_pos; // no idea why it's inverted, probably a quirk of sf::View::move function
+            window_x = (float)sf::Mouse::getPosition().x;
+            window_y = (float)sf::Mouse::getPosition().y;
+            current_pos = sf::Vector2f (window_x, window_y);
+            delta_pos = prev_pos - current_pos; // inverted because when we "look" to the left things "move" to the right
             this->current_view.move(delta_pos);
             prev_pos = current_pos;
             this->window->clear(BG_COLOR);
@@ -282,7 +286,6 @@ void Visualizer::cursorRoutine() {
             this->graph.render(*this->window);
             this->window->setView(this->original_view);
             this->toolbar.render(*this->window);
-            this->window->setView(this->current_view);
             this->window->display();
             this->window->pollEvent(this->sfEvent);
         }
