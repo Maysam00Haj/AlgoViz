@@ -1,9 +1,10 @@
 #include <iostream>
 #include "Visualizer.h"
-#include <cassert>
 #include "Toolbar.h"
+#include "utils.h"
 
 int main() {
+/*
     Graph g;
     std::shared_ptr<Node> v1 = g.addNode(200, 100);
     std::shared_ptr<Node> v2 = g.addNode(400, 100);
@@ -61,8 +62,9 @@ int main() {
     g.addEdge(e19);
     g.addEdge(e20);
     g.addEdge(e21);
+    */
 
-    Visualizer algoViz(g);
+    Visualizer algoViz;
     algoViz.run();
 
     return 0;

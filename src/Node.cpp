@@ -1,22 +1,19 @@
 #include "Node.h"
 #include "cmath"
 #include <utility>
+#include "utils.h"
 #include <iostream>
 
 #define RADIUS 30
 
-Node::Node(std::string name, float pos_x, float pos_y): name(std::move(name)) {
+Node::Node(std::string name, float pos_x, float pos_y, sf::Font* text_font): name(std::move(name)) {
     this->shape.setRadius(RADIUS);
-    this->shape.setOutlineColor(sf::Color::Yellow);
+    this->shape.setOutlineColor(NODE_OUTLINE_COLOR);
     this->shape.setPosition(pos_x, pos_y);
 }
 
 sf::CircleShape Node::getShape() const {
     return this->shape;
-}
-
-sf::Rect<float> Node::getShapeLocalBounds() const {
-    return this->shape.getLocalBounds();
 }
 
 void Node::render(sf::RenderTarget& target) {
@@ -41,14 +38,6 @@ int Node::getDistance() const {
     return this->distance;
 }
 
-void Node::setPathWeight(int updated_path_weight) {
-    this->path_weight = updated_path_weight;
-}
-
-int Node::getPathWeight() const {
-    return this->path_weight;
-}
-
 bool Node::operator==(const std::shared_ptr<Node>& node) const {
     return (this->getName() == node->getName());
 }
@@ -57,9 +46,6 @@ void Node::setColor(const sf::Color &color) {
     this->shape.setFillColor(color);
 }
 
-sf::Color Node::getColor() const {
-    return this->shape.getFillColor();
-}
 
 void Node::setState(NodeState state) {
     this->state = state;
@@ -105,21 +91,21 @@ void Node::setPosition(float pos_x, float pos_y) {
 
 
 void Node::toggle() {
-    this->is_toggled = true;
-    int r = this->shape.getFillColor().r;
-    int g = this->shape.getFillColor().g;
-    int b = this->shape.getFillColor().b;
+    int red = this->shape.getFillColor().r;
+    int green = this->shape.getFillColor().g;
+    int blue = this->shape.getFillColor().b;
     this->shape.setOutlineThickness(3);
-    this->shape.setFillColor(sf::Color(r, b, g, 150));
+    this->shape.setFillColor(sf::Color(red, green, blue, 150));
 }
 
 void Node::untoggle() {
-    this->is_toggled = false;
-    int r = this->shape.getFillColor().r;
-    int g = this->shape.getFillColor().g;
-    int b = this->shape.getFillColor().b;
+    int red = this->shape.getFillColor().r;
+    int green = this->shape.getFillColor().g;
+    int blue = this->shape.getFillColor().b;
     this->shape.setOutlineThickness(0);
-    this->shape.setFillColor(sf::Color(r, b, g, 255));
+    this->shape.setFillColor(sf::Color(red, green, blue, 255));
 }
+
+
 
 

@@ -8,45 +8,37 @@
 #include "SFML/Graphics.hpp"
 
 #define UNDISCOVERED_EDGE_COLOR (sf::Color(150, 150, 150, 70))
-//#define UNDISCOVERED_EDGE_COLOR (sf::Color::White)
 #define DISCOVERED_EDGE_COLOR   (sf::Color::White)
 #define SELECTED_EDGE_COLOR   (sf::Color::Red)
 #define NODE_RADIUS 30
 
-enum EdgeState
-{
+enum EdgeState {
     EDGE_DISCOVERED,
     EDGE_UNDISCOVERED,
     EDGE_SELECTED
 };
 
 class Edge {
-    EdgeState state = EDGE_UNDISCOVERED;
+    sf::RectangleShape shape;
+    std::string literal;
     const std::shared_ptr<Node> first_node;
     const std::shared_ptr<Node> second_node;
-    sf::RectangleShape shape;
-    bool is_toggled = false;
-    std::string literal;
     float length;
 
 
 public:
     explicit Edge(const std::shared_ptr<Node>& first_node, const std::shared_ptr<Node>& second_node, bool do_correct = true);
     ~Edge() = default;
-    std::shared_ptr<Node> getFirstNode() const;
-    std::shared_ptr<Node> getSecondNode() const;
-    sf::RectangleShape getShape() const;
     void render(sf::RenderTarget& target);
     void setColor(const sf::Color& color);
-    sf::Color getColor() const;
     void setState(EdgeState state);
     float getLength() const;
-    EdgeState getState() const;
     bool operator<(const std::shared_ptr<Edge>& other) const;
     bool operator==(const std::shared_ptr<Edge>& other) const;
     std::vector<float> correctEdgeCoordinates();
-    void toggle();
-    void untoggle();
+    std::shared_ptr<Node> getFirstNode() const;
+    std::shared_ptr<Node> getSecondNode() const;
+    sf::RectangleShape getShape() const;
 };
 
 #endif //ALGOVIZ_EDGE_H

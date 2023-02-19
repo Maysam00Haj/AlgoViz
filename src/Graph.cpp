@@ -25,8 +25,6 @@ extern bool is_finished;
 extern bool should_end;
 
 
-
-
 Graph::Graph(const Graph &other) {
     this->nodes_num = other.nodes_num;
     this->edges_num = other.edges_num;
@@ -52,9 +50,9 @@ void Graph::render(sf::RenderTarget& target) {
 }
 
 
-std::shared_ptr<Node> Graph::addNode(float pos_x, float pos_y) {
+std::shared_ptr<Node> Graph::addNode(float pos_x, float pos_y, sf::Font* text_font) {
     std::string node_name = generateNodeName();
-    std::shared_ptr<Node> node_ptr = std::make_shared<Node>(node_name, pos_x, pos_y);
+    std::shared_ptr<Node> node_ptr = std::make_shared<Node>(node_name, pos_x, pos_y, text_font);
     if (!checkValidPosition(*node_ptr)) return nullptr;
     this->nodes_list[node_name] = node_ptr;
     this->neighbors_list[node_name] = {};
@@ -128,18 +126,6 @@ const std::shared_ptr<Node>& Graph::getStartNode() const {
     return this->start_node;
 }
 
-int Graph::getNodesNum() const {
-    return nodes_num;
-}
-
-int Graph::getEdgesNum() const {
-    return edges_num;
-}
-
-bool Graph::containsNode(const std::string& node_name) {
-    return (this->nodes_list.find(node_name) != this->nodes_list.end());
-}
-
 bool Graph::containsEdge(const std::shared_ptr<Edge>& edge) {
     std::string node1_name = edge->getFirstNode()->getName();
     std::string node2_name = edge->getSecondNode()->getName();
@@ -162,7 +148,6 @@ void Graph::setStartNode(const std::shared_ptr<Node>& new_start_node) {
     if (this->start_node) this->start_node->setState(NODE_UNDISCOVERED);
     this->start_node = new_start_node;
     this->start_node->setDistance(0);
-    this->start_node->setPathWeight(0);
     this->start_node->setState(NODE_START);
 }
 
@@ -280,11 +265,6 @@ void Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<No
     CHECK_IF_SHOULD_END
     this->renderAndWait(window, toolbar, original_view, current_view, wait);
 }
-
-void Graph::runMST(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait) {
-
-}
-
 
 std::shared_ptr<Node> Graph::dijkstraMinDistance() const {
     int min = INT_MAX;

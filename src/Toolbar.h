@@ -3,14 +3,7 @@
 #include <memory>
 #include <SFML/Graphics.hpp>
 
-enum ButtonStates
-{
-    BUTTON_IDLE = 0,
-    BUTTON_ACTIVE
-};
-
-enum ButtonId
-{
+enum ButtonId {
     CURSOR,
     ADD_NODE,
     ADD_EDGE,
@@ -24,7 +17,6 @@ enum ButtonId
 };
 
 class Button {
-    ButtonStates buttonState;
     sf::RectangleShape shape;
     sf::Text text;
     ButtonId id;
@@ -32,11 +24,11 @@ class Button {
 public:
     Button(float x, float y, float width, float height, const std::string& txt, ButtonId id);
     ~Button();
-    ButtonId getId() const;
     bool update(const sf::Vector2f& mousePosWindow);
     void setButtonDisabled();
     void setButtonEnabled();
     void render(sf::RenderTarget& target);
+    ButtonId getId() const;
 };
 
 
@@ -49,10 +41,10 @@ private:
 public:
     Toolbar();
     ~Toolbar() = default;
-    ButtonId getActiveButtonId() const;
     bool updateActiveButton(const sf::Vector2f& mousePosWindow);
     void render(sf::RenderTarget& target);
     void resetActiveButton(); //used after 'CLEAN'
+    ButtonId getActiveButtonId() const;
 
     std::vector<std::shared_ptr<Button>> buttons;
 };
