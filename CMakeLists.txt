@@ -7,6 +7,7 @@ add_executable(AlgoViz main.cpp Node.cpp Edge.cpp Graph.cpp Toolbar.cpp Visualiz
 
 set(SFML_STATIC_LIBRARIES TRUE)
 set(SFML_DIR C:/SFML/lib/cmake/SFML)
+
 find_package(SFML COMPONENTS graphics system window network REQUIRED)
 INCLUDE_DIRECTORIES(C:/SFML/include)
 target_link_libraries(AlgoViz sfml-graphics)
