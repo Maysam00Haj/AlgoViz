@@ -54,6 +54,14 @@ void Node::setState(NodeState state) {
             this->setColor(START_NODE_COLOR);
             break;
         }
+        case NODE_TARGET: {
+            this->setColor(TARGET_NODE_COLOR);
+            break;
+        }
+        case NODE_NEAREST: {
+            this->setColor(NEAREST_NODE_COLOR);
+            break;
+        }
         case NODE_CURRENT: {
             this->setColor(CURRENT_NODE_COLOR);
             break;
@@ -104,6 +112,14 @@ void Node::untoggle() {
     int blue = this->shape.getFillColor().b;
     this->shape.setOutlineThickness(0);
     this->shape.setFillColor(sf::Color(red, green, blue, 255));
+}
+
+void Node::setParent(const std::shared_ptr<Node>& parent) {
+    this->parent_node = parent;
+}
+
+std::shared_ptr<Node> Node::getParent() const {
+    return this->parent_node;
 }
 
 

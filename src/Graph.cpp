@@ -122,6 +122,12 @@ void Graph::removeEdge(const std::shared_ptr<Edge>& to_delete) {
     this->edges_num--;
 }
 
+void Graph::removeTargetNode() {
+    if (!this->target_node) return;
+    this->target_node->setState(NODE_UNDISCOVERED);
+    this->target_node = nullptr;
+}
+
 const std::shared_ptr<Node>& Graph::getStartNode() const {
     return this->start_node;
 }
@@ -149,6 +155,14 @@ void Graph::setStartNode(const std::shared_ptr<Node>& new_start_node) {
     this->start_node = new_start_node;
     this->start_node->setDistance(0);
     this->start_node->setState(NODE_START);
+}
+
+
+void Graph::setTargetNode(const std::shared_ptr<Node> &new_target_node) {
+    if (!new_target_node) return;
+    if (this->target_node) this->target_node->setState(NODE_UNDISCOVERED);
+    this->target_node = new_target_node;
+    this->target_node->setState(NODE_TARGET);
 }
 
 
@@ -217,17 +231,37 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
                 current_edge = getEdgeByNodes(previous_node, current_node);
                 current_edge->setState(EDGE_DISCOVERED);
                 bfs_q.push(current_node);
-                current_node->setState(NODE_DISCOVERED);
+                current_node->setParent(previous_node);
                 current_node->setDistance(1);
+                if (current_node->getState() == NODE_TARGET) {
+                    while (bfs_q.front()->getState() != NODE_TARGET) bfs_q.pop();
+                    break;
+                }
+                current_node->setState(NODE_DISCOVERED);
                 this->renderAndWait(window, toolbar, original_view, current_view, wait);
             }
         }
+        if (bfs_q.front()->getState() == NODE_TARGET) break;
         previous_node->setState(NODE_DONE);
         bfs_q.pop();
         CHECK_IF_SHOULD_END;
         this->renderAndWait(window, toolbar, original_view, current_view, wait);
     }
 
+    if (!bfs_q.empty()) {
+        CHECK_IF_SHOULD_END;
+        std::shared_ptr<Node> current_node = bfs_q.front();
+        while (current_node->getParent()) {
+            CHECK_IF_SHOULD_END;
+            std::shared_ptr<Edge> next_edge = this->getEdgeByNodes(current_node, current_node->getParent());
+            next_edge->setState(EDGE_NEAREST);
+            if (current_node->getState() != NODE_TARGET) current_node->setState(NODE_NEAREST);
+            current_node = current_node->getParent();
+            this->renderAndWait(window, toolbar, original_view, current_view, wait);
+        }
+        if (current_node) current_node->setState(NODE_START);
+    }
+    this->start_node->setState(NODE_NEAREST);
     if (wait) {
         is_finished = true;
     }
@@ -320,6 +354,9 @@ void Graph::reset() {
     for (const auto& node: nodes_list) {
         if (node.second == this->start_node) {
             node.second->setState(NODE_START);
+        }
+        else if (node.second == this->target_node) {
+            node.second->setState(NODE_TARGET);
         }
         else {
             node.second->setState(NODE_UNDISCOVERED);

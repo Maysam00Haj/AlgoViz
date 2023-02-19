@@ -10,11 +10,13 @@
 #define UNDISCOVERED_EDGE_COLOR (sf::Color(150, 150, 150, 70))
 #define DISCOVERED_EDGE_COLOR   (sf::Color::White)
 #define SELECTED_EDGE_COLOR   (sf::Color::Red)
+#define NEAREST_EDGE_COLOR  (sf::Color::Magenta)
 #define NODE_RADIUS 30
 
 enum EdgeState {
     EDGE_DISCOVERED,
     EDGE_UNDISCOVERED,
+    EDGE_NEAREST,
     EDGE_SELECTED
 };
 
