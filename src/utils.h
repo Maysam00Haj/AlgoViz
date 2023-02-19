@@ -4,8 +4,9 @@
 
 #ifndef ALGOVIZ_UTILS_H
 #define ALGOVIZ_UTILS_H
-
+#include "SFML/Graphics.hpp"
 #include <vector>
+
 
 float getAngle(float x1, float y1, float x2, float y2);
 float getDistance(float x1, float y1, float x2, float y2);

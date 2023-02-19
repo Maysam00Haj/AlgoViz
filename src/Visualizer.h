@@ -2,12 +2,11 @@
 #define ALGOVIZ_VISUALIZER_H
 #include "Graph.h"
 #include "Toolbar.h"
+#include "MessagesBox.h"
 
-enum VisMode
-{
+enum VisMode {
     BFS,
     DFS,
-    MST,
     DIJKSTRA
 };
 
@@ -16,12 +15,14 @@ class Visualizer {
     sf::Event sfEvent{};
     sf::View original_view;
     sf::View current_view;
-    float current_zoom_factor = 1.f;
     Graph graph;
     Toolbar toolbar;
-    bool node_is_clicked = false;
     std::shared_ptr<Node> clicked_node;
     VisMode mode = BFS;
+    sf::Font* vis_font;
+    MessagesBox messagesBox;
+    bool node_is_clicked = false;
+    float current_zoom_factor = 1.f;
 
 
 
