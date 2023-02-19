@@ -9,9 +9,10 @@
 extern bool algo_thread_is_running;
 
 
-Button::Button(float x, float y, float width, float height, const std::string& txt, ButtonId id) : id(id) {
-    auto* texture = new sf::Texture();
-    texture->loadFromFile(txt);
+Button::Button(float x, float y, float width, float height, const std::string& icon_path, ButtonId id) : id(id) {
+    sf::Texture* texture = new sf::Texture();
+    this->icon_path = icon_path;
+    texture->loadFromFile(this->icon_path);
     this->shape.setTexture(texture);
     this->shape.setPosition(sf::Vector2f(x, y));
     this->shape.setSize(sf::Vector2f(width, height));
@@ -20,6 +21,21 @@ Button::Button(float x, float y, float width, float height, const std::string& t
 Button::~Button() {
     delete this->shape.getTexture();
 }
+
+
+Button& Button::operator=(const Button& other) {
+    if (this != &other) {
+        this->icon_path = other.icon_path;
+        delete this->shape.getTexture();
+        sf::Texture* texture = new sf::Texture();
+        texture->loadFromFile(this->icon_path);
+        this->shape.setTexture(texture);
+        this->shape.setPosition(other.shape.getPosition());
+        this->shape.setSize(sf::Vector2f(other.shape.getSize()));
+    }
+    return *this;
+}
+
 
 ButtonId Button::getId() const {
     return this->id;
@@ -43,7 +59,6 @@ void Button::setButtonDisabled() {
 
 void Button::render(sf::RenderTarget& target) {
     target.draw(this->shape);
-    target.draw(this->text);
 }
 
 //----------------------------------------Toolbar Methods---------------------------------------------
@@ -65,12 +80,12 @@ Toolbar::Toolbar() {
     this->buttons.push_back(std::make_shared<Button>(35, 560, 30, 30, "./images/reset.png", RESET));
     this->buttons.push_back(std::make_shared<Button>(35, 615, 30, 30, "./images/clear_window.png", CLEAR_WINDOW));
     this->rectangle.setPosition(10, 10);
-    this->rectangle.setSize({80, 660});
+    this->rectangle.setSize({80, 650});
     this->rectangle.setFillColor(sf::Color(107, 107, 107, 255));
     this->rectangle.setOutlineColor(sf::Color::White);
     this->rectangle.setOutlineThickness(2.f);
 
-for (int i = 0; i < icons.size(); i++) {
+for (int i = 0; i < icons.size() - 1; i++) {
         sf::RectangleShape s1;
         s1.setSize(sf::Vector2f(2, 60));
         s1.setFillColor(SEPARATOR_COLOR);
