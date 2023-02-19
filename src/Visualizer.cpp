@@ -1,8 +1,8 @@
 #include "Visualizer.h"
 #include "utils.h"
-#include <iostream>
 #include <thread>
 #include <mutex>
+#include "Node.h"
 
 //#define MOUSE_X       (this->sfEvent.mouseButton.x)
 //#define MOUSE_Y       (this->sfEvent.mouseButton.y)
@@ -66,8 +66,14 @@ std::thread algo_thread; // the thread we use to execute runBfs
 
 
 Visualizer::Visualizer(const Graph& graph): graph(graph) {
+    this->vis_font = new sf::Font();
+    this->vis_font->loadFromFile("fonts/arial.ttf");
+
     this->window = new sf::RenderWindow(sf::VideoMode(1400, 1000), "Graph Visualizer");
     this->window->setFramerateLimit(60);
+
+    this->messagesBox = MessagesBox(vis_font);
+
     this->current_view = this->window->getView();
     this->original_view = this->window->getDefaultView();
 }
@@ -76,6 +82,7 @@ Visualizer::Visualizer(const Graph& graph): graph(graph) {
 
 Visualizer::~Visualizer() {
   delete this->window;
+  delete this->vis_font;
 }
 
 
@@ -139,6 +146,7 @@ void Visualizer::render() {
     this->graph.render(*this->window);
     this->window->setView(this->original_view);
     this->toolbar.render(*this->window);
+    this->messagesBox.render(*this->window);
     if (this->toolbar.getActiveButtonId() == ADD_NODE) {
         float corrected_radius = this->current_zoom_factor * NODE_RADIUS;
         sf::CircleShape hover_node(corrected_radius);
@@ -147,7 +155,7 @@ void Visualizer::render() {
         this->window->draw(hover_node);
     }
     if (this->toolbar.getActiveButtonId() == ADD_EDGE && this->node_is_clicked) {
-        std::shared_ptr<Node> tmp_node = std::make_shared<Node>(Node("tmp", CORRECTED_MOUSE_X, CORRECTED_MOUSE_Y));
+        std::shared_ptr<Node> tmp_node = std::make_shared<Node>(Node("tmp", CORRECTED_MOUSE_X, CORRECTED_MOUSE_Y, vis_font));
         std::shared_ptr<Edge> tmp_edge = std::make_shared<Edge>(Edge(this->clicked_node, tmp_node, false));
         tmp_edge->render(*this->window);
     }
@@ -259,12 +267,6 @@ void Visualizer::runAlgorithm() {
                                       std::ref(this->toolbar), std::ref(this->original_view), std::ref(this->current_view), should_wait);
             break;
         }
-        case MST: {
-            this->window->setActive(false);
-            algo_thread = std::thread(&Graph::runMST, std::ref(this->graph), std::ref(*this->window),
-                                      std::ref(this->toolbar), std::ref(this->original_view), std::ref(this->current_view), should_wait);
-            break;
-        }
         case DIJKSTRA: {
             this->window->setActive(false);
             algo_thread = std::thread(&Graph::runDijkstra, std::ref(this->graph), std::ref(*this->window),
@@ -299,6 +301,7 @@ void Visualizer::cursorRoutine() {
             this->graph.render(*this->window);
             this->window->setView(this->original_view);
             this->toolbar.render(*this->window);
+            this->messagesBox.render(*this->window);
             this->window->setView(this->current_view);
             this->window->display();
             this->window->pollEvent(this->sfEvent);
@@ -321,6 +324,7 @@ void Visualizer::cursorRoutine() {
             this->graph.render(*this->window);
             this->window->setView(this->original_view);
             this->toolbar.render(*this->window);
+            this->messagesBox.render(*this->window);
             this->window->display();
             this->window->pollEvent(this->sfEvent);
         }
@@ -329,9 +333,12 @@ void Visualizer::cursorRoutine() {
 
 
 void Visualizer::addNodeRoutine() {
-    std::shared_ptr<Node> node_exists = this->graph.addNode(CORRECTED_EVENT_X, CORRECTED_EVENT_Y);
+    std::shared_ptr<Node> node_exists = this->graph.addNode(CORRECTED_EVENT_X, CORRECTED_EVENT_Y, vis_font);
     if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists) {
         this->graph.reset();
+    }
+    if (graph.getStartNode() != nullptr) {
+        this->messagesBox.is_rendered[0] = false;
     }
 }
 
@@ -349,13 +356,14 @@ void Visualizer::addEdgeRoutine() {
         }
         while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
             while (!dst || dst == clicked_node) {
-                std::shared_ptr<Node> tmp_node = std::make_shared<Node>(Node("tmp", CORRECTED_MOUSE_X, CORRECTED_MOUSE_Y));
+                std::shared_ptr<Node> tmp_node = std::make_shared<Node>(Node("tmp", CORRECTED_MOUSE_X, CORRECTED_MOUSE_Y, vis_font));
                 std::shared_ptr<Edge> tmp_edge = std::make_shared<Edge>(Edge(this->clicked_node, tmp_node, false));
                 this->window->clear(BG_COLOR);
                 window->setView(this->current_view);
                 this->graph.render(*this->window);
                 this->window->setView(this->original_view);
                 this->toolbar.render(*this->window);
+                this->messagesBox.render(*this->window);
                 this->window->setView(this->current_view);
                 tmp_edge->render(*this->window);
                 this->window->display();
@@ -393,6 +401,7 @@ void Visualizer::addEdgeRoutine() {
                 this->graph.render(*this->window);
                 this->window->setView(this->original_view);
                 this->toolbar.render(*this->window);
+                this->messagesBox.render(*this->window);
                 this->window->setView(this->current_view);
                 to_add->render(*this->window);
                 this->window->display();
@@ -424,6 +433,9 @@ void Visualizer::eraseRoutine() {
     std::shared_ptr<Edge> edge_to_delete = this->graph.getEdgeByPosition(EVENT_X, EVENT_Y);
     if (node_to_delete) {
         this->graph.removeNode(node_to_delete->getName());
+        if (graph.getStartNode() == nullptr) {
+            this->messagesBox.is_rendered[0] = true;
+        }
     }
     else if (edge_to_delete) {
         this->graph.removeEdge(edge_to_delete);
@@ -528,6 +540,7 @@ void Visualizer::runDijkstraRoutine() {
 
 
 void Visualizer::endRoutine() {
+    this->toolbar.resetActiveButton();
     if (!algo_thread_is_running) return;
     should_end = true;
     algo_thread.join();

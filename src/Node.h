@@ -12,6 +12,7 @@
 #define DONE_NODE_COLOR         (sf::Color::Blue)
 #define TARGET_NODE_COLOR       (sf::Color::Green)
 #define NEAREST_NODE_COLOR      (sf::Color::Magenta)
+#define NODE_OUTLINE_COLOR      (sf::Color::Yellow)
 
 
 enum NodeState
@@ -26,6 +27,7 @@ enum NodeState
 };
 
 class Node {
+private:
     std::string name;
     NodeState state = NODE_UNDISCOVERED;
     int distance = INT_MAX;
@@ -35,28 +37,25 @@ class Node {
     bool is_toggled = false;
 
 public:
-    explicit Node(std::string name, float pos_x, float pos_y);
-    sf::CircleShape getShape() const;
-    sf::Rect<float> getShapeLocalBounds() const;
+    explicit Node(std::string name, float pos_x, float pos_y, sf::Font* text_font);
+    ~Node() = default;
     void render(sf::RenderTarget& target);
-    std::string getName() const;
     bool checkBoundsCollision(const std::shared_ptr<Node>& node) const;
     void setDistance(int distance);
     int getDistance() const;
     void setPathWeight(int path_weight);
-    int getPathWeight() const;
     bool operator==(const std::shared_ptr<Node>& node) const;
     void setColor(const sf::Color& color);
-    sf::Color getColor() const;
     void setState(NodeState state);
-    NodeState getState() const;
-    sf::Vector2f getPosition() const;
     void setPosition(float pos_x, float pos_y);
     void setParent(const std::shared_ptr<Node>& parent);
     std::shared_ptr<Node> getParent() const;
     void toggle();
     void untoggle();
-
+    sf::CircleShape getShape() const;
+    std::string getName() const;
+    NodeState getState() const;
+    sf::Vector2f getPosition() const;
 };
 
 

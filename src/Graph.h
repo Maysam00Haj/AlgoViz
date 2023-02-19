@@ -21,17 +21,18 @@ class Graph {
     int nodes_num = 0;
     int edges_num = 0;
     int name_count = 0;
+    bool directed = false;
     std::shared_ptr<Node> start_node = nullptr;
-    std::shared_ptr<Node> target_node = nullptr;
     std::shared_ptr<Node> toggled_node = nullptr;
     std::unordered_map<std::string, std::shared_ptr<Node>> nodes_list; // enables us to find node pointer by its name string
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Node>>> neighbors_list;
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Edge>>> edges_list; // for each node there's a set of edges that touch it (2 copies of each edge)
-    bool directed = false;
+    sf::Font graph_font;
 
-    std::string generateNodeName() const;
     void renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, sf::View original_view, sf::View current_view, bool wait = true);
     void dfs(const std::shared_ptr<Node>& prev, const std::shared_ptr<Node>& start, sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
+    std::shared_ptr<Node> dijkstraMinDistance() const;
+    std::string generateNodeName() const;
 
 public:
     explicit Graph() = default;
@@ -40,28 +41,23 @@ public:
     void setStartNode(const std::shared_ptr<Node>& newStartNode);
     void setTargetNode(const std::shared_ptr<Node>& target_node);
     void render(sf::RenderTarget& target);
-    std::shared_ptr<Node> addNode(float pos_x, float pos_y);
     void removeNode(const std::string& node_name);
     void addEdge(std::shared_ptr<Edge>& edge);
     void removeEdge(const std::shared_ptr<Edge>& edge);
-    const std::shared_ptr<Node>& getStartNode() const;
     void removeTargetNode();
-    int getNodesNum() const;
-    int getEdgesNum() const;
-    bool containsNode(const std::string& node_name);
     bool containsEdge(const std::shared_ptr<Edge>& edge);
-    std::shared_ptr<Node> getNodeByPosition(float pos_x, float pos_y);
-    std::shared_ptr<Edge> getEdgeByPosition(float pos_x, float pos_y);
     void runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
     void runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
-    void runMST(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
     void runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
-    std::shared_ptr<Node> dijkstraMinDistance() const;
-    std::shared_ptr<Edge> getEdgeByNodes(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2);
     void reset();
     void setToggledNode(std::shared_ptr<Node>& to_toggle);
     void untoggle();
     bool checkValidPosition(const Node& node) const;
+    const std::shared_ptr<Node>& getStartNode() const;
+    std::shared_ptr<Node> getNodeByPosition(float pos_x, float pos_y);
+    std::shared_ptr<Edge> getEdgeByPosition(float pos_x, float pos_y);
+    std::shared_ptr<Edge> getEdgeByNodes(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2);
+    std::shared_ptr<Node> addNode(float pos_x, float pos_y, sf::Font* text_font);
     std::shared_ptr<Node> getCollidedNode(const std::shared_ptr<Node>& moving_node) const;
 };
 #endif //ALGOVIZ_GRAPH_H

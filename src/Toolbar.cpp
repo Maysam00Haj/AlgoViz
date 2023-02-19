@@ -2,52 +2,43 @@
 #include <iostream>
 #include <filesystem>
 
+#define TOOLBAR_COLOR    sf::Color(107, 107, 107, 255)
+#define SEPARATOR_COLOR  sf::Color(81, 78, 78, 200)
+
+
 extern bool algo_thread_is_running;
 
-Button::Button(float x, float y, float width, float height, const std::string& txt, ButtonId id) : buttonState(BUTTON_IDLE), id(id) {
+
+Button::Button(float x, float y, float width, float height, const std::string& txt, ButtonId id) : id(id) {
     auto* texture = new sf::Texture();
     texture->loadFromFile(txt);
     this->shape.setTexture(texture);
     this->shape.setPosition(sf::Vector2f(x, y));
     this->shape.setSize(sf::Vector2f(width, height));
-
 }
 
 Button::~Button() {
     delete this->shape.getTexture();
 }
 
-bool Button::isPressed() const {
-    if (this->buttonState == BUTTON_ACTIVE)
-        return true;
-
-    return false;
-}
-
 ButtonId Button::getId() const {
     return this->id;
-}
-
-void Button::setId(ButtonId id) {
-    this->id = id;
 }
 
 bool Button::update(const sf::Vector2f& mousePosWindow) {
     //Mouse click is in bounds
     if (this->shape.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosWindow))) {
-        this->buttonState = BUTTON_ACTIVE;
-        this->shape.setOutlineColor(sf::Color::Red);
         return true;
     }
     return false;
 }
 
 void Button::setButtonEnabled() {
-    this->shape.setOutlineColor(CLICKED_BUTTON_COLOR);
+    this->shape.setFillColor(sf::Color(this->shape.getFillColor().r, this->shape.getFillColor().g, this->shape.getFillColor().b, 100));
 }
 
 void Button::setButtonDisabled() {
-    this->shape.setOutlineColor(DEFAULT_BUTTON_COLOR);
+    this->shape.setFillColor(sf::Color(this->shape.getFillColor().r, this->shape.getFillColor().g, this->shape.getFillColor().b, 255));
 }
 
 void Button::render(sf::RenderTarget& target) {
@@ -79,20 +70,15 @@ Toolbar::Toolbar() {
     this->rectangle.setOutlineColor(sf::Color::White);
     this->rectangle.setOutlineThickness(2.f);
 
-    for (int i = 0; i < icons.size(); i++) {
-        sf::RectangleShape *s1 = new sf::RectangleShape();
-        s1->setSize(sf::Vector2f(2, 60));
-        s1->setFillColor(sf::Color(81, 78, 78, 200));
-        s1->setPosition(80, 50 * (i + 1));
-        s1->setRotation(90);
+for (int i = 0; i < icons.size(); i++) {
+        sf::RectangleShape s1;
+        s1.setSize(sf::Vector2f(2, 60));
+        s1.setFillColor(SEPARATOR_COLOR);
+        s1.setPosition(80, 50 * (i + 1));
+        s1.setRotation(90);
         this->horizontal_separators.push_back(s1);
     }
-
     this->active_button = buttons[0];
-}
-
-Toolbar::~Toolbar() {
-    for (int i = 0; i < this->buttons.size(); i++) delete this->horizontal_separators[i];
 }
 
 ButtonId Toolbar::getActiveButtonId() const {
@@ -117,7 +103,7 @@ void Toolbar::render(sf::RenderTarget& target) {
     target.draw(this->rectangle);
 
     for (int i = 0; i < this->horizontal_separators.size(); i++) {
-        target.draw(*this->horizontal_separators[i]);
+        target.draw(this->horizontal_separators[i]);
     }
 
     for (const auto& button : this->buttons) {

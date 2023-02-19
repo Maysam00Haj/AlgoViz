@@ -40,21 +40,12 @@ void Edge::setColor(const sf::Color &color) {
     this->shape.setFillColor(color);
 }
 
-sf::Color Edge::getColor() const {
-    return this->shape.getFillColor();
-}
-
-EdgeState Edge::getState() const {
-    return this->state;
-}
-
 float Edge::getLength() const {
     return this->shape.getSize().y;
 
 }
 
 void Edge::setState(EdgeState state) {
-    this->state = state;
     switch (state) {
         case EDGE_UNDISCOVERED: {
             this->setColor(UNDISCOVERED_EDGE_COLOR);
@@ -91,13 +82,5 @@ std::vector<float> Edge::correctEdgeCoordinates() {
     this->shape.setSize(sf::Vector2f(3, getDistance(x1, y1, x2, y2) - 2 * NODE_RADIUS));
     this->length = getDistance(x1, y1, x2, y2) - 2 * NODE_RADIUS;
     return {x1, y1, x2, y2};
-}
-
-void Edge::toggle() {
-    this->is_toggled = true;
-}
-
-void Edge::untoggle() {
-    this->is_toggled = false;
 }
 
