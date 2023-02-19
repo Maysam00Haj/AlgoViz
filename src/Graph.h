@@ -23,6 +23,7 @@ class Graph {
     int name_count = 0;
     bool directed = false;
     std::shared_ptr<Node> start_node = nullptr;
+    std::shared_ptr<Node> target_node = nullptr;
     std::shared_ptr<Node> toggled_node = nullptr;
     std::unordered_map<std::string, std::shared_ptr<Node>> nodes_list; // enables us to find node pointer by its name string
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Node>>> neighbors_list;

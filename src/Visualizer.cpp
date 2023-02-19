@@ -334,7 +334,7 @@ void Visualizer::cursorRoutine() {
 
 void Visualizer::addNodeRoutine() {
     std::shared_ptr<Node> node_exists = this->graph.addNode(CORRECTED_EVENT_X, CORRECTED_EVENT_Y, vis_font);
-    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists) {
+    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && node_exists) {
         this->graph.reset();
     }
     if (graph.getStartNode() != nullptr) {
@@ -420,7 +420,7 @@ void Visualizer::addEdgeRoutine() {
         this->node_is_clicked = false;
         this->clicked_node = nullptr;
     }
-    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && edge_was_added) {
+    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && edge_was_added) {
         this->graph.reset();
     }
 }
@@ -440,7 +440,7 @@ void Visualizer::eraseRoutine() {
     else if (edge_to_delete) {
         this->graph.removeEdge(edge_to_delete);
     }
-    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && (node_to_delete || edge_to_delete)) {
+    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && (node_to_delete || edge_to_delete)) {
         this->graph.reset();
     }
 }
@@ -448,7 +448,7 @@ void Visualizer::eraseRoutine() {
 
 void Visualizer::changeStartNodeRoutine() {
     std::shared_ptr<Node> node_exists = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
-    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists) {
+    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() || this->graph.getStartNode()->getState() == NODE_NEAREST) && node_exists) {
         this->graph.reset();
     }
     this->graph.setStartNode(this->graph.getNodeByPosition(EVENT_X, EVENT_Y));
@@ -456,7 +456,7 @@ void Visualizer::changeStartNodeRoutine() {
 
 void Visualizer::chooseTargetNodeRoutine() {
     std::shared_ptr<Node> node_exists = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
-    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists) {
+    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && node_exists) {
         this->graph.reset();
     }
     this->graph.setTargetNode(this->graph.getNodeByPosition(EVENT_X, EVENT_Y));
@@ -465,7 +465,7 @@ void Visualizer::chooseTargetNodeRoutine() {
 void Visualizer::removeTargetNodeRoutine() {
     if (algo_thread_is_running || !is_immediate) return;
     std::shared_ptr<Node> node_exists = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
-    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE && node_exists) {
+    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && node_exists) {
         this->graph.reset();
     }
     this->graph.removeTargetNode();
@@ -485,7 +485,7 @@ void Visualizer::runBFSRoutine() {
         this->toolbar.updateActiveButton(original_active_button_coordinates);
         return;
     }
-    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
+    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST)) {
         this->graph.reset();
     }
     this->mode = BFS;
@@ -507,7 +507,7 @@ void Visualizer::runDfSRoutine() {
         this->toolbar.updateActiveButton(original_active_button_coordinates);
         return;
     }
-    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
+    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST)) {
         this->graph.reset();
     }
     this->mode = DFS;
@@ -529,7 +529,7 @@ void Visualizer::runDijkstraRoutine() {
         this->toolbar.updateActiveButton(original_active_button_coordinates);
         return;
     }
-    if (this->graph.getStartNode() && this->graph.getStartNode()->getState() == NODE_DONE) {
+    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST)) {
         this->graph.reset();
     }
     this->mode = DIJKSTRA;

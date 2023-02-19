@@ -122,6 +122,12 @@ void Graph::removeEdge(const std::shared_ptr<Edge>& to_delete) {
     this->edges_num--;
 }
 
+void Graph::removeTargetNode() {
+    if (!this->target_node) return;
+    this->target_node->setState(NODE_UNDISCOVERED);
+    this->target_node = nullptr;
+}
+
 const std::shared_ptr<Node>& Graph::getStartNode() const {
     return this->start_node;
 }
@@ -148,7 +154,6 @@ void Graph::setStartNode(const std::shared_ptr<Node>& new_start_node) {
     if (this->start_node) this->start_node->setState(NODE_UNDISCOVERED);
     this->start_node = new_start_node;
     this->start_node->setDistance(0);
-    this->start_node->setPathWeight(0);
     this->start_node->setState(NODE_START);
 }
 
@@ -256,6 +261,7 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
         }
         if (current_node) current_node->setState(NODE_START);
     }
+    this->start_node->setState(NODE_NEAREST);
     if (wait) {
         is_finished = true;
     }
