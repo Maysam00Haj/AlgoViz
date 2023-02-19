@@ -173,6 +173,17 @@ void Visualizer::executeClickAction() {
     // and not global or world position:
     auto window_x = (float)this->sfEvent.mouseButton.x;
     auto window_y = (float)this->sfEvent.mouseButton.y;
+
+    if (this->messagesBox.inBoundsMinimize(window_x, window_y)) {
+        this->messagesBox.minimizeBox();
+        return;
+    }
+
+    if (this->messagesBox.inBoundsMaximize(window_x, window_y)) {
+        this->messagesBox.maximizeBox();
+        return;
+    }
+
     is_immediate = this->toolbar.updateActiveButton(sf::Vector2f(window_x,window_y));
     ButtonId id = this->toolbar.getActiveButtonId();
 

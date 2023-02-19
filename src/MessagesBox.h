@@ -4,7 +4,7 @@
 #include "Toolbar.h"
 
 enum BoxState {
-    REGULAR,
+    MAXIMIZED,
     MINIMIZED
 };
 
@@ -12,8 +12,9 @@ enum BoxState {
 
 class MessagesBox {
 private:
-    BoxState state = REGULAR;
-    sf::RectangleShape minimized_rectangle;
+    BoxState state = MAXIMIZED;
+    Button maximize;
+    Button minimize;
     sf::RectangleShape rectangle;
     sf::RectangleShape frame;
     std::vector<std::string> messages;
@@ -26,6 +27,10 @@ public:
     MessagesBox(MessagesBox& other);
     ~MessagesBox() = default;
     void render(sf::RenderTarget& target);
+    void minimizeBox();
+    void maximizeBox();
+    bool inBoundsMaximize(float x, float y);
+    bool inBoundsMinimize(float x, float y);
     MessagesBox& operator=(const MessagesBox& other);
 
 

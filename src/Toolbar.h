@@ -15,22 +15,27 @@ enum ButtonId {
     RUN_DIJKSTRA,
     END,
     RESET,
-    CLEAR_WINDOW
+    CLEAR_WINDOW,
+    MINIMIZE,
+    MAXIMIZE
 };
 
 class Button {
     sf::RectangleShape shape;
-    sf::Text text;
+    std::string icon_path;
     ButtonId id;
 
 public:
     Button(float x, float y, float width, float height, const std::string& txt, ButtonId id);
+    Button() = default;
     ~Button();
+    Button& operator=(const Button& other);
     bool update(const sf::Vector2f& mousePosWindow);
     void setButtonDisabled();
     void setButtonEnabled();
     void render(sf::RenderTarget& target);
     ButtonId getId() const;
+
 };
 
 
