@@ -8,6 +8,12 @@ enum BoxState {
     MINIMIZED
 };
 
+enum MessageType {
+    EMPTY_GRAPH_M,
+    CHANGE_START_NODE_M,
+    DIJKSTRA_M,
+};
+
 
 
 class MessagesBox {
@@ -17,7 +23,7 @@ private:
     Button minimize;
     sf::RectangleShape rectangle;
     sf::RectangleShape frame;
-    std::vector<std::string> messages;
+    std::map<MessageType, std::string> messages;
     std::vector<sf::Text*> texts;
 
 
@@ -34,7 +40,7 @@ public:
     MessagesBox& operator=(const MessagesBox& other);
 
 
-    std::vector<bool> is_rendered;
+    std::map<MessageType, bool> is_rendered;
 };
 
 

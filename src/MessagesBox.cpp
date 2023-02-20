@@ -14,18 +14,23 @@ MessagesBox::MessagesBox(sf::Font* font) : minimize(975, 812.5, 30, 30, "./image
     this->frame.setPosition(10, 820);
     this->frame.setSize({1000, 20});
     this->frame.setFillColor(sf::Color(107, 107, 107, 255));
-    this->messages =
-    {
-            "Click on the white circle to add a node"
+    this->messages[EMPTY_GRAPH_M] = {
+            "Click on the white circle to add a node\nClick on the dotted line to add an edge",
+
     };
+    this->messages[CHANGE_START_NODE_M] = {
+            "Change the source node by clicking on the blue circle"
+    };
+
     sf::Text* text = new sf::Text();
-    text->setString(messages[0]);
+    text->setString(messages[EMPTY_GRAPH_M]);
     text->setFont(*font);
     text->setFillColor(sf::Color::White);
     text->setCharacterSize(20);
     text->setPosition(20, 850);
+    text->setLineSpacing(2);
     this->texts.push_back(text);
-    this->is_rendered.push_back(true);
+    this->is_rendered[EMPTY_GRAPH_M] = true;
 }
 
 
@@ -52,8 +57,8 @@ void MessagesBox::render(sf::RenderTarget& target) {
         target.draw(this->frame);
         this->minimize.render(target);
         for (int i = 0; i < this->is_rendered.size(); i++)
-            if (is_rendered[i]) {
-                target.draw(*this->texts[0]);
+            if (is_rendered[EMPTY_GRAPH_M]) {
+                target.draw(*this->texts[EMPTY_GRAPH_M]);
             }
     }
 }

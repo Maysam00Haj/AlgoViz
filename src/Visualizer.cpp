@@ -67,7 +67,7 @@ std::thread algo_thread; // the thread we use to execute runBfs
 
 Visualizer::Visualizer(const Graph& graph): graph(graph) {
     this->vis_font = new sf::Font();
-    this->vis_font->loadFromFile("fonts/arial.ttf");
+    this->vis_font->loadFromFile("fonts/Raleway-Regular.ttf");
 
     this->window = new sf::RenderWindow(sf::VideoMode(1400, 1000), "Graph Visualizer");
     this->window->setFramerateLimit(60);
@@ -349,7 +349,7 @@ void Visualizer::addNodeRoutine() {
         this->graph.reset();
     }
     if (graph.getStartNode() != nullptr) {
-        this->messagesBox.is_rendered[0] = false;
+        this->messagesBox.is_rendered[EMPTY_GRAPH_M] = false;
     }
 }
 
@@ -445,7 +445,7 @@ void Visualizer::eraseRoutine() {
     if (node_to_delete) {
         this->graph.removeNode(node_to_delete->getName());
         if (graph.getStartNode() == nullptr) {
-            this->messagesBox.is_rendered[0] = true;
+            this->messagesBox.is_rendered[EMPTY_GRAPH_M] = true;
         }
     }
     else if (edge_to_delete) {
