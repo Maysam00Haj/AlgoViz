@@ -16,34 +16,34 @@
 //#define MOUSE_HOVER_Y_CORRECTED ((float)sf::Mouse::getPosition(*this->window).y-30)
 
 #define EVENT_X (this->window->mapPixelToCoords( \
-                sf::Vector2i(this->sfEvent.mouseButton.x,this->sfEvent.mouseButton.y)).x)
+sf::Vector2i(this->sfEvent.mouseButton.x,this->sfEvent.mouseButton.y)).x)
 
 #define EVENT_Y (this->window->mapPixelToCoords( \
-                sf::Vector2i(this->sfEvent.mouseButton.x,this->sfEvent.mouseButton.y)).y)
+sf::Vector2i(this->sfEvent.mouseButton.x,this->sfEvent.mouseButton.y)).y)
 
 #define MOUSE_X (this->window->mapPixelToCoords( \
-                sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x, \
-                (float)sf::Mouse::getPosition(*this->window).y)).x)
+sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x, \
+(float)sf::Mouse::getPosition(*this->window).y)).x)
 
 #define MOUSE_Y (this->window->mapPixelToCoords( \
-                sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x, \
-                (float)sf::Mouse::getPosition(*this->window).y)).y)
+sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x, \
+(float)sf::Mouse::getPosition(*this->window).y)).y)
 
 #define CORRECTED_EVENT_X   (this->window->mapPixelToCoords( \
-                            sf::Vector2i(this->sfEvent.mouseButton.x-(30*this->current_zoom_factor), \
-                            this->sfEvent.mouseButton.y-(30*this->current_zoom_factor))).x)
+sf::Vector2i(this->sfEvent.mouseButton.x-(30*this->current_zoom_factor), \
+this->sfEvent.mouseButton.y-(30*this->current_zoom_factor))).x)
 
 #define CORRECTED_EVENT_Y   (this->window->mapPixelToCoords( \
-                            sf::Vector2i(this->sfEvent.mouseButton.x-(30*this->current_zoom_factor), \
-                            this->sfEvent.mouseButton.y-(30*this->current_zoom_factor))).y)
+sf::Vector2i(this->sfEvent.mouseButton.x-(30*this->current_zoom_factor), \
+this->sfEvent.mouseButton.y-(30*this->current_zoom_factor))).y)
 
 #define CORRECTED_MOUSE_X   (this->window->mapPixelToCoords( \
-                            sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zoom_factor), \
-                            (float)sf::Mouse::getPosition(*this->window).y-(30*this->current_zoom_factor))).x)
+sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zoom_factor), \
+(float)sf::Mouse::getPosition(*this->window).y-(30*this->current_zoom_factor))).x)
 
 #define CORRECTED_MOUSE_Y   (this->window->mapPixelToCoords( \
-                            sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zoom_factor), \
-                            (float)sf::Mouse::getPosition(*this->window).y-(30*this->current_zoom_factor))).y)
+sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zoom_factor), \
+(float)sf::Mouse::getPosition(*this->window).y-(30*this->current_zoom_factor))).y)
 
 
 
@@ -118,6 +118,7 @@ void Visualizer::update() {
                 this->current_view = sf::View(view);
                 this->original_view = sf::View(view);
                 this->window->setView(this->current_view);
+                this->current_zoom_factor = 1;
                 break;
             }
             case sf::Event::MouseWheelScrolled: {
@@ -269,19 +270,22 @@ void Visualizer::runAlgorithm() {
         case BFS: {
             this->window->setActive(false);
             algo_thread = std::thread(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window),
-                                      std::ref(this->toolbar), std::ref(this->original_view), std::ref(this->current_view), should_wait);
+                                      std::ref(this->toolbar), std::ref(this->original_view),
+                                      std::ref(this->current_view), should_wait);
             break;
         }
         case DFS: {
             this->window->setActive(false);
             algo_thread = std::thread(&Graph::runDFS, std::ref(this->graph), std::ref(*this->window),
-                                      std::ref(this->toolbar), std::ref(this->original_view), std::ref(this->current_view), should_wait);
+                                      std::ref(this->toolbar), std::ref(this->original_view),
+                                      std::ref(this->current_view), should_wait);
             break;
         }
         case DIJKSTRA: {
             this->window->setActive(false);
             algo_thread = std::thread(&Graph::runDijkstra, std::ref(this->graph), std::ref(*this->window),
-                                      std::ref(this->toolbar), std::ref(this->original_view), std::ref(this->current_view), should_wait);
+                                      std::ref(this->toolbar), std::ref(this->original_view),
+                                      std::ref(this->current_view), should_wait);
             break;
         }
     }

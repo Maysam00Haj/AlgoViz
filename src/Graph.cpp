@@ -259,9 +259,8 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
             current_node = current_node->getParent();
             this->renderAndWait(window, toolbar, original_view, current_view, wait);
         }
-        if (current_node) current_node->setState(NODE_START);
+        this->start_node->setState(NODE_NEAREST);
     }
-    this->start_node->setState(NODE_NEAREST);
     if (wait) {
         is_finished = true;
     }
