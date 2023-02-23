@@ -3,6 +3,7 @@
 #include <thread>
 #include <mutex>
 #include "Node.h"
+#include <cmath>
 
 
 #define EVENT_X (this->window->mapPixelToCoords( \
@@ -36,10 +37,10 @@ sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zo
 (float)sf::Mouse::getPosition(*this->window).y-(30*this->current_zoom_factor))).y)
 
 
-#define ROWS        (16.25/this->current_zoom_factor)
-#define COLS        (22.75/this->current_zoom_factor)
+#define ROWS        (83/this->current_zoom_factor)
+#define COLS        ((83*((float)this->window->getView().getSize().x/(float)this->window->getView().getSize().y))/this->current_zoom_factor)
 #define MAX_ZOOM    5
-#define MIN_ZOOM    0.2
+#define MIN_ZOOM    0.3
 
 
 
@@ -140,7 +141,6 @@ void Visualizer::render() {
     window->setActive(true);
     this->window->clear(BG_COLOR);
     this->drawGrid();
-    window->setView(this->current_view);
     this->graph.render(*this->window);
     this->window->setView(this->original_view);
     this->toolbar.render(*this->window);
@@ -293,40 +293,42 @@ void Visualizer::runAlgorithm() {
 
 void Visualizer::cursorRoutine() {
     std::shared_ptr<Node> moving_node = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
-    if (moving_node) {
-        while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-            moving_node->setPosition(CORRECTED_MOUSE_X, CORRECTED_MOUSE_Y);
-            if (!this->graph.checkValidPosition(*moving_node)) {
-                std::shared_ptr<Node> collided_node = this->graph.getCollidedNode(moving_node);
-                if (collided_node) {
-                    float collided_x = collided_node->getPosition().x;
-                    float collided_y = collided_node->getPosition().y;
-                    std::vector<float> closest_pos = getClosestNonCollision(collided_x, collided_y,
-                                                                            CORRECTED_MOUSE_X,
-                                                                            CORRECTED_MOUSE_Y);
-                    moving_node->setPosition(closest_pos[0], closest_pos[1]);
-                    if (!this->graph.checkValidPosition(*moving_node)) continue;
-                }
-            }
-            this->render();
-            this->window->pollEvent(this->sfEvent);
-        }
-    }
-    else {
+    if (!moving_node) {
+        // didn't click on a node, which means we're moving the view
         float window_x = (float)sf::Mouse::getPosition().x;
         float window_y = (float)sf::Mouse::getPosition().y;
         sf::Vector2f prev_pos = sf::Vector2f (window_x, window_y);
         sf::Vector2f current_pos, delta_pos;
         while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-            window_x = (float)sf::Mouse::getPosition().x;
-            window_y = (float)sf::Mouse::getPosition().y;
-            current_pos = sf::Vector2f (window_x, window_y);
+            window_x = (float) sf::Mouse::getPosition().x;
+            window_y = (float) sf::Mouse::getPosition().y;
+            current_pos = sf::Vector2f(window_x, window_y);
             delta_pos = prev_pos - current_pos; // inverted because when we "look" to the left things "move" to the right
             this->current_view.move(delta_pos / this->current_zoom_factor);
             prev_pos = current_pos;
             this->render();
             this->window->pollEvent(this->sfEvent);
         }
+        return;
+    }
+
+    // Clicked on a node, which means we're moving a node:
+    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
+        moving_node->setPosition(CORRECTED_MOUSE_X, CORRECTED_MOUSE_Y);
+        if (!this->graph.checkValidPosition(*moving_node)) {
+            std::shared_ptr<Node> collided_node = this->graph.getCollidedNode(moving_node);
+            if (collided_node) {
+                float collided_x = collided_node->getPosition().x;
+                float collided_y = collided_node->getPosition().y;
+                std::vector<float> closest_pos = getClosestNonCollision(collided_x, collided_y,
+                                                                        CORRECTED_MOUSE_X,
+                                                                        CORRECTED_MOUSE_Y);
+                moving_node->setPosition(closest_pos[0], closest_pos[1]);
+                if (!this->graph.checkValidPosition(*moving_node)) continue;
+            }
+        }
+        this->render();
+        this->window->pollEvent(this->sfEvent);
     }
 }
 
@@ -452,8 +454,7 @@ void Visualizer::chooseTargetNodeRoutine() {
 
 void Visualizer::removeTargetNodeRoutine() {
     if (algo_thread_is_running || !is_immediate) return;
-    std::shared_ptr<Node> node_exists = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
-    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && node_exists) {
+    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST)) {
         this->graph.reset();
     }
     this->graph.removeTargetNode();
@@ -579,26 +580,27 @@ void Visualizer::drawGrid() {
     // initialize values
     int numLines = ROWS+COLS-2;
     sf::VertexArray grid(sf::Lines, 2*(numLines));
-    this->window->setView(this->window->getDefaultView());
-    auto size = this->window->getView().getSize();
-    float rowH = size.y/ROWS;
-    float colW = size.x/COLS;
+    auto size = this->original_view.getSize();
+    size.x *= 5;
+    size.y *= 5;
+    float rowH = 2 * NODE_RADIUS * (this->current_zoom_factor);
+    float colW = 2 * NODE_RADIUS * (this->current_zoom_factor);
     // row separators
     for(int i=0; i < ROWS-1; i++){
         int r = i+1;
         float rowY = rowH*r;
-        grid[i*2].position = {0, rowY};
+        grid[i*2].position = {-size.x/2, rowY-size.y/2};
         grid[i*2].color = sf::Color(255,255,255,40);
-        grid[i*2+1].position = {size.x, rowY};
+        grid[i*2+1].position = {size.x/2, rowY-size.y/2};
         grid[i*2+1].color = sf::Color(255,255,255,40);
     }
     // column separators
     for(int i=ROWS-1; i < numLines; i++){
         int c = i-ROWS+2;
         float colX = colW*c;
-        grid[i*2].position = {colX, 0};
+        grid[i*2].position = {colX-size.x/2, -size.y/2};
         grid[i*2].color = sf::Color(255,255,255,40);
-        grid[i*2+1].position = {colX, size.y};
+        grid[i*2+1].position = {colX-size.x/2, size.y/2};
         grid[i*2+1].color = sf::Color(255,255,255,40);
     }
     // draw it
