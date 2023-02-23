@@ -16,6 +16,8 @@ enum ButtonId {
     END,
     RESET,
     CLEAR_WINDOW,
+    SAVE_TO_FILE,
+    LOAD_FROM_FILE,
     MINIMIZE,
     MAXIMIZE
 };

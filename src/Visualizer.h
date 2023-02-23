@@ -35,17 +35,14 @@ class Visualizer {
     void addEdgeRoutine();
     void eraseRoutine();
     void changeStartNodeRoutine();
-    void runBFSRoutine();
-    void runDfSRoutine();
-    void runDijkstraRoutine();
     void endRoutine();
     void resetRoutine();
     void clearWindowRoutine();
     void chooseTargetNodeRoutine();
     void removeTargetNodeRoutine();
     void drawGrid();
+    void saveToFile();
     void loadFromFile();
-    void storeInFile();
 
 public:
     explicit Visualizer(const Graph& graph = Graph());

@@ -3,7 +3,7 @@
 #include <thread>
 #include <mutex>
 #include "Node.h"
-#include <cmath>
+#include <fstream>
 
 
 #define EVENT_X (this->window->mapPixelToCoords( \
@@ -37,8 +37,10 @@ sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zo
 (float)sf::Mouse::getPosition(*this->window).y-(30*this->current_zoom_factor))).y)
 
 
-#define ROWS        (83/this->current_zoom_factor)
-#define COLS        ((83*((float)this->window->getView().getSize().x/(float)this->window->getView().getSize().y))/this->current_zoom_factor)
+#define ROWS    (83/this->current_zoom_factor)
+#define COLS    ((83*((float)this->window->getView().getSize().x/(float)this->window->getView().getSize().y)) \
+/this->current_zoom_factor)
+
 #define MAX_ZOOM    5
 #define MIN_ZOOM    0.3
 
@@ -136,6 +138,7 @@ void Visualizer::update() {
     }
 }
 
+
 void Visualizer::render() {
     window_lock.lock();
     window->setActive(true);
@@ -165,6 +168,38 @@ void Visualizer::render() {
 
 
 
+void Visualizer::drawGrid() {
+    // initialize values
+    int numLines = ROWS+COLS-2;
+    sf::VertexArray grid(sf::Lines, 2*(numLines));
+    auto size = this->original_view.getSize();
+    size.x *= 5;
+    size.y *= 5;
+    float rowH = 2 * NODE_RADIUS * (this->current_zoom_factor);
+    float colW = 2 * NODE_RADIUS * (this->current_zoom_factor);
+    // row separators
+    for(int i=0; i < ROWS-1; i++){
+        int r = i+1;
+        float rowY = rowH*r;
+        grid[i*2].position = {-size.x/2, rowY-size.y/2};
+        grid[i*2].color = sf::Color(255,255,255,20);
+        grid[i*2+1].position = {size.x/2, rowY-size.y/2};
+        grid[i*2+1].color = sf::Color(255,255,255,20);
+    }
+    // column separators
+    for(int i=ROWS-1; i < numLines; i++){
+        int c = i-ROWS+2;
+        float colX = colW*c;
+        grid[i*2].position = {colX-size.x/2, -size.y/2};
+        grid[i*2].color = sf::Color(255,255,255,20);
+        grid[i*2+1].position = {colX-size.x/2, size.y/2};
+        grid[i*2+1].color = sf::Color(255,255,255,20);
+    }
+    // draw it
+    this->window->draw(grid);
+}
+
+
 
 void Visualizer::executeClickAction() {
     //Didn't use macros because this case is unique, other class functions work on position relative to window
@@ -191,15 +226,18 @@ void Visualizer::executeClickAction() {
             break;
         }
         case RUN_BFS: {
-            runBFSRoutine();
+            this->mode = BFS;
+            runAlgorithm();
             break;
         }
         case RUN_DFS: {
-            runDfSRoutine();
+            this->mode = DFS;
+            runAlgorithm();
             break;
         }
         case RUN_DIJKSTRA: {
-            runDijkstraRoutine();
+            this->mode = DIJKSTRA;
+            runAlgorithm();
             break;
         }
         case END: {
@@ -249,6 +287,14 @@ void Visualizer::executeClickAction() {
             chooseTargetNodeRoutine();
             break;
         }
+        case SAVE_TO_FILE: {
+            this->saveToFile();
+            break;
+        }
+        case LOAD_FROM_FILE: {
+            this->loadFromFile();
+            break;
+        }
         default: {
             break;
         }
@@ -261,6 +307,21 @@ void Visualizer::executeClickAction() {
 
 void Visualizer::runAlgorithm() {
     if (!this->graph.getStartNode() || algo_thread_is_running) return;
+    auto window_x = (float) this->sfEvent.mouseButton.x;
+    auto window_y = (float) this->sfEvent.mouseButton.y;
+    sf::Vector2f original_active_button_coordinates = sf::Vector2f(window_x, window_y);
+    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
+        this->window->pollEvent(this->sfEvent);
+    }
+    if (!this->toolbar.updateActiveButton(sf::Vector2f(window_x, window_y))) {
+        this->toolbar.updateActiveButton(original_active_button_coordinates);
+        return;
+    }
+    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST)) {
+        this->graph.reset();
+    }
+    this->toolbar.resetActiveButton();
+
     VisMode current_mode = this->mode;
     bool should_wait = true;
     switch (current_mode) {
@@ -462,72 +523,6 @@ void Visualizer::removeTargetNodeRoutine() {
 }
 
 
-void Visualizer::runBFSRoutine() {
-    if (algo_thread_is_running || !is_immediate) return;
-    auto window_x = (float) this->sfEvent.mouseButton.x;
-    auto window_y = (float) this->sfEvent.mouseButton.y;
-    sf::Vector2f original_active_button_coordinates = sf::Vector2f(window_x, window_y);
-    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-        this->window->pollEvent(this->sfEvent);
-    }
-    if (!this->toolbar.updateActiveButton(sf::Vector2f(window_x, window_y)) || this->toolbar.getActiveButtonId() != RUN_BFS) {
-        this->toolbar.updateActiveButton(original_active_button_coordinates);
-        return;
-    }
-    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST)) {
-        this->graph.reset();
-    }
-    this->mode = BFS;
-    runAlgorithm();
-    this->toolbar.resetActiveButton();
-}
-
-
-
-void Visualizer::runDfSRoutine() {
-    if (algo_thread_is_running || !is_immediate) return;
-    auto window_x = (float) this->sfEvent.mouseButton.x;
-    auto window_y = (float) this->sfEvent.mouseButton.y;
-    sf::Vector2f original_active_button_coordinates = sf::Vector2f(window_x, window_y);
-    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-        this->window->pollEvent(this->sfEvent);
-    }
-    if (!this->toolbar.updateActiveButton(sf::Vector2f(window_x, window_y)) || this->toolbar.getActiveButtonId() != RUN_DFS) {
-        this->toolbar.updateActiveButton(original_active_button_coordinates);
-        return;
-    }
-    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST)) {
-        this->graph.reset();
-    }
-    this->mode = DFS;
-    runAlgorithm();
-    this->toolbar.resetActiveButton();
-}
-
-
-
-void Visualizer::runDijkstraRoutine() {
-    if (algo_thread_is_running || !is_immediate) return;
-    auto window_x = (float) this->sfEvent.mouseButton.x;
-    auto window_y = (float) this->sfEvent.mouseButton.y;
-    sf::Vector2f original_active_button_coordinates = sf::Vector2f(window_x, window_y);
-    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-        this->window->pollEvent(this->sfEvent);
-    }
-    if (!this->toolbar.updateActiveButton(sf::Vector2f(window_x, window_y)) || this->toolbar.getActiveButtonId() != RUN_DIJKSTRA) {
-        this->toolbar.updateActiveButton(original_active_button_coordinates);
-        return;
-    }
-    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST)) {
-        this->graph.reset();
-    }
-    this->mode = DIJKSTRA;
-    runAlgorithm();
-    this->toolbar.resetActiveButton();
-}
-
-
-
 void Visualizer::endRoutine() {
     this->toolbar.resetActiveButton();
     if (!algo_thread_is_running) return;
@@ -576,42 +571,14 @@ void Visualizer::clearWindowRoutine() {
 }
 
 
-void Visualizer::drawGrid() {
-    // initialize values
-    int numLines = ROWS+COLS-2;
-    sf::VertexArray grid(sf::Lines, 2*(numLines));
-    auto size = this->original_view.getSize();
-    size.x *= 5;
-    size.y *= 5;
-    float rowH = 2 * NODE_RADIUS * (this->current_zoom_factor);
-    float colW = 2 * NODE_RADIUS * (this->current_zoom_factor);
-    // row separators
-    for(int i=0; i < ROWS-1; i++){
-        int r = i+1;
-        float rowY = rowH*r;
-        grid[i*2].position = {-size.x/2, rowY-size.y/2};
-        grid[i*2].color = sf::Color(255,255,255,20);
-        grid[i*2+1].position = {size.x/2, rowY-size.y/2};
-        grid[i*2+1].color = sf::Color(255,255,255,20);
-    }
-    // column separators
-    for(int i=ROWS-1; i < numLines; i++){
-        int c = i-ROWS+2;
-        float colX = colW*c;
-        grid[i*2].position = {colX-size.x/2, -size.y/2};
-        grid[i*2].color = sf::Color(255,255,255,20);
-        grid[i*2+1].position = {colX-size.x/2, size.y/2};
-        grid[i*2+1].color = sf::Color(255,255,255,20);
-    }
-    // draw it
-    this->window->draw(grid);
+
+void Visualizer::saveToFile() {
+
 }
+
+
 
 void Visualizer::loadFromFile() {
-
-}
-
-void Visualizer::storeInFile() {
 
 }
 
