@@ -67,7 +67,7 @@ Visualizer::Visualizer(const Graph& graph): graph(graph) {
     this->vis_font->loadFromFile("fonts/Raleway-Regular.ttf");
 
     this->window = new sf::RenderWindow(sf::VideoMode(1400, 1000), "Graph Visualizer");
-    this->window->setFramerateLimit(60);
+    this->window->setFramerateLimit(120);
 
     this->messagesBox = MessagesBox(vis_font);
 
@@ -590,18 +590,18 @@ void Visualizer::drawGrid() {
         int r = i+1;
         float rowY = rowH*r;
         grid[i*2].position = {-size.x/2, rowY-size.y/2};
-        grid[i*2].color = sf::Color(255,255,255,40);
+        grid[i*2].color = sf::Color(255,255,255,20);
         grid[i*2+1].position = {size.x/2, rowY-size.y/2};
-        grid[i*2+1].color = sf::Color(255,255,255,40);
+        grid[i*2+1].color = sf::Color(255,255,255,20);
     }
     // column separators
     for(int i=ROWS-1; i < numLines; i++){
         int c = i-ROWS+2;
         float colX = colW*c;
         grid[i*2].position = {colX-size.x/2, -size.y/2};
-        grid[i*2].color = sf::Color(255,255,255,40);
+        grid[i*2].color = sf::Color(255,255,255,20);
         grid[i*2+1].position = {colX-size.x/2, size.y/2};
-        grid[i*2+1].color = sf::Color(255,255,255,40);
+        grid[i*2+1].color = sf::Color(255,255,255,20);
     }
     // draw it
     this->window->draw(grid);
