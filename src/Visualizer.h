@@ -43,8 +43,9 @@ class Visualizer {
     void clearWindowRoutine();
     void chooseTargetNodeRoutine();
     void removeTargetNodeRoutine();
+    void drawGrid();
     void loadFromFile();
-    void storeInFile() const;
+    void storeInFile();
 
 public:
     explicit Visualizer(const Graph& graph = Graph());
