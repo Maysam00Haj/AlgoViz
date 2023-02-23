@@ -64,8 +64,7 @@ void Button::render(sf::RenderTarget& target) {
 //----------------------------------------Toolbar Methods---------------------------------------------
 
 Toolbar::Toolbar() {
-    std::vector<std::string> icons = {"cursor", "add_node", "add_edge", "erase", "change_start_node", "choose_target_node", "remove_target_node", "run_bfs", "run_dfs", "run_dijkstra", "end", "reset", "clear_window"};
-    std::vector<ButtonId> id_list = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, CHOOSE_TARGET_NODE, REMOVE_TARGET_NODE, RUN_BFS, RUN_DFS, RUN_DIJKSTRA, END, RESET, CLEAR_WINDOW};
+    std::vector<ButtonId> id_list = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, CHOOSE_TARGET_NODE, REMOVE_TARGET_NODE, RUN_BFS, RUN_DFS, RUN_DIJKSTRA, END, RESET, CLEAR_WINDOW, SAVE_TO_FILE, LOAD_FROM_FILE};
     this->buttons.push_back(std::make_shared<Button>(32.5, 15, 30, 30, "./images/cursor.png", CURSOR));
     this->buttons.push_back(std::make_shared<Button>(35, 60, 30, 30, "./images/add_node.png", ADD_NODE));
     this->buttons.push_back(std::make_shared<Button>(35, 110, 30, 30, "./images/add_edge.png", ADD_EDGE));
@@ -78,14 +77,16 @@ Toolbar::Toolbar() {
     this->buttons.push_back(std::make_shared<Button>(15, 460, 70, 30, "./images/run_dijkstra.png", RUN_DIJKSTRA));
     this->buttons.push_back(std::make_shared<Button>(35, 510, 30, 30, "./images/end.png", END));
     this->buttons.push_back(std::make_shared<Button>(35, 560, 30, 30, "./images/reset.png", RESET));
-    this->buttons.push_back(std::make_shared<Button>(35, 615, 30, 30, "./images/clear_window.png", CLEAR_WINDOW));
+    this->buttons.push_back(std::make_shared<Button>(35, 610, 30, 30, "./images/clear_window.png", CLEAR_WINDOW));
+    this->buttons.push_back(std::make_shared<Button>(35, 660, 30, 30, "./images/save_to_file.png", SAVE_TO_FILE));
+    this->buttons.push_back(std::make_shared<Button>(35, 715, 30, 30, "./images/load_from_file.png", LOAD_FROM_FILE));
     this->rectangle.setPosition(10, 10);
-    this->rectangle.setSize({80, 650});
+    this->rectangle.setSize({80, 745});
     this->rectangle.setFillColor(sf::Color(107, 107, 107, 255));
     this->rectangle.setOutlineColor(sf::Color::White);
     this->rectangle.setOutlineThickness(2.f);
 
-for (int i = 0; i < icons.size() - 1; i++) {
+for (int i = 0; i < id_list.size() - 1; i++) {
         sf::RectangleShape s1;
         s1.setSize(sf::Vector2f(2, 60));
         s1.setFillColor(SEPARATOR_COLOR);
@@ -114,7 +115,7 @@ bool Toolbar::updateActiveButton(const sf::Vector2f& mousePosWindow) {
 }
 
 void Toolbar::render(sf::RenderTarget& target) {
-    std::vector<ButtonId> not_to_render_while_running = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, CHOOSE_TARGET_NODE, REMOVE_TARGET_NODE, RUN_BFS, RUN_DFS, RUN_DIJKSTRA};
+    std::vector<ButtonId> not_to_render_while_running = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, CHOOSE_TARGET_NODE, REMOVE_TARGET_NODE, RUN_BFS, RUN_DFS, RUN_DIJKSTRA, SAVE_TO_FILE, LOAD_FROM_FILE};
     target.draw(this->rectangle);
 
     for (int i = 0; i < this->horizontal_separators.size(); i++) {
