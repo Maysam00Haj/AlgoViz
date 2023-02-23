@@ -36,6 +36,7 @@ Graph::Graph(const Graph &other) {
     this->directed = other.directed;
 }
 
+
 void Graph::render(sf::RenderTarget& target) {
     for (auto &node: this->nodes_list) {
         node.second->render(target);

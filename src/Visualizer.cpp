@@ -4,16 +4,6 @@
 #include <mutex>
 #include "Node.h"
 
-//#define MOUSE_X       (this->sfEvent.mouseButton.x)
-//#define MOUSE_Y       (this->sfEvent.mouseButton.y)
-//#define MOUSE_HOVER_X ((float)sf::Mouse::getPosition(*this->window).x)
-//#define MOUSE_HOVER_Y ((float)sf::Mouse::getPosition(*this->window).y)
-//
-//
-//#define MOUSE_X_CORRECTED       (this->sfEvent.mouseButton.x-30)
-//#define MOUSE_Y_CORRECTED       (this->sfEvent.mouseButton.y-30)
-//#define MOUSE_HOVER_X_CORRECTED ((float)sf::Mouse::getPosition(*this->window).x-30)
-//#define MOUSE_HOVER_Y_CORRECTED ((float)sf::Mouse::getPosition(*this->window).y-30)
 
 #define EVENT_X (this->window->mapPixelToCoords( \
 sf::Vector2i(this->sfEvent.mouseButton.x,this->sfEvent.mouseButton.y)).x)
@@ -44,6 +34,12 @@ sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zo
 #define CORRECTED_MOUSE_Y   (this->window->mapPixelToCoords( \
 sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zoom_factor), \
 (float)sf::Mouse::getPosition(*this->window).y-(30*this->current_zoom_factor))).y)
+
+
+#define ROWS        (16.25/this->current_zoom_factor)
+#define COLS        (22.75/this->current_zoom_factor)
+#define MAX_ZOOM    5
+#define MIN_ZOOM    0.2
 
 
 
@@ -122,11 +118,11 @@ void Visualizer::update() {
                 break;
             }
             case sf::Event::MouseWheelScrolled: {
-                if (this->sfEvent.mouseWheelScroll.delta > 0) {
+                if (this->sfEvent.mouseWheelScroll.delta > 0 && current_zoom_factor < MAX_ZOOM) {
                     this->current_view.zoom(0.8);
                     this->current_zoom_factor *= 1.25;
                 }
-                else if (this->sfEvent.mouseWheelScroll.delta < 0){
+                else if (this->sfEvent.mouseWheelScroll.delta < 0 && current_zoom_factor > MIN_ZOOM){
                     this->current_view.zoom(1.25);
                     this->current_zoom_factor *= 0.8;
                 }
@@ -143,6 +139,7 @@ void Visualizer::render() {
     window_lock.lock();
     window->setActive(true);
     this->window->clear(BG_COLOR);
+    this->drawGrid();
     window->setView(this->current_view);
     this->graph.render(*this->window);
     this->window->setView(this->original_view);
@@ -155,12 +152,12 @@ void Visualizer::render() {
         hover_node.setPosition(CORRECTED_MOUSE_X, CORRECTED_MOUSE_Y);
         this->window->draw(hover_node);
     }
+    this->window->setView(this->current_view);
     if (this->toolbar.getActiveButtonId() == ADD_EDGE && this->node_is_clicked) {
         std::shared_ptr<Node> tmp_node = std::make_shared<Node>(Node("tmp", CORRECTED_MOUSE_X, CORRECTED_MOUSE_Y, vis_font));
         std::shared_ptr<Edge> tmp_edge = std::make_shared<Edge>(Edge(this->clicked_node, tmp_node, false));
         tmp_edge->render(*this->window);
     }
-    this->window->setView(this->current_view);
     this->window->display();
     window->setActive(false);
     window_lock.unlock();
@@ -311,14 +308,7 @@ void Visualizer::cursorRoutine() {
                     if (!this->graph.checkValidPosition(*moving_node)) continue;
                 }
             }
-            this->window->clear(BG_COLOR);
-            window->setView(this->current_view);
-            this->graph.render(*this->window);
-            this->window->setView(this->original_view);
-            this->toolbar.render(*this->window);
-            this->messagesBox.render(*this->window);
-            this->window->setView(this->current_view);
-            this->window->display();
+            this->render();
             this->window->pollEvent(this->sfEvent);
         }
     }
@@ -334,13 +324,7 @@ void Visualizer::cursorRoutine() {
             delta_pos = prev_pos - current_pos; // inverted because when we "look" to the left things "move" to the right
             this->current_view.move(delta_pos / this->current_zoom_factor);
             prev_pos = current_pos;
-            this->window->clear(BG_COLOR);
-            window->setView(this->current_view);
-            this->graph.render(*this->window);
-            this->window->setView(this->original_view);
-            this->toolbar.render(*this->window);
-            this->messagesBox.render(*this->window);
-            this->window->display();
+            this->render();
             this->window->pollEvent(this->sfEvent);
         }
     }
@@ -361,71 +345,10 @@ void Visualizer::addNodeRoutine() {
 void Visualizer::addEdgeRoutine() {
     bool edge_was_added = false;
     std::shared_ptr<Node> dst = nullptr;
-    if (!this->node_is_clicked) {
-        this->clicked_node = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
-        if (clicked_node) {
-            this->node_is_clicked = true;
-        }
-        else {
-            return;
-        }
-        while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-            while (!dst || dst == clicked_node) {
-                std::shared_ptr<Node> tmp_node = std::make_shared<Node>(Node("tmp", CORRECTED_MOUSE_X, CORRECTED_MOUSE_Y, vis_font));
-                std::shared_ptr<Edge> tmp_edge = std::make_shared<Edge>(Edge(this->clicked_node, tmp_node, false));
-                this->window->clear(BG_COLOR);
-                window->setView(this->current_view);
-                this->graph.render(*this->window);
-                this->window->setView(this->original_view);
-                this->toolbar.render(*this->window);
-                this->messagesBox.render(*this->window);
-                this->window->setView(this->current_view);
-                tmp_edge->render(*this->window);
-                this->window->display();
-                dst = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
-                this->window->pollEvent(this->sfEvent);
-                if (this->sfEvent.type == sf::Event::MouseButtonReleased) {
-                    if (dst == clicked_node) {
-                        if (edge_was_added) {
-                            this->clicked_node = nullptr;
-                            this->node_is_clicked = false;
-                        }
-                        return;
-                    }
-                    else if (!dst) {
-                        edge_was_added = false;
-                    }
-                    else {
-                        edge_was_added = true;
-                    }
-                    break;
-                }
-            }
-            if (!edge_was_added && !dst) {
-                this->clicked_node = nullptr;
-                this->node_is_clicked = false;
-                return;
-            }
-            if (dst && dst != clicked_node) {
-                std::shared_ptr<Edge> to_add = std::make_shared<Edge>(this->clicked_node, dst);
-                this->graph.addEdge(to_add);
-                this->clicked_node = dst;
-                this->graph.setToggledNode(dst);
-                this->window->clear(BG_COLOR);
-                window->setView(this->current_view);
-                this->graph.render(*this->window);
-                this->window->setView(this->original_view);
-                this->toolbar.render(*this->window);
-                this->messagesBox.render(*this->window);
-                this->window->setView(this->current_view);
-                to_add->render(*this->window);
-                this->window->display();
-                edge_was_added = true;
-            }
-            this->window->pollEvent(this->sfEvent);
-        }
-    }
-    else {
+
+    if (this->node_is_clicked) {
+        // a node was clicked and the mouse was released
+        // the next node to be clicked will be connected by an edge to the already clicked one
         dst = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
         if (dst && dst != clicked_node) {
             std::shared_ptr<Edge> to_add = std::make_shared<Edge>(this->clicked_node, dst);
@@ -434,6 +357,56 @@ void Visualizer::addEdgeRoutine() {
         }
         this->node_is_clicked = false;
         this->clicked_node = nullptr;
+        if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && edge_was_added) {
+            this->graph.reset();
+        }
+        return;
+    }
+    // The following is in case no node was previously clicked to draw an edge
+    // so drawing an edge is going to happen by selecting a node after clicking
+    // and connecting it to another node that is going to be selected after releasing
+    this->clicked_node = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
+    if (!clicked_node) return;
+    this->node_is_clicked = true;
+
+    while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
+        // As long as the mouse wasn't released:
+        while (!dst || dst == clicked_node) {
+            // Keep rendering an edge animation that follows the mouse from the clicked node:
+            this->render();
+            dst = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
+            this->window->pollEvent(this->sfEvent);
+            if (this->sfEvent.type == sf::Event::MouseButtonReleased) {
+                if (dst == clicked_node) {
+                    if (edge_was_added) {
+                        this->clicked_node = nullptr;
+                        this->node_is_clicked = false;
+                    }
+                    return;
+                }
+                else if (!dst) {
+                    edge_was_added = false;
+                }
+                else {
+                    edge_was_added = true;
+                }
+                break;
+            }
+        }
+        if (!edge_was_added && !dst) {
+            this->clicked_node = nullptr;
+            this->node_is_clicked = false;
+            return;
+        }
+        if (dst && dst != clicked_node) {
+            std::shared_ptr<Edge> to_add = std::make_shared<Edge>(this->clicked_node, dst);
+            this->graph.addEdge(to_add);
+            this->clicked_node = dst;
+            this->graph.setToggledNode(dst);
+            this->render();
+            edge_was_added = true;
+        }
+        this->window->pollEvent(this->sfEvent);
     }
     if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && edge_was_added) {
         this->graph.reset();
@@ -601,11 +574,42 @@ void Visualizer::clearWindowRoutine() {
     this->toolbar.resetActiveButton();
 }
 
+
+void Visualizer::drawGrid() {
+    // initialize values
+    int numLines = ROWS+COLS-2;
+    sf::VertexArray grid(sf::Lines, 2*(numLines));
+    this->window->setView(this->window->getDefaultView());
+    auto size = this->window->getView().getSize();
+    float rowH = size.y/ROWS;
+    float colW = size.x/COLS;
+    // row separators
+    for(int i=0; i < ROWS-1; i++){
+        int r = i+1;
+        float rowY = rowH*r;
+        grid[i*2].position = {0, rowY};
+        grid[i*2].color = sf::Color(255,255,255,40);
+        grid[i*2+1].position = {size.x, rowY};
+        grid[i*2+1].color = sf::Color(255,255,255,40);
+    }
+    // column separators
+    for(int i=ROWS-1; i < numLines; i++){
+        int c = i-ROWS+2;
+        float colX = colW*c;
+        grid[i*2].position = {colX, 0};
+        grid[i*2].color = sf::Color(255,255,255,40);
+        grid[i*2+1].position = {colX, size.y};
+        grid[i*2+1].color = sf::Color(255,255,255,40);
+    }
+    // draw it
+    this->window->draw(grid);
+}
+
 void Visualizer::loadFromFile() {
 
 }
 
-void Visualizer::storeInFile() const {
+void Visualizer::storeInFile() {
 
 }
 
