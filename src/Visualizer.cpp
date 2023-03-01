@@ -3,7 +3,9 @@
 #include <thread>
 #include <mutex>
 #include "Node.h"
+#include <iostream>
 #include <fstream>
+#include <windows.h>
 
 
 #define EVENT_X (this->window->mapPixelToCoords( \
@@ -252,6 +254,14 @@ void Visualizer::executeClickAction() {
             clearWindowRoutine();
             break;
         }
+        case SAVE_TO_FILE: {
+            saveToFile();
+            break;
+        }
+        case LOAD_FROM_FILE: {
+            loadFromFile();
+            break;
+        }
         default: {
             break;
         }
@@ -285,14 +295,6 @@ void Visualizer::executeClickAction() {
         }
         case CHOOSE_TARGET_NODE: {
             chooseTargetNodeRoutine();
-            break;
-        }
-        case SAVE_TO_FILE: {
-            this->saveToFile();
-            break;
-        }
-        case LOAD_FROM_FILE: {
-            this->loadFromFile();
             break;
         }
         default: {
@@ -573,12 +575,36 @@ void Visualizer::clearWindowRoutine() {
 
 
 void Visualizer::saveToFile() {
+    std::string graph_name;
+    this->window->pollEvent(this->sfEvent);
+    while (!(sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))) {
+        if (this->sfEvent.type == sf::Event::KeyPressed) {
+            unsigned int c = this->sfEvent.text.unicode;
+            graph_name += c;
+            std::cout<< c<<std::endl;
+        }
+        this->window->pollEvent(this->sfEvent);
+    }
+    if (graph_name.empty() || std::find(this->saved_graphs.begin(), this->saved_graphs.end(), graph_name) != this->saved_graphs.end()) {
+        this->toolbar.resetActiveButton();
+        return;
+    }
 
+    std::ofstream save_file;
+    save_file.open("SavedGraphs.txt", std::ios::out | std::ios::app);
+    std::string graph_encoding = this->graph.getEncoding();
+    graph_encoding = "svg:" + graph_name + graph_encoding;
+    save_file.write(graph_encoding.c_str(), (long long)graph_encoding.size());
+    this->toolbar.resetActiveButton();
 }
 
 
 
 void Visualizer::loadFromFile() {
+
+}
+
+void Visualizer::deleteFromFile() {
 
 }
 
