@@ -23,11 +23,13 @@ class Visualizer {
     MessagesBox messagesBox;
     bool node_is_clicked = false;
     float current_zoom_factor = 1.f;
+    std::vector<std::string> saved_graphs;
 
 
 
     void update();
     void render();
+    void drawGrid();
     void executeClickAction();
     void runAlgorithm();
     void cursorRoutine();
@@ -40,9 +42,9 @@ class Visualizer {
     void clearWindowRoutine();
     void chooseTargetNodeRoutine();
     void removeTargetNodeRoutine();
-    void drawGrid();
     void saveToFile();
     void loadFromFile();
+    void deleteFromFile();
 
 public:
     explicit Visualizer(const Graph& graph = Graph());

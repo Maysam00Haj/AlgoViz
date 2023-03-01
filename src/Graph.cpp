@@ -419,3 +419,22 @@ void Graph::untoggle() {
     this->toggled_node = nullptr;
 }
 
+
+std::string Graph::getEncoding() {
+    std::string encoding = "{";
+    for (const auto& node : this->nodes_list) {
+        encoding += node.first + ",";
+    }
+    encoding += "|";
+    for (const auto& node : this->nodes_list) {
+        for (const auto& edge : this->edges_list[node.first]) {
+            encoding += "(" + edge->getFirstNode()->getName() + "," + edge->getSecondNode()->getName() + ")";
+        }
+    }
+    encoding += "|";
+    if (this->start_node)
+        encoding += this->start_node->getName();
+    encoding += "}";
+    return encoding;
+}
+
