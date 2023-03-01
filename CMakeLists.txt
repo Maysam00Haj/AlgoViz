@@ -3,7 +3,7 @@ project(AlgoViz)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(AlgoViz src/main.cpp src/Node.cpp src/Edge.cpp src/Graph.cpp src/Toolbar.cpp src/Visualizer.cpp src/utils.cpp src/MessagesBox.cpp)
+add_executable(AlgoViz src/main.cpp src/Node.cpp src/Edge.cpp src/Graph.cpp src/Toolbar.cpp src/Visualizer.cpp src/utils.cpp src/MessagesBox.cpp src/TextBox.h src/TextBox.cpp)
 
 set(SFML_STATIC_LIBRARIES TRUE)
 set(SFML_DIR C:/SFML/lib/cmake/SFML)
