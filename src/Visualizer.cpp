@@ -1,8 +1,9 @@
 #include "Visualizer.h"
 #include "utils.h"
+#include "Node.h"
+#include "TextBox.h"
 #include <thread>
 #include <mutex>
-#include "Node.h"
 #include <iostream>
 #include <fstream>
 #include <windows.h>
@@ -577,14 +578,18 @@ void Visualizer::clearWindowRoutine() {
 void Visualizer::saveToFile() {
     std::string graph_name;
     this->window->pollEvent(this->sfEvent);
-    while (!(sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))) {
-        if (this->sfEvent.type == sf::Event::KeyPressed) {
-            unsigned int c = this->sfEvent.text.unicode;
-            graph_name += c;
-            std::cout<< c<<std::endl;
-        }
-        this->window->pollEvent(this->sfEvent);
-    }
+//    while (!(sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))) {
+//        if (this->sfEvent.type == sf::Event::KeyPressed) {
+//            unsigned int c = this->sfEvent.text.unicode;
+//            graph_name += c;
+//            std::cout<< c<<std::endl;
+//        }
+//        this->window->pollEvent(this->sfEvent);
+//    }
+    InputBox inputBox(*(this->window));
+    this->window->setView(this->original_view);
+    graph_name = inputBox.getInput(*(this->window));
+
     if (graph_name.empty() || std::find(this->saved_graphs.begin(), this->saved_graphs.end(), graph_name) != this->saved_graphs.end()) {
         this->toolbar.resetActiveButton();
         return;
