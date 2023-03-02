@@ -39,7 +39,7 @@ private:
 public:
     explicit Node(std::string name, float pos_x, float pos_y, sf::Font* text_font);
     ~Node() = default;
-    void render(sf::RenderTarget& target);
+    void render(sf::RenderWindow& window, sf::Font* font);
     bool checkBoundsCollision(const std::shared_ptr<Node>& node) const;
     void setDistance(int distance);
     int getDistance() const;

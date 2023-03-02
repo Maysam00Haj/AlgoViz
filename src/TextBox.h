@@ -10,8 +10,9 @@
 class TextBox {
     sf::RectangleShape text_box;
     sf::RectangleShape text_field;
+    sf::Font* text_font;
 public:
-    explicit TextBox(sf::RenderWindow& window);
+    explicit TextBox(sf::RenderWindow& window, sf::Font* font);
     ~TextBox() = default;
     bool close(float event_x, float event_y);
     virtual void render(sf::RenderWindow& window, const std::string& txt);
@@ -20,7 +21,7 @@ public:
 class InputBox : TextBox {
     std::string input;
 public:
-    explicit InputBox(sf::RenderWindow& window): TextBox(window){};
+    explicit InputBox(sf::RenderWindow& window, sf::Font* font): TextBox(window, font){};
     void render(sf::RenderWindow& window, const std::string& txt) override;
     std::string getInput(sf::RenderWindow& window);
 };
@@ -28,7 +29,7 @@ public:
 class OutputBox : TextBox {
     const std::string output;
 public:
-    explicit OutputBox(sf::RenderWindow& window): TextBox(window){};
+    explicit OutputBox(sf::RenderWindow& window, sf::Font* font): TextBox(window, font){};
     void render(sf::RenderWindow& window, const std::string& txt) override;
 };
 

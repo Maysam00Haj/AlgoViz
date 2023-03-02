@@ -147,7 +147,7 @@ void Visualizer::render() {
     window->setActive(true);
     this->window->clear(BG_COLOR);
     this->drawGrid();
-    this->graph.render(*this->window);
+    this->graph.render(*this->window, this->vis_font);
     this->window->setView(this->original_view);
     this->toolbar.render(*this->window);
     this->messagesBox.render(*this->window);
@@ -332,21 +332,21 @@ void Visualizer::runAlgorithm() {
             this->window->setActive(false);
             algo_thread = std::thread(&Graph::runBFS, std::ref(this->graph), std::ref(*this->window),
                                       std::ref(this->toolbar), std::ref(this->original_view),
-                                      std::ref(this->current_view), should_wait);
+                                      std::ref(this->current_view), std::ref(this->vis_font), should_wait);
             break;
         }
         case DFS: {
             this->window->setActive(false);
             algo_thread = std::thread(&Graph::runDFS, std::ref(this->graph), std::ref(*this->window),
                                       std::ref(this->toolbar), std::ref(this->original_view),
-                                      std::ref(this->current_view), should_wait);
+                                      std::ref(this->current_view), std::ref(this->vis_font), should_wait);
             break;
         }
         case DIJKSTRA: {
             this->window->setActive(false);
             algo_thread = std::thread(&Graph::runDijkstra, std::ref(this->graph), std::ref(*this->window),
                                       std::ref(this->toolbar), std::ref(this->original_view),
-                                      std::ref(this->current_view), should_wait);
+                                      std::ref(this->current_view), std::ref(this->vis_font), should_wait);
             break;
         }
     }
@@ -536,13 +536,13 @@ void Visualizer::endRoutine() {
 
     this->graph.reset();
     if (this->mode == BFS) {
-        this->graph.runBFS(*this->window, this->toolbar, this->original_view, this->current_view, false);
+        this->graph.runBFS(*this->window, this->toolbar, this->original_view, this->current_view, this->vis_font, false);
     }
     else if (this->mode == DFS) {
-        this->graph.runDFS(*this->window, this->toolbar, this->original_view, this->current_view, false);
+        this->graph.runDFS(*this->window, this->toolbar, this->original_view, this->current_view, this->vis_font, false);
     }
     else {
-        this->graph.runDijkstra(*this->window, this->toolbar, this->original_view, this->current_view, false);
+        this->graph.runDijkstra(*this->window, this->toolbar, this->original_view, this->current_view, this->vis_font, false);
     }
     this->toolbar.resetActiveButton();
 }
@@ -578,15 +578,7 @@ void Visualizer::clearWindowRoutine() {
 void Visualizer::saveToFile() {
     std::string graph_name;
     this->window->pollEvent(this->sfEvent);
-//    while (!(sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))) {
-//        if (this->sfEvent.type == sf::Event::KeyPressed) {
-//            unsigned int c = this->sfEvent.text.unicode;
-//            graph_name += c;
-//            std::cout<< c<<std::endl;
-//        }
-//        this->window->pollEvent(this->sfEvent);
-//    }
-    InputBox inputBox(*(this->window));
+    InputBox inputBox(*(this->window), this->vis_font);
     this->window->setView(this->original_view);
     graph_name = inputBox.getInput(*(this->window));
 

@@ -7,7 +7,7 @@
 using std::cout;
 using std::endl;
 
-TextBox::TextBox(sf::RenderWindow& window) {
+TextBox::TextBox(sf::RenderWindow& window, sf::Font* font): text_font(font) {
     this->text_box.setPosition((float)window.getPosition().x+(float)window.getSize().x/4, (float)window.getPosition().y+(float)window.getSize().y/4);
     this->text_field.setPosition((float)this->text_box.getPosition().x+10, (float)this->text_box.getPosition().y+70);
     this->text_box.setSize(sf::Vector2f(200, 120));
@@ -24,10 +24,10 @@ bool TextBox::close(float event_x, float event_y) {
 void TextBox::render(sf::RenderWindow& window, const std::string& txt) {
     sf::Text t;
     t.setString(txt);
+    t.setFont(*this->text_font);
     t.setFillColor(sf::Color::White);
     t.setCharacterSize(20);
     t.setPosition(this->text_field.getPosition().x, this->text_field.getPosition().y);
-    t.setLineSpacing(2);
     window.draw(this->text_box);
     window.draw(this->text_field);
     window.draw(t);
