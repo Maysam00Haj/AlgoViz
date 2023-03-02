@@ -28,10 +28,9 @@ class Graph {
     std::unordered_map<std::string, std::shared_ptr<Node>> nodes_list; // enables us to find node pointer by its name string
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Node>>> neighbors_list;
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<Edge>>> edges_list; // for each node there's a set of edges that touch it (2 copies of each edge)
-    sf::Font graph_font;
 
-    void renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, sf::View original_view, sf::View current_view, bool wait = true);
-    void dfs(const std::shared_ptr<Node>& prev, const std::shared_ptr<Node>& start, sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
+    void renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, sf::View original_view, sf::View current_view, sf::Font* font, bool wait = true);
+    void dfs(const std::shared_ptr<Node>& prev, const std::shared_ptr<Node>& start, sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait = false);
     std::shared_ptr<Node> dijkstraMinDistance() const;
     std::string generateNodeName() const;
 
@@ -41,15 +40,15 @@ public:
     ~Graph() = default;
     void setStartNode(const std::shared_ptr<Node>& newStartNode);
     void setTargetNode(const std::shared_ptr<Node>& target_node);
-    void render(sf::RenderTarget& target);
+    void render(sf::RenderWindow& target, sf::Font* font);
     void removeNode(const std::string& node_name);
     void addEdge(std::shared_ptr<Edge>& edge);
     void removeEdge(const std::shared_ptr<Edge>& edge);
     void removeTargetNode();
     bool containsEdge(const std::shared_ptr<Edge>& edge);
-    void runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
-    void runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
-    void runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, bool wait = false);
+    void runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait = false);
+    void runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait = false);
+    void runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait = false);
     void reset();
     void setToggledNode(std::shared_ptr<Node>& to_toggle);
     void untoggle();
