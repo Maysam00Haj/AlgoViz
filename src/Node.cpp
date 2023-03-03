@@ -18,7 +18,7 @@ sf::CircleShape Node::getShape() const {
 
 void Node::render(sf::RenderWindow& window, sf::Font* font) {
     window.draw(this->shape);
-    if (this->state != NODE_DONE && this->state != NODE_DISCOVERED && this->state != NODE_NEAREST && this->state != NODE_TARGET) return;
+    if (this->state != NODE_DONE && this->state != NODE_DISCOVERED && this->state != NODE_NEAREST && this->state != NODE_TARGET && this->state != NODE_CURRENT) return;
     sf::Text t;
     t.setFont(*font);
     t.setPosition(this->getPosition().x+21, this->getPosition().y+9);

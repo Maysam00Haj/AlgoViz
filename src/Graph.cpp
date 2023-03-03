@@ -360,11 +360,12 @@ void Graph::reset() {
         }
         else if (node.second == this->target_node) {
             node.second->setState(NODE_TARGET);
+            node.second->setDistance(INT_MAX);
         }
         else {
             node.second->setState(NODE_UNDISCOVERED);
+            node.second->setDistance(INT_MAX);
         }
-        node.second->setDistance(INT_MAX);
     }
 
     for (const auto& node: edges_list) {

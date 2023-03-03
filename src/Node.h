@@ -43,7 +43,6 @@ public:
     bool checkBoundsCollision(const std::shared_ptr<Node>& node) const;
     void setDistance(int distance);
     int getDistance() const;
-    void setPathWeight(int path_weight);
     bool operator==(const std::shared_ptr<Node>& node) const;
     void setColor(const sf::Color& color);
     void setState(NodeState state);
