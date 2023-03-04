@@ -18,6 +18,12 @@ if (should_end) {           \
     return;                 \
     }
 
+#define CHECK_IF_SHOULD_END_REC \
+if (should_end) {           \
+    algo_thread_is_running = false; \
+    is_finished = true;\
+    return false;                 \
+    }
 
 
 extern std::mutex window_lock;
@@ -138,7 +144,10 @@ void Graph::removeEdge(const std::shared_ptr<Edge>& to_delete) {
 
 void Graph::removeTargetNode() {
     if (!this->target_node) return;
-    this->target_node->setState(NODE_UNDISCOVERED);
+
+    if (this->target_node == this->start_node) this->target_node->setState(NODE_START);
+    else this->target_node->setState(NODE_UNDISCOVERED);
+
     this->target_node = nullptr;
 }
 
@@ -299,22 +308,38 @@ void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
 }
 
 
-void Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<Node>& curr_node, sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait) {
-    CHECK_IF_SHOULD_END
+bool Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<Node>& curr_node, sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait) {
+    CHECK_IF_SHOULD_END_REC
     if (prev_node) {
         getEdgeByNodes(prev_node, curr_node)->setState(EDGE_DISCOVERED);
         curr_node->setDistance(prev_node->getDistance() + 1);
     }
+
+    if (curr_node->getState() == NODE_TARGET) {
+        curr_node->setParent(prev_node);
+        this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
+        return true;
+    }
+
     curr_node->setState(NODE_DISCOVERED);
     this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
+
+    bool found_target = false;
     for (const std::shared_ptr<Node>& neighbor_node : this->neighbors_list[curr_node->getName()]) {
-        CHECK_IF_SHOULD_END
+        CHECK_IF_SHOULD_END_REC
         if (neighbor_node->getState() != NODE_DISCOVERED && neighbor_node->getState() != NODE_DONE)
-            dfs(curr_node, neighbor_node, window, toolbar, original_view, current_view, font, wait);
+            found_target = dfs(curr_node, neighbor_node, window, toolbar, original_view, current_view, font, wait);
+        if (found_target) {
+            curr_node->setState(NODE_NEAREST);
+            this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
+            return true;
+        }
     }
+
     curr_node->setState(NODE_DONE);
-    CHECK_IF_SHOULD_END
+    CHECK_IF_SHOULD_END_REC
     this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
+    return false;
 }
 
 
@@ -323,15 +348,17 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& or
     algo_thread_is_running = true;
     if (wait) this->untoggle();
     if (!this->start_node) return;
-    if (this->start_node->getState() == NODE_DONE) {
+    if (this->start_node->getState() == NODE_DONE || this->start_node->getState() == NODE_NEAREST) {
         this->reset();
     }
     this->calculate_distances();
     std::unordered_map<std::shared_ptr<Node>, std::shared_ptr<Edge>> discovered_edges;
     this->start_node->setWeight(0);
+    bool target_found = false;
+    std::shared_ptr<Node> current_node;
 
     for (int i = 0; i < nodes_list.size(); i++) {
-        std::shared_ptr<Node> current_node = dijkstraMinDistance();
+        current_node = dijkstraMinDistance();
         if (current_node->getWeight() < INT_MAX) {
             current_node->setState(NODE_DISCOVERED);
             if (discovered_edges.find(current_node) != discovered_edges.end()) {
@@ -343,13 +370,31 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& or
                 // updating the distance of neighboring nodes
                 std::shared_ptr<Edge> edge = getEdgeByNodes(current_node, neighbor_node);
                 int new_distance = edge->getLength() + current_node->getWeight() + 60;
-                if (neighbor_node->getState() == NODE_UNDISCOVERED && new_distance < neighbor_node->getWeight()) {
+                if ((neighbor_node->getState() == NODE_UNDISCOVERED || neighbor_node->getState() == NODE_TARGET) &&
+                    new_distance < neighbor_node->getWeight()) {
                     neighbor_node->setWeight(new_distance);
+                    neighbor_node->setParent(current_node);
                     discovered_edges[neighbor_node] = edge;
                 }
             }
+            if (current_node == this->target_node) {
+                current_node->setState(NODE_TARGET);
+                target_found = true;
+                break;
+            }
             current_node->setState(NODE_DONE);
             CHECK_IF_SHOULD_END
+            this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
+        }
+    }
+
+    if (target_found) {
+        while (current_node) {
+            CHECK_IF_SHOULD_END
+            std::shared_ptr<Edge> nearest_path_edge = this->getEdgeByNodes(current_node, current_node->getParent());
+            if (current_node->getState() != NODE_TARGET) current_node->setState(NODE_NEAREST);
+            if (nearest_path_edge) nearest_path_edge->setState(EDGE_NEAREST);
+            current_node = current_node->getParent();
             this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
         }
     }
@@ -419,6 +464,7 @@ bool Graph::checkValidPosition(const Node& node) const {
 
 
 std::shared_ptr<Edge> Graph::getEdgeByNodes(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2) {
+    if (!node1 || !node2) return nullptr;
     for (const auto& edge: this->edges_list[node1->getName()]) {
         if (edge->getSecondNode()->getName() == node2->getName() || edge->getFirstNode()->getName() == node2->getName())
             return edge;

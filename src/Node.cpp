@@ -20,12 +20,14 @@ sf::CircleShape Node::getShape() const {
 void Node::render(sf::RenderWindow& window, sf::Font* font, const std::string& to_print) {
     window.draw(this->shape);
     if (this->state != NODE_DONE && this->state != NODE_DISCOVERED && this->state != NODE_NEAREST && this->state != NODE_TARGET && this->state != NODE_CURRENT) return;
+    // If no algorithm ran, target node will have inf distance and should not print a value.
+    if (this->state == NODE_TARGET && (to_print == std::to_string(INT_MAX) || to_print == std::to_string(0))) return;
     sf::Text t;
     t.setFont(*font);
     t.setPosition(this->getPosition().x+21, this->getPosition().y+9);
     t.setFillColor(sf::Color::White);
     t.setCharacterSize(30);
-    if (to_print == std::to_string(INT_MAX)) {
+    if (to_print == std::to_string(INT_MAX)) { // debugging purposes (correct run should never have to print inf
         t.setString("inf");
     }
     else {

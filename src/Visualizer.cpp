@@ -211,7 +211,7 @@ void Visualizer::drawGrid() {
 
 
 void Visualizer::executeClickAction() {
-    //Didn't use macros because this case is unique, other class functions work on position relative to window
+    //Didn't use macros because this case is shared, other class functions work on position relative to window
     // and not global or world position:
     auto window_x = (float)this->sfEvent.mouseButton.x;
     auto window_y = (float)this->sfEvent.mouseButton.y;
@@ -397,7 +397,8 @@ void Visualizer::cursorRoutine() {
                 if (!this->graph.checkValidPosition(*moving_node)) continue;
             }
         }
-        if (current_algo_mode == DIJKSTRA && this->graph.getStartNode()->getState() == NODE_DONE) {
+        if (current_algo_mode == DIJKSTRA && (this->graph.getStartNode()->getState() == NODE_DONE ||
+            this->graph.getStartNode()->getState() == NODE_NEAREST)) {
             this->graph.runDijkstra(*(this->window), this->toolbar, this->original_view, this->current_view,
                                     this->vis_font,
                                     false);
