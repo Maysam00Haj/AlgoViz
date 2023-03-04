@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <windows.h>
+#include <cmath>
 
 
 #define EVENT_X (this->window->mapPixelToCoords( \
@@ -40,12 +41,15 @@ sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zo
 (float)sf::Mouse::getPosition(*this->window).y-(30*this->current_zoom_factor))).y)
 
 
-#define ROWS    (83/this->current_zoom_factor)
-#define COLS    ((83*((float)this->window->getView().getSize().x/(float)this->window->getView().getSize().y)) \
-/this->current_zoom_factor)
+//#define ROWS    (83/this->current_zoom_factor)
+//#define COLS    ((83*((float)this->window->getView().getSize().x/(float)this->window->getView().getSize().y)) \
+///this->current_zoom_factor)
+
+#define ROWS    (120)
+#define COLS    (120*((float)this->window->getView().getSize().x/(float)this->window->getView().getSize().y))
 
 #define MAX_ZOOM    5
-#define MIN_ZOOM    0.3
+#define MIN_ZOOM    0.2
 
 
 
@@ -127,12 +131,12 @@ void Visualizer::update() {
             }
             case sf::Event::MouseWheelScrolled: {
                 if (this->sfEvent.mouseWheelScroll.delta > 0 && current_zoom_factor < MAX_ZOOM) {
-                    this->current_view.zoom(0.8);
-                    this->current_zoom_factor *= 1.25;
+                    this->current_view.zoom(0.875);
+                    this->current_zoom_factor *= 1.142857;
                 }
                 else if (this->sfEvent.mouseWheelScroll.delta < 0 && current_zoom_factor > MIN_ZOOM){
-                    this->current_view.zoom(1.25);
-                    this->current_zoom_factor *= 0.8;
+                    this->current_view.zoom(1.142857);
+                    this->current_zoom_factor *= 0.875;
                 }
                 break;
             }
@@ -180,24 +184,24 @@ void Visualizer::drawGrid() {
     auto size = this->original_view.getSize();
     size.x *= 5;
     size.y *= 5;
-    float rowH = 2 * NODE_RADIUS * (this->current_zoom_factor);
-    float colW = 2 * NODE_RADIUS * (this->current_zoom_factor);
+    float rowH = 2 * NODE_RADIUS;
+    float colW = 2 * NODE_RADIUS;
     // row separators
     for(int i=0; i < ROWS-1; i++){
         int r = i+1;
         float rowY = rowH*r;
-        grid[i*2].position = {-size.x/2, rowY-size.y/2};
+        grid[i*2].position = {-size.x/2-660, rowY-size.y/2-360};
         grid[i*2].color = sf::Color(255,255,255,20);
-        grid[i*2+1].position = {size.x/2, rowY-size.y/2};
+        grid[i*2+1].position = {size.x-1110, rowY-size.y/2-360};
         grid[i*2+1].color = sf::Color(255,255,255,20);
     }
     // column separators
     for(int i=ROWS-1; i < numLines; i++){
         int c = i-ROWS+2;
         float colX = colW*c;
-        grid[i*2].position = {colX-size.x/2, -size.y/2};
+        grid[i*2].position = {colX-size.x/2-660, -size.y/2-360};
         grid[i*2].color = sf::Color(255,255,255,20);
-        grid[i*2+1].position = {colX-size.x/2, size.y/2};
+        grid[i*2+1].position = {colX-size.x/2-660, size.y-710};
         grid[i*2+1].color = sf::Color(255,255,255,20);
     }
     // draw it
