@@ -34,7 +34,7 @@ public:
     void render(sf::RenderTarget& target);
     void setColor(const sf::Color& color);
     void setState(EdgeState state);
-    float getLength() const;
+    int getLength() const;
     bool operator<(const std::shared_ptr<Edge>& other) const;
     bool operator==(const std::shared_ptr<Edge>& other) const;
     std::vector<float> correctEdgeCoordinates();

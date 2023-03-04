@@ -40,8 +40,8 @@ void Edge::setColor(const sf::Color &color) {
     this->shape.setFillColor(color);
 }
 
-float Edge::getLength() const {
-    return this->shape.getSize().y;
+int Edge::getLength() const {
+    return (int)this->shape.getSize().y;
 
 }
 

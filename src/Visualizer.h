@@ -18,7 +18,6 @@ class Visualizer {
     Graph graph;
     Toolbar toolbar;
     std::shared_ptr<Node> clicked_node;
-    VisMode mode = BFS;
     sf::Font* vis_font;
     MessagesBox messagesBox;
     bool node_is_clicked = false;

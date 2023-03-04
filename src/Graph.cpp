@@ -5,6 +5,7 @@
 #include <queue>
 #include "Graph.h"
 #include "Node.h"
+#include "Visualizer.h"
 #include <thread>
 #include <mutex>
 
@@ -23,6 +24,7 @@ extern std::mutex window_lock;
 extern bool algo_thread_is_running;
 extern bool is_finished;
 extern bool should_end;
+extern VisMode current_algo_mode;
 
 
 Graph::Graph(const Graph &other) {
@@ -38,8 +40,19 @@ Graph::Graph(const Graph &other) {
 
 
 void Graph::render(sf::RenderWindow& target, sf::Font* font) {
+    std::string node_text;
     for (auto &node: this->nodes_list) {
-        node.second->render(target, font);
+        switch (current_algo_mode) {
+            case DIJKSTRA: {
+                node_text = std::to_string(node.second->getWeight());
+                break;
+            }
+            default: {
+                node_text = std::to_string(node.second->getDistance());
+                break;
+            }
+        }
+        node.second->render(target, font, node_text);
     }
 // rendered nodes first then edges to show edges when they cross nodes
     for (auto &node: this->nodes_list) {
@@ -290,6 +303,7 @@ void Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<No
     CHECK_IF_SHOULD_END
     if (prev_node) {
         getEdgeByNodes(prev_node, curr_node)->setState(EDGE_DISCOVERED);
+        curr_node->setDistance(prev_node->getDistance() + 1);
     }
     curr_node->setState(NODE_DISCOVERED);
     this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
@@ -303,30 +317,22 @@ void Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<No
     this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
 }
 
-std::shared_ptr<Node> Graph::dijkstraMinDistance() const {
-    int min = INT_MAX;
-    std::shared_ptr<Node> min_distance_node;
-    // finding the node with the min distance
-    for (const auto& node: nodes_list) {
-        if (node.second->getState() != NODE_DONE && node.second->getState() != NODE_DISCOVERED && node.second->getDistance() <= min) {
-            min = node.second->getDistance();
-            min_distance_node = node.second;
-        }
-    }
-    return min_distance_node;
-}
+
 
 void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait) {
     algo_thread_is_running = true;
-    this->untoggle();
+    if (wait) this->untoggle();
     if (!this->start_node) return;
-
+    if (this->start_node->getState() == NODE_DONE) {
+        this->reset();
+    }
+    this->calculate_distances();
     std::unordered_map<std::shared_ptr<Node>, std::shared_ptr<Edge>> discovered_edges;
-    this->start_node->setDistance(0);
+    this->start_node->setWeight(0);
 
     for (int i = 0; i < nodes_list.size(); i++) {
         std::shared_ptr<Node> current_node = dijkstraMinDistance();
-        if (current_node->getDistance() < INT_MAX) {
+        if (current_node->getWeight() < INT_MAX) {
             current_node->setState(NODE_DISCOVERED);
             if (discovered_edges.find(current_node) != discovered_edges.end()) {
                 discovered_edges[current_node]->setState(EDGE_DISCOVERED);
@@ -336,9 +342,9 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& or
             for (const std::shared_ptr<Node> &neighbor_node: this->neighbors_list[current_node->getName()]) {
                 // updating the distance of neighboring nodes
                 std::shared_ptr<Edge> edge = getEdgeByNodes(current_node, neighbor_node);
-                float new_distance = edge->getLength() + current_node->getDistance();
-                if (neighbor_node->getState() == NODE_UNDISCOVERED && new_distance < neighbor_node->getDistance()) {
-                    neighbor_node->setDistance(new_distance);
+                int new_distance = edge->getLength() + current_node->getWeight() + 60;
+                if (neighbor_node->getState() == NODE_UNDISCOVERED && new_distance < neighbor_node->getWeight()) {
+                    neighbor_node->setWeight(new_distance);
                     discovered_edges[neighbor_node] = edge;
                 }
             }
@@ -352,6 +358,7 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& or
     algo_thread_is_running = false;
 }
 
+
 void Graph::reset() {
     this->untoggle();
     for (const auto& node: nodes_list) {
@@ -361,10 +368,12 @@ void Graph::reset() {
         else if (node.second == this->target_node) {
             node.second->setState(NODE_TARGET);
             node.second->setDistance(INT_MAX);
+            node.second->setWeight(INT_MAX);
         }
         else {
             node.second->setState(NODE_UNDISCOVERED);
             node.second->setDistance(INT_MAX);
+            node.second->setWeight(INT_MAX);
         }
     }
 
@@ -416,6 +425,39 @@ std::shared_ptr<Edge> Graph::getEdgeByNodes(const std::shared_ptr<Node>& node1, 
     }
     return nullptr;
 }
+
+
+void Graph::calculate_distances() {
+    if (!this->start_node) return;
+    std::shared_ptr<Node> current = this->start_node;
+    current->setDistance(0);
+    std::queue<std::shared_ptr<Node>> bfs_q;
+    bfs_q.push(current);
+    while (!bfs_q.empty()) {
+        current = bfs_q.front();
+        for (const auto& neighbor : this->neighbors_list[current->getName()]) {
+            if (neighbor->getDistance() != INT_MAX) continue;
+            bfs_q.push(neighbor);
+            neighbor->setDistance(current->getDistance() + 1);
+        }
+        bfs_q.pop();
+    }
+}
+
+
+std::shared_ptr<Node> Graph::dijkstraMinDistance() const {
+    int min = INT_MAX;
+    std::shared_ptr<Node> min_distance_node;
+    // finding the node with the min distance
+    for (const auto& node: nodes_list) {
+        if (node.second->getState() != NODE_DONE && node.second->getState() != NODE_DISCOVERED && node.second->getWeight() <= min) {
+            min = node.second->getWeight();
+            min_distance_node = node.second;
+        }
+    }
+    return min_distance_node;
+}
+
 
 void Graph::untoggle() {
     if (this->toggled_node)
