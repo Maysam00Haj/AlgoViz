@@ -1,10 +1,11 @@
 #include "Node.h"
-#include "cmath"
+#include <cmath>
 #include <utility>
 #include "utils.h"
 #include <iostream>
 
 #define RADIUS 30
+
 
 Node::Node(std::string name, float pos_x, float pos_y, sf::Font* text_font): name(std::move(name)) {
     this->shape.setRadius(RADIUS);
@@ -16,7 +17,7 @@ sf::CircleShape Node::getShape() const {
     return this->shape;
 }
 
-void Node::render(sf::RenderWindow& window, sf::Font* font) {
+void Node::render(sf::RenderWindow& window, sf::Font* font, const std::string& to_print) {
     window.draw(this->shape);
     if (this->state != NODE_DONE && this->state != NODE_DISCOVERED && this->state != NODE_NEAREST && this->state != NODE_TARGET && this->state != NODE_CURRENT) return;
     sf::Text t;
@@ -24,10 +25,14 @@ void Node::render(sf::RenderWindow& window, sf::Font* font) {
     t.setPosition(this->getPosition().x+21, this->getPosition().y+9);
     t.setFillColor(sf::Color::White);
     t.setCharacterSize(30);
-    if (this->distance == INT_MAX)
+    if (to_print == std::to_string(INT_MAX)) {
         t.setString("inf");
-    else
-        t.setString(std::to_string(this->distance));
+    }
+    else {
+        t.setPosition(t.getPosition().x - ((float)to_print.size()-1)*5, t.getPosition().y + ((float)to_print.size()-1));
+        t.setCharacterSize(std::max<long long>((t.getCharacterSize()+1) - to_print.size()*2, 1));
+        t.setString(to_print);
+    }
     window.draw(t);
 }
 
@@ -47,6 +52,14 @@ void Node::setDistance(int updated_distance) {
 
 int Node::getDistance() const {
     return this->distance;
+}
+
+void Node::setWeight(int weight) {
+    this->path_weight = weight;
+}
+
+int Node::getWeight() const {
+    return this->path_weight;
 }
 
 bool Node::operator==(const std::shared_ptr<Node>& node) const {

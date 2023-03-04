@@ -65,6 +65,8 @@ bool is_immediate = false;
 
 std::thread algo_thread; // the thread we use to execute runBfs
 
+VisMode current_algo_mode;
+
 
 
 Visualizer::Visualizer(const Graph& graph): graph(graph) {
@@ -229,17 +231,17 @@ void Visualizer::executeClickAction() {
             break;
         }
         case RUN_BFS: {
-            this->mode = BFS;
+            current_algo_mode = BFS;
             runAlgorithm();
             break;
         }
         case RUN_DFS: {
-            this->mode = DFS;
+            current_algo_mode = DFS;
             runAlgorithm();
             break;
         }
         case RUN_DIJKSTRA: {
-            this->mode = DIJKSTRA;
+            current_algo_mode = DIJKSTRA;
             runAlgorithm();
             break;
         }
@@ -325,7 +327,7 @@ void Visualizer::runAlgorithm() {
     }
     this->toolbar.resetActiveButton();
 
-    VisMode current_mode = this->mode;
+    VisMode current_mode = current_algo_mode;
     bool should_wait = true;
     switch (current_mode) {
         case BFS: {
@@ -390,6 +392,12 @@ void Visualizer::cursorRoutine() {
                 moving_node->setPosition(closest_pos[0], closest_pos[1]);
                 if (!this->graph.checkValidPosition(*moving_node)) continue;
             }
+        }
+        if (current_algo_mode == DIJKSTRA && this->graph.getStartNode()->getState() == NODE_DONE) {
+            this->graph.runDijkstra(*(this->window), this->toolbar, this->original_view, this->current_view,
+                                    this->vis_font,
+                                    false);
+            this->graph.setToggledNode(moving_node);
         }
         this->render();
         this->window->pollEvent(this->sfEvent);
@@ -535,10 +543,10 @@ void Visualizer::endRoutine() {
     should_end = false;
 
     this->graph.reset();
-    if (this->mode == BFS) {
+    if (current_algo_mode == BFS) {
         this->graph.runBFS(*this->window, this->toolbar, this->original_view, this->current_view, this->vis_font, false);
     }
-    else if (this->mode == DFS) {
+    else if (current_algo_mode == DFS) {
         this->graph.runDFS(*this->window, this->toolbar, this->original_view, this->current_view, this->vis_font, false);
     }
     else {
