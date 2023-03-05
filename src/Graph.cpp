@@ -177,9 +177,11 @@ void Graph::setStartNode(const std::shared_ptr<Node>& new_start_node) {
     if (this->start_node) {
         this->start_node->setState(NODE_UNDISCOVERED);
         this->start_node->setDistance(INT_MAX);
+        this->start_node->setWeight(INT_MAX);
     }
     this->start_node = new_start_node;
     this->start_node->setDistance(0);
+    this->start_node->setWeight(0);
     this->start_node->setState(NODE_START);
 }
 
@@ -348,9 +350,7 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& or
     algo_thread_is_running = true;
     if (wait) this->untoggle();
     if (!this->start_node) return;
-    if (this->start_node->getState() == NODE_DONE || this->start_node->getState() == NODE_NEAREST) {
-        this->reset();
-    }
+    this->reset();
     this->calculate_distances();
     std::unordered_map<std::shared_ptr<Node>, std::shared_ptr<Edge>> discovered_edges;
     this->start_node->setWeight(0);
@@ -405,7 +405,12 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& or
 
 
 void Graph::reset() {
+    if (!this->start_node ||
+        (this->start_node->getState() != NODE_DONE && this->start_node->getState() != NODE_NEAREST))
+        return;
+
     this->untoggle();
+
     for (const auto& node: nodes_list) {
         if (node.second == this->start_node) {
             node.second->setState(NODE_START);
