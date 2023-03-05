@@ -41,9 +41,7 @@ sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zo
 (float)sf::Mouse::getPosition(*this->window).y-(30*this->current_zoom_factor))).y)
 
 
-//#define ROWS    (83/this->current_zoom_factor)
-//#define COLS    ((83*((float)this->window->getView().getSize().x/(float)this->window->getView().getSize().y)) \
-///this->current_zoom_factor)
+
 
 #define ROWS    (120)
 #define COLS    (120*((float)this->window->getView().getSize().x/(float)this->window->getView().getSize().y))
@@ -326,9 +324,7 @@ void Visualizer::runAlgorithm() {
         this->toolbar.updateActiveButton(original_active_button_coordinates);
         return;
     }
-    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST)) {
-        this->graph.reset();
-    }
+    this->graph.reset();
     this->toolbar.resetActiveButton();
 
     VisMode current_mode = current_algo_mode;
@@ -399,9 +395,8 @@ void Visualizer::cursorRoutine() {
         }
         if (current_algo_mode == DIJKSTRA && (this->graph.getStartNode()->getState() == NODE_DONE ||
             this->graph.getStartNode()->getState() == NODE_NEAREST)) {
-            this->graph.runDijkstra(*(this->window), this->toolbar, this->original_view, this->current_view,
-                                    this->vis_font,
-                                    false);
+            this->graph.runDijkstra(*(this->window), this->toolbar, this->original_view,
+                                    this->current_view, this->vis_font, false);
             this->graph.setToggledNode(moving_node);
         }
         this->render();
@@ -412,7 +407,7 @@ void Visualizer::cursorRoutine() {
 
 void Visualizer::addNodeRoutine() {
     std::shared_ptr<Node> node_exists = this->graph.addNode(CORRECTED_EVENT_X, CORRECTED_EVENT_Y, vis_font);
-    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && node_exists) {
+    if (node_exists) {
         this->graph.reset();
     }
     if (graph.getStartNode() != nullptr) {
@@ -436,7 +431,7 @@ void Visualizer::addEdgeRoutine() {
         }
         this->node_is_clicked = false;
         this->clicked_node = nullptr;
-        if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && edge_was_added) {
+        if (edge_was_added) {
             this->graph.reset();
         }
         return;
@@ -460,6 +455,7 @@ void Visualizer::addEdgeRoutine() {
                     if (edge_was_added) {
                         this->clicked_node = nullptr;
                         this->node_is_clicked = false;
+                        this->graph.reset();
                     }
                     return;
                 }
@@ -487,7 +483,7 @@ void Visualizer::addEdgeRoutine() {
         }
         this->window->pollEvent(this->sfEvent);
     }
-    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && edge_was_added) {
+    if (edge_was_added) {
         this->graph.reset();
     }
 }
@@ -507,7 +503,7 @@ void Visualizer::eraseRoutine() {
     else if (edge_to_delete) {
         this->graph.removeEdge(edge_to_delete);
     }
-    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && (node_to_delete || edge_to_delete)) {
+    if (node_to_delete || edge_to_delete) {
         this->graph.reset();
     }
 }
@@ -515,7 +511,7 @@ void Visualizer::eraseRoutine() {
 
 void Visualizer::changeStartNodeRoutine() {
     std::shared_ptr<Node> node_exists = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
-    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() || this->graph.getStartNode()->getState() == NODE_NEAREST) && node_exists) {
+    if (node_exists) {
         this->graph.reset();
     }
     this->graph.setStartNode(this->graph.getNodeByPosition(EVENT_X, EVENT_Y));
@@ -523,7 +519,7 @@ void Visualizer::changeStartNodeRoutine() {
 
 void Visualizer::chooseTargetNodeRoutine() {
     std::shared_ptr<Node> node_exists = this->graph.getNodeByPosition(EVENT_X, EVENT_Y);
-    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST) && node_exists) {
+    if (node_exists) {
         this->graph.reset();
     }
     this->graph.setTargetNode(this->graph.getNodeByPosition(EVENT_X, EVENT_Y));
@@ -531,9 +527,7 @@ void Visualizer::chooseTargetNodeRoutine() {
 
 void Visualizer::removeTargetNodeRoutine() {
     if (algo_thread_is_running || !is_immediate) return;
-    if (this->graph.getStartNode() && (this->graph.getStartNode()->getState() == NODE_DONE || this->graph.getStartNode()->getState() == NODE_NEAREST)) {
-        this->graph.reset();
-    }
+    this->graph.reset();
     this->graph.removeTargetNode();
     this->toolbar.resetActiveButton();
 }
@@ -549,13 +543,16 @@ void Visualizer::endRoutine() {
 
     this->graph.reset();
     if (current_algo_mode == BFS) {
-        this->graph.runBFS(*this->window, this->toolbar, this->original_view, this->current_view, this->vis_font, false);
+        this->graph.runBFS(*this->window, this->toolbar, this->original_view,
+                           this->current_view, this->vis_font, false);
     }
     else if (current_algo_mode == DFS) {
-        this->graph.runDFS(*this->window, this->toolbar, this->original_view, this->current_view, this->vis_font, false);
+        this->graph.runDFS(*this->window, this->toolbar, this->original_view,
+                           this->current_view, this->vis_font, false);
     }
     else {
-        this->graph.runDijkstra(*this->window, this->toolbar, this->original_view, this->current_view, this->vis_font, false);
+        this->graph.runDijkstra(*this->window, this->toolbar, this->original_view,
+                                this->current_view, this->vis_font, false);
     }
     this->toolbar.resetActiveButton();
 }
@@ -595,7 +592,8 @@ void Visualizer::saveToFile() {
     this->window->setView(this->original_view);
     graph_name = inputBox.getInput(*(this->window));
 
-    if (graph_name.empty() || std::find(this->saved_graphs.begin(), this->saved_graphs.end(), graph_name) != this->saved_graphs.end()) {
+    if (graph_name.empty() ||
+        std::find(this->saved_graphs.begin(), this->saved_graphs.end(), graph_name) != this->saved_graphs.end()) {
         this->toolbar.resetActiveButton();
         return;
     }
