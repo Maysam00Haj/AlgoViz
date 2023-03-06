@@ -9,11 +9,13 @@ using std::endl;
 
 TextBox::TextBox(sf::RenderWindow& window, sf::Font* font): text_font(font) {
     this->text_box.setPosition((float)window.getPosition().x+(float)window.getSize().x/4, (float)window.getPosition().y+(float)window.getSize().y/4);
-    this->text_field.setPosition((float)this->text_box.getPosition().x+10, (float)this->text_box.getPosition().y+70);
+    this->text_field.setPosition((float)this->text_box.getPosition().x+15, (float)this->text_box.getPosition().y+70);
     this->text_box.setSize(sf::Vector2f(200, 120));
-    this->text_field.setSize(sf::Vector2f(180, 30));
+    this->text_field.setSize(sf::Vector2f(170, 30));
     this->text_box.setFillColor(sf::Color(100,100,100,255));
     this->text_field.setFillColor(sf::Color(150,150,150,255));
+    this->text_box.setOutlineThickness(1);
+    this->text_box.setOutlineColor(sf::Color::White);
 }
 
 
@@ -49,8 +51,7 @@ std::string InputBox::getInput(sf::RenderWindow& window) {
             cout<< static_cast<char>(event.text.unicode)<<endl;
         }
         else if (event.type == sf::Event::MouseButtonPressed || event.type == sf::Event::Resized) {
-            if (close((float)event.mouseButton.x, (float)event.mouseButton.y))
-            return "";
+            if (close((float)event.mouseButton.x, (float)event.mouseButton.y)) return "";
         }
         this->render(window, this->input);
         window.pollEvent(event);

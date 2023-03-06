@@ -22,6 +22,17 @@ enum ButtonId {
     MAXIMIZE
 };
 
+
+class SavedGraphsList {
+    std::vector<std::string> saved_graphs;
+public:
+    SavedGraphsList() = default;
+    ~SavedGraphsList() = default;
+    void render(sf::RenderWindow& window);
+
+};
+
+
 class Button {
     sf::RectangleShape shape;
     std::string icon_path;
@@ -44,6 +55,8 @@ public:
 class Toolbar {
 private:
     std::shared_ptr<Button> active_button;
+    std::vector<std::shared_ptr<Button>> buttons;
+    SavedGraphsList saved_graphs_list;
     sf::RectangleShape rectangle;
     std::vector<sf::RectangleShape> horizontal_separators;
 
@@ -51,11 +64,9 @@ public:
     Toolbar();
     ~Toolbar() = default;
     bool updateActiveButton(const sf::Vector2f& mousePosWindow);
-    void render(sf::RenderTarget& target);
+    void render(sf::RenderWindow& window, bool load_list);
     void resetActiveButton(); //used after 'CLEAN'
     ButtonId getActiveButtonId() const;
-
-    std::vector<std::shared_ptr<Button>> buttons;
 };
 
 

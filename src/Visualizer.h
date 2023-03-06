@@ -24,7 +24,9 @@ class Visualizer {
     float current_zoom_factor = 1.f;
     std::vector<std::string> saved_graphs;
 
-
+    bool viewIsInBounds();
+    std::vector<std::shared_ptr<Node>> parseNodesFromString(std::string graph_literal);
+    std::vector<std::shared_ptr<Edge>> parseEdgesFromString(std::string graph_literal);
 
     void update();
     void render();

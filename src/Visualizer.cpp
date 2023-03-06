@@ -104,9 +104,9 @@ void Visualizer::run() {
 
 
 void Visualizer::update() {
-    CHECK_THREAD_AND_JOIN;
+    CHECK_THREAD_AND_JOIN
     while(this->window->pollEvent(this->sfEvent)) {
-        CHECK_THREAD_AND_JOIN;
+        CHECK_THREAD_AND_JOIN
         switch (this->sfEvent.type) {
             case sf::Event::Closed: {
                 should_end = true;
@@ -131,10 +131,18 @@ void Visualizer::update() {
                 if (this->sfEvent.mouseWheelScroll.delta > 0 && current_zoom_factor < MAX_ZOOM) {
                     this->current_view.zoom(0.875);
                     this->current_zoom_factor *= 1.142857;
+//                    if (!this->viewIsInBounds()) {
+//                        this->current_view.zoom(1.142857);
+//                        this->current_zoom_factor *= 0.875;
+//                    }
                 }
                 else if (this->sfEvent.mouseWheelScroll.delta < 0 && current_zoom_factor > MIN_ZOOM){
                     this->current_view.zoom(1.142857);
                     this->current_zoom_factor *= 0.875;
+//                    if (!this->viewIsInBounds()) {
+//                        this->current_view.zoom(0.875);
+//                        this->current_zoom_factor *= 1.142857;
+//                    }
                 }
                 break;
             }
@@ -153,7 +161,7 @@ void Visualizer::render() {
     this->drawGrid();
     this->graph.render(*this->window, this->vis_font);
     this->window->setView(this->original_view);
-    this->toolbar.render(*this->window);
+    this->toolbar.render(*this->window, false);
     this->messagesBox.render(*this->window);
     if (this->toolbar.getActiveButtonId() == ADD_NODE) {
         float corrected_radius = this->current_zoom_factor * NODE_RADIUS;
@@ -187,7 +195,7 @@ void Visualizer::drawGrid() {
     // row separators
     for(int i=0; i < ROWS-1; i++){
         int r = i+1;
-        float rowY = rowH*r;
+        float rowY = (float)r * rowH;
         grid[i*2].position = {-size.x/2-660, rowY-size.y/2-360};
         grid[i*2].color = sf::Color(255,255,255,20);
         grid[i*2+1].position = {size.x-1110, rowY-size.y/2-360};
@@ -196,7 +204,7 @@ void Visualizer::drawGrid() {
     // column separators
     for(int i=ROWS-1; i < numLines; i++){
         int c = i-ROWS+2;
-        float colX = colW*c;
+        float colX = (float)c * colW;
         grid[i*2].position = {colX-size.x/2-660, -size.y/2-360};
         grid[i*2].color = sf::Color(255,255,255,20);
         grid[i*2+1].position = {colX-size.x/2-660, size.y-710};
@@ -371,6 +379,9 @@ void Visualizer::cursorRoutine() {
             current_pos = sf::Vector2f(window_x, window_y);
             delta_pos = prev_pos - current_pos; // inverted because when we "look" to the left things "move" to the right
             this->current_view.move(delta_pos / this->current_zoom_factor);
+//            if (!this->viewIsInBounds()) {
+//                this->current_view.move(-delta_pos / this->current_zoom_factor);
+//            }
             prev_pos = current_pos;
             this->render();
             this->window->pollEvent(this->sfEvent);
@@ -406,7 +417,7 @@ void Visualizer::cursorRoutine() {
 
 
 void Visualizer::addNodeRoutine() {
-    std::shared_ptr<Node> node_exists = this->graph.addNode(CORRECTED_EVENT_X, CORRECTED_EVENT_Y, vis_font);
+    std::shared_ptr<Node> node_exists = this->graph.addNode(CORRECTED_EVENT_X, CORRECTED_EVENT_Y, this->vis_font);
     if (node_exists) {
         this->graph.reset();
     }
@@ -598,21 +609,47 @@ void Visualizer::saveToFile() {
         return;
     }
 
-    std::ofstream save_file;
-    save_file.open("SavedGraphs.txt", std::ios::out | std::ios::app);
+    std::ofstream save_file("SavedGraphs.txt", std::ios::out | std::ios::app);
     std::string graph_encoding = this->graph.getEncoding();
     graph_encoding = "svg:" + graph_name + graph_encoding;
     save_file.write(graph_encoding.c_str(), (long long)graph_encoding.size());
+    save_file.close();
     this->toolbar.resetActiveButton();
 }
 
 
 
 void Visualizer::loadFromFile() {
-
+    deleteFromFile();
+    std::ifstream save_file("SavedGraphs.txt", std::ios::in);
+    std::string graph_encoding;
+    std::getline(save_file, graph_encoding);
+    std::vector<std::shared_ptr<Node>> nodes = this->parseNodesFromString(graph_encoding);
+    std::vector<std::shared_ptr<Edge>> edges = this->parseEdgesFromString(graph_encoding);
+    this->clearWindowRoutine();
+    for (auto& node : nodes) {
+        this->graph.addNode(node);
+    }
 }
 
 void Visualizer::deleteFromFile() {
 
 }
 
+//**********************************************Auxiliary Functions***************************************************//
+
+bool Visualizer::viewIsInBounds() {
+    return
+        !(this->current_view.getCenter().x - ((float)this->window->getSize().x/this->current_zoom_factor) < -4000 ||
+        this->current_view.getCenter().x + ((float)this->window->getSize().x/this->current_zoom_factor) >  5800 ||
+        this->current_view.getCenter().y - ((float)this->window->getSize().y/this->current_zoom_factor) < -2800 ||
+        this->current_view.getCenter().y + ((float)this->window->getSize().y/this->current_zoom_factor) >  4200);
+}
+
+std::vector<std::shared_ptr<Node>> Visualizer::parseNodesFromString(std::string graph_literal) {
+    return {};
+}
+
+std::vector<std::shared_ptr<Edge>> Visualizer::parseEdgesFromString(std::string graph_literal) {
+    return {};
+}
