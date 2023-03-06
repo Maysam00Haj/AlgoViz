@@ -9,6 +9,15 @@
 extern bool algo_thread_is_running;
 
 
+//----------------------------------------SavedGraphsList methods-------------------------------------------------------
+
+void SavedGraphsList::render(sf::RenderWindow& window) {
+
+}
+
+
+//--------------------------------------------Button methods------------------------------------------------------------
+
 Button::Button(float x, float y, float width, float height, const std::string& icon_path, ButtonId id) : id(id) {
     sf::Texture* texture = new sf::Texture();
     this->icon_path = icon_path;
@@ -50,36 +59,43 @@ bool Button::update(const sf::Vector2f& mousePosWindow) {
 }
 
 void Button::setButtonEnabled() {
-    this->shape.setFillColor(sf::Color(this->shape.getFillColor().r, this->shape.getFillColor().g, this->shape.getFillColor().b, 100));
+    this->shape.setFillColor(sf::Color(this->shape.getFillColor().r, this->shape.getFillColor().g,
+                                       this->shape.getFillColor().b, 100));
 }
 
 void Button::setButtonDisabled() {
-    this->shape.setFillColor(sf::Color(this->shape.getFillColor().r, this->shape.getFillColor().g, this->shape.getFillColor().b, 255));
+    this->shape.setFillColor(sf::Color(this->shape.getFillColor().r, this->shape.getFillColor().g,
+                                       this->shape.getFillColor().b, 255));
 }
 
 void Button::render(sf::RenderTarget& target) {
     target.draw(this->shape);
 }
 
-//----------------------------------------Toolbar Methods---------------------------------------------
+//-------------------------------------------Toolbar Methods------------------------------------------------------------
 
 Toolbar::Toolbar() {
-    std::vector<ButtonId> id_list = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, CHOOSE_TARGET_NODE, REMOVE_TARGET_NODE, RUN_BFS, RUN_DFS, RUN_DIJKSTRA, END, RESET, CLEAR_WINDOW, SAVE_TO_FILE, LOAD_FROM_FILE};
+    std::vector<ButtonId> id_list = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, CHOOSE_TARGET_NODE,
+                                     REMOVE_TARGET_NODE, RUN_BFS, RUN_DFS, RUN_DIJKSTRA, END, RESET, CLEAR_WINDOW,
+                                     SAVE_TO_FILE, LOAD_FROM_FILE};
     this->buttons.push_back(std::make_shared<Button>(32.5, 15, 30, 30, "./images/cursor.png", CURSOR));
     this->buttons.push_back(std::make_shared<Button>(35, 60, 30, 30, "./images/add_node.png", ADD_NODE));
     this->buttons.push_back(std::make_shared<Button>(35, 110, 30, 30, "./images/add_edge.png", ADD_EDGE));
     this->buttons.push_back(std::make_shared<Button>(35, 162.5, 30, 30, "./images/erase.png", ERASE));
-    this->buttons.push_back(std::make_shared<Button>(35, 210, 30, 30, "./images/change_start_node.png", CHANGE_START_NODE));
-    this->buttons.push_back(std::make_shared<Button>(35, 260, 30, 30, "./images/choose_target_node.png", CHOOSE_TARGET_NODE));
-    this->buttons.push_back(std::make_shared<Button>(35, 310, 30, 30, "./images/remove_target_node.png", REMOVE_TARGET_NODE));
+    this->buttons.push_back(std::make_shared<Button>(35, 210, 30, 30, "./images/change_start_node.png",
+                                                     CHANGE_START_NODE));
+    this->buttons.push_back(std::make_shared<Button>(35, 260, 28, 28, "./images/choose_target_node.png",
+                                                     CHOOSE_TARGET_NODE));
+    this->buttons.push_back(std::make_shared<Button>(35, 310, 28, 28, "./images/remove_target_node.png",
+                                                     REMOVE_TARGET_NODE));
     this->buttons.push_back(std::make_shared<Button>(25, 360, 50, 30, "./images/run_bfs.png", RUN_BFS));
     this->buttons.push_back(std::make_shared<Button>(25, 410, 50, 30, "./images/run_dfs.png", RUN_DFS));
     this->buttons.push_back(std::make_shared<Button>(15, 460, 70, 30, "./images/run_dijkstra.png", RUN_DIJKSTRA));
     this->buttons.push_back(std::make_shared<Button>(35, 510, 30, 30, "./images/end.png", END));
     this->buttons.push_back(std::make_shared<Button>(35, 560, 30, 30, "./images/reset.png", RESET));
     this->buttons.push_back(std::make_shared<Button>(35, 610, 30, 30, "./images/clear_window.png", CLEAR_WINDOW));
-    this->buttons.push_back(std::make_shared<Button>(35, 660, 30, 30, "./images/save_to_file.png", SAVE_TO_FILE));
-    this->buttons.push_back(std::make_shared<Button>(35, 715, 30, 30, "./images/load_from_file.png", LOAD_FROM_FILE));
+    this->buttons.push_back(std::make_shared<Button>(30, 655, 45, 45, "./images/save_to_file.png", SAVE_TO_FILE));
+    this->buttons.push_back(std::make_shared<Button>(30, 705, 45, 45, "./images/load_from_file.png", LOAD_FROM_FILE));
     this->rectangle.setPosition(10, 10);
     this->rectangle.setSize({80, 745});
     this->rectangle.setFillColor(sf::Color(107, 107, 107, 255));
@@ -114,12 +130,14 @@ bool Toolbar::updateActiveButton(const sf::Vector2f& mousePosWindow) {
     return false;
 }
 
-void Toolbar::render(sf::RenderTarget& target) {
-    std::vector<ButtonId> not_to_render_while_running = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE, CHOOSE_TARGET_NODE, REMOVE_TARGET_NODE, RUN_BFS, RUN_DFS, RUN_DIJKSTRA, SAVE_TO_FILE, LOAD_FROM_FILE};
-    target.draw(this->rectangle);
+void Toolbar::render(sf::RenderWindow& window, bool load_list) {
+    std::vector<ButtonId> not_to_render_while_running = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE,
+                                                         CHOOSE_TARGET_NODE, REMOVE_TARGET_NODE, RUN_BFS, RUN_DFS,
+                                                         RUN_DIJKSTRA, SAVE_TO_FILE, LOAD_FROM_FILE};
+    window.draw(this->rectangle);
 
     for (int i = 0; i < this->horizontal_separators.size(); i++) {
-        target.draw(this->horizontal_separators[i]);
+        window.draw(this->horizontal_separators[i]);
     }
 
     for (const auto& button : this->buttons) {
@@ -129,7 +147,7 @@ void Toolbar::render(sf::RenderTarget& target) {
                 ) {
             continue;
         }
-        button->render(target);
+        button->render(window);
     }
 }
 

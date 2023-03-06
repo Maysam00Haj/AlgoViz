@@ -7,7 +7,7 @@
 #define RADIUS 30
 
 
-Node::Node(std::string name, float pos_x, float pos_y, sf::Font* text_font): name(std::move(name)) {
+Node::Node(std::string name, float pos_x, float pos_y, sf::Font* text_font): name(std::move(name)), font(text_font) {
     this->shape.setRadius(RADIUS);
     this->shape.setOutlineColor(NODE_OUTLINE_COLOR);
     this->shape.setPosition(pos_x, pos_y);
@@ -17,7 +17,7 @@ sf::CircleShape Node::getShape() const {
     return this->shape;
 }
 
-void Node::render(sf::RenderWindow& window, sf::Font* font, const std::string& to_print) {
+void Node::render(sf::RenderWindow& window, const std::string& to_print) {
     window.draw(this->shape);
     if (this->state != NODE_DONE && this->state != NODE_DISCOVERED && this->state != NODE_NEAREST && this->state != NODE_TARGET && this->state != NODE_CURRENT) return;
     // If no algorithm ran, target node will have inf distance and should not print a value.

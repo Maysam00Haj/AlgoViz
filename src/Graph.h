@@ -43,6 +43,7 @@ public:
     void setStartNode(const std::shared_ptr<Node>& newStartNode);
     void setTargetNode(const std::shared_ptr<Node>& target_node);
     void render(sf::RenderWindow& target, sf::Font* font);
+    void addNode(std::shared_ptr<Node>& node);
     void removeNode(const std::string& node_name);
     void addEdge(std::shared_ptr<Edge>& edge);
     void removeEdge(const std::shared_ptr<Edge>& edge);

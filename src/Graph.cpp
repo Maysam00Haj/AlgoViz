@@ -58,7 +58,7 @@ void Graph::render(sf::RenderWindow& target, sf::Font* font) {
                 break;
             }
         }
-        node.second->render(target, font, node_text);
+        node.second->render(target, node_text);
     }
 // rendered nodes first then edges to show edges when they cross nodes
     for (auto &node: this->nodes_list) {
@@ -80,6 +80,14 @@ std::shared_ptr<Node> Graph::addNode(float pos_x, float pos_y, sf::Font* text_fo
     this->name_count++;
     if (this->nodes_num == 1) setStartNode(node_ptr);
     return node_ptr;
+}
+
+
+void Graph::addNode(std::shared_ptr<Node>& node) {
+    this->nodes_list[node->getName()] = node;
+    this->neighbors_list[node->getName()] = {};
+    this->nodes_num++;
+    this->name_count = std::max(this->name_count, std::stoi(node->getName().substr(5, node->getName().size()-5)));
 }
 
 
@@ -242,11 +250,11 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
     std::shared_ptr<Edge> current_edge;
     bfs_q.push(this->start_node);
     bfs_q.front()->setState(NODE_CURRENT);
-    CHECK_IF_SHOULD_END;
+    CHECK_IF_SHOULD_END
     this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
 
     while (!bfs_q.empty()) {
-        CHECK_IF_SHOULD_END;
+        CHECK_IF_SHOULD_END
         previous_node = bfs_q.front();
         if (previous_node->getState() == NODE_DONE) {
             bfs_q.pop();
@@ -254,7 +262,7 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
         }
         previous_node->setState(NODE_CURRENT);
         for (const std::shared_ptr<Node>& current_node: this->neighbors_list[previous_node->getName()]) {
-            CHECK_IF_SHOULD_END;
+            CHECK_IF_SHOULD_END
             if (current_node->getState() != NODE_DONE && current_node->getState() != NODE_DISCOVERED) {
                 current_edge = getEdgeByNodes(previous_node, current_node);
                 current_edge->setState(EDGE_DISCOVERED);
@@ -272,15 +280,15 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
         if (bfs_q.front()->getState() == NODE_TARGET) break;
         previous_node->setState(NODE_DONE);
         bfs_q.pop();
-        CHECK_IF_SHOULD_END;
+        CHECK_IF_SHOULD_END
         this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
     }
 
     if (!bfs_q.empty()) {
-        CHECK_IF_SHOULD_END;
+        CHECK_IF_SHOULD_END
         std::shared_ptr<Node> current_node = bfs_q.front();
         while (current_node->getParent()) {
-            CHECK_IF_SHOULD_END;
+            CHECK_IF_SHOULD_END
             std::shared_ptr<Edge> next_edge = this->getEdgeByNodes(current_node, current_node->getParent());
             next_edge->setState(EDGE_NEAREST);
             if (current_node->getState() != NODE_TARGET) current_node->setState(NODE_NEAREST);
@@ -445,7 +453,7 @@ void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, sf::View o
     window.setView(current_view);
     this->render(window, font);
     window.setView(original_view);
-    toolbar.render(window);
+    toolbar.render(window, false);
     window.setView(original_view);
     window.display();
     window.setActive(false);
@@ -520,7 +528,12 @@ void Graph::untoggle() {
 std::string Graph::getEncoding() {
     std::string encoding = "{";
     for (const auto& node : this->nodes_list) {
-        encoding += node.first + ",";
+        std::shared_ptr<Node> current_node = node.second;
+        std::string node_x = std::to_string((int)current_node->getPosition().x);
+        std::string node_y = std::to_string((int)current_node->getPosition().y);
+        encoding += node.first + ":<";
+        encoding += node_x + ",";
+        encoding += node_y + ">";
     }
     encoding += "|";
     for (const auto& node : this->nodes_list) {
@@ -531,7 +544,7 @@ std::string Graph::getEncoding() {
     encoding += "|";
     if (this->start_node)
         encoding += this->start_node->getName();
-    encoding += "}";
+    encoding += "}\n";
     return encoding;
 }
 

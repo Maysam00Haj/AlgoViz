@@ -35,11 +35,12 @@ private:
     std::shared_ptr<Node> parent_node = nullptr;
     sf::CircleShape shape;
     bool is_toggled = false;
+    sf::Font* font;
 
 public:
     explicit Node(std::string name, float pos_x, float pos_y, sf::Font* text_font);
     ~Node() = default;
-    void render(sf::RenderWindow& window, sf::Font* font, const std::string& to_print);
+    void render(sf::RenderWindow& window, const std::string& to_print);
     bool checkBoundsCollision(const std::shared_ptr<Node>& node) const;
     void setDistance(int distance);
     int getDistance() const;
