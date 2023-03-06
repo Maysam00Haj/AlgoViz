@@ -8,6 +8,7 @@
 #include <fstream>
 #include <windows.h>
 #include <cmath>
+#include <regex>
 
 
 #define EVENT_X (this->window->mapPixelToCoords( \
@@ -624,12 +625,17 @@ void Visualizer::loadFromFile() {
     std::ifstream save_file("SavedGraphs.txt", std::ios::in);
     std::string graph_encoding;
     std::getline(save_file, graph_encoding);
+    save_file.close();
     std::vector<std::shared_ptr<Node>> nodes = this->parseNodesFromString(graph_encoding);
-    std::vector<std::shared_ptr<Edge>> edges = this->parseEdgesFromString(graph_encoding);
+    std::vector<std::shared_ptr<Edge>> edges = this->parseEdgesFromString(graph_encoding, nodes);
     this->clearWindowRoutine();
     for (auto& node : nodes) {
         this->graph.addNode(node);
     }
+    for (auto& edge : edges) {
+        this->graph.addEdge(edge);
+    }
+    this->toolbar.resetActiveButton();
 }
 
 void Visualizer::deleteFromFile() {
@@ -646,10 +652,71 @@ bool Visualizer::viewIsInBounds() {
         this->current_view.getCenter().y + ((float)this->window->getSize().y/this->current_zoom_factor) >  4200);
 }
 
-std::vector<std::shared_ptr<Node>> Visualizer::parseNodesFromString(std::string graph_literal) {
-    return {};
+
+
+
+std::vector<std::shared_ptr<Node>> Visualizer::parseNodesFromString(const std::string& graph_literal) {
+    std::vector<std::shared_ptr<Node>> nodes;
+    std::vector<std::string> node_names;
+    std::vector<std::string> node_positions;
+
+    std::regex start_node_expression("|node_[0-9]+}");
+    std::regex name_expression("node_[0-9]+:");
+    std::regex pos_expression("<[0-9]+,[0-9]+>");
+
+    std::smatch start_node_match;
+    std::smatch name_matches;
+    std::smatch pos_matches;
+
+    std::string start_node_name;
+
+    while (std::regex_search(graph_literal, start_node_match, start_node_expression)) {
+        start_node_name = start_node_match.suffix().str().substr(1, start_node_match.suffix().str().size()-2);
+    }
+    while (std::regex_search(graph_literal, name_matches, name_expression)) {
+        node_names.push_back(name_matches.suffix().str());
+    }
+    while (std::regex_search(graph_literal, pos_matches, pos_expression)) {
+        node_positions.push_back(pos_matches.suffix().str());
+    }
+
+    for (int i = 0; i < node_names.size(); i++) {
+        std::string pos_str = node_positions[i];
+        float pos_x = (float)std::stoi(pos_str.substr(pos_str.find('<')+1, pos_str.find(',')-1));
+        float pos_y = (float)std::stoi(pos_str.substr(pos_str.find(',')+1, pos_str.find('>')-1));
+        std::shared_ptr<Node> to_add = std::make_shared<Node>(Node(node_names[i], pos_x, pos_y, this->vis_font));
+        if (to_add->getName() == start_node_name) to_add->setState(NODE_START);
+        nodes.push_back(to_add);
+    }
+    return nodes;
 }
 
-std::vector<std::shared_ptr<Edge>> Visualizer::parseEdgesFromString(std::string graph_literal) {
-    return {};
+
+
+
+std::vector<std::shared_ptr<Edge>> Visualizer::parseEdgesFromString(const std::string& graph_literal,
+                                                                    std::vector<std::shared_ptr<Node>>& nodes) {
+    std::vector<std::shared_ptr<Edge>> edges;
+    std::vector<std::vector<std::string>> node_pairs;
+    std::shared_ptr<Node> node1, node2;
+
+    std::regex pair_expression("\\(node_[0-9]+,node_[0-9]+\\)");
+    std::smatch pair_matches;
+
+    while (std::regex_search(graph_literal, pair_matches, pair_expression)) {
+        std::string pair_str = pair_matches.suffix().str();
+        std::string node1_name = pair_str.substr(pair_str.find('(')+1, pair_str.find(',')-1);
+        std::string node2_name = pair_str.substr(pair_str.find(',')+1, pair_str.find(')')-1);
+        node_pairs.push_back({node1_name, node2_name});
+    }
+
+    for (auto& pair : node_pairs) {
+        for (auto& node : nodes) {
+            if (pair[0] == node->getName()) node1 = node;
+            else if (pair[1] == node->getName()) node2 = node;
+        }
+        edges.push_back(std::make_shared<Edge>(node1, node2));
+    }
+
+    return edges;
 }

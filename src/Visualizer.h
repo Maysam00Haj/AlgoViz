@@ -25,8 +25,9 @@ class Visualizer {
     std::vector<std::string> saved_graphs;
 
     bool viewIsInBounds();
-    std::vector<std::shared_ptr<Node>> parseNodesFromString(std::string graph_literal);
-    std::vector<std::shared_ptr<Edge>> parseEdgesFromString(std::string graph_literal);
+    std::vector<std::shared_ptr<Node>> parseNodesFromString(const std::string& graph_literal);
+    std::vector<std::shared_ptr<Edge>> parseEdgesFromString(const std::string& graph_literal,
+                                                            std::vector<std::shared_ptr<Node>>& nodes);
 
     void update();
     void render();
