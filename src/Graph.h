@@ -62,6 +62,6 @@ public:
     std::shared_ptr<Edge> getEdgeByNodes(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2);
     std::shared_ptr<Node> addNode(float pos_x, float pos_y, sf::Font* text_font);
     std::shared_ptr<Node> getCollidedNode(const std::shared_ptr<Node>& moving_node) const;
-    std::string getEncoding();
+    std::string getLiteral();
 };
 #endif //ALGOVIZ_GRAPH_H
