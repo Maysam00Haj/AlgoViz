@@ -611,9 +611,9 @@ void Visualizer::saveToFile() {
     }
 
     std::ofstream save_file("SavedGraphs.txt", std::ios::out | std::ios::app);
-    std::string graph_encoding = this->graph.getEncoding();
-    graph_encoding = "svg:" + graph_name + graph_encoding;
-    save_file.write(graph_encoding.c_str(), (long long)graph_encoding.size());
+    std::string graph_literal = this->graph.getLiteral();
+    graph_literal = "svg:" + graph_name + graph_literal;
+    save_file.write(graph_literal.c_str(), (long long)graph_literal.size());
     save_file.close();
     this->toolbar.resetActiveButton();
 }
@@ -622,15 +622,38 @@ void Visualizer::saveToFile() {
 
 void Visualizer::loadFromFile() {
     deleteFromFile();
+    std::string graph_literal, input_graph_name;
+
+    this->window->pollEvent(this->sfEvent);
+    InputBox inputBox(*(this->window), this->vis_font);
+    this->window->setView(this->original_view);
+    input_graph_name = inputBox.getInput(*(this->window));
+
     std::ifstream save_file("SavedGraphs.txt", std::ios::in);
-    std::string graph_encoding;
-    std::getline(save_file, graph_encoding);
+    while(std::getline(save_file, graph_literal)) {
+        bool found = false;
+        for (int i = 0; i < graph_literal.size() - input_graph_name.size(); i++) {
+            std::cout << graph_literal.substr(i, input_graph_name.size()) << std::endl;
+            if (graph_literal.substr(i, input_graph_name.size()) == input_graph_name) {
+                found = true;
+                break;
+            }
+        }
+        if (found) break;
+    }
     save_file.close();
-    std::vector<std::shared_ptr<Node>> nodes = this->parseNodesFromString(graph_encoding);
-    std::vector<std::shared_ptr<Edge>> edges = this->parseEdgesFromString(graph_encoding, nodes);
+
+    if (graph_literal.empty() || graph_literal == std::to_string(EOF)) {
+        this->toolbar.resetActiveButton();
+        return;
+    }
+
+    std::vector<std::shared_ptr<Node>> nodes = parseNodesFromString(graph_literal, this->vis_font);
+    std::vector<std::shared_ptr<Edge>> edges = parseEdgesFromString(graph_literal, nodes);
     this->clearWindowRoutine();
     for (auto& node : nodes) {
         this->graph.addNode(node);
+        if (node->getState() == NODE_START) this->graph.setStartNode(node);
     }
     for (auto& edge : edges) {
         this->graph.addEdge(edge);
@@ -655,14 +678,16 @@ bool Visualizer::viewIsInBounds() {
 
 
 
-std::vector<std::shared_ptr<Node>> Visualizer::parseNodesFromString(const std::string& graph_literal) {
+std::vector<std::shared_ptr<Node>> Visualizer::parseNodesFromString(const std::string& graph_literal, sf::Font* font) {
+    std::string tmp_literal = graph_literal;
+
     std::vector<std::shared_ptr<Node>> nodes;
     std::vector<std::string> node_names;
     std::vector<std::string> node_positions;
 
-    std::regex start_node_expression("|node_[0-9]+}");
-    std::regex name_expression("node_[0-9]+:");
-    std::regex pos_expression("<[0-9]+,[0-9]+>");
+    std::regex start_node_expression("\\|(node_[0-9]+)*\\}");
+    std::regex name_expression("(node_[0-9]+):");
+    std::regex pos_expression("<([0-9]+,[0-9]+)>");
 
     std::smatch start_node_match;
     std::smatch name_matches;
@@ -670,21 +695,34 @@ std::vector<std::shared_ptr<Node>> Visualizer::parseNodesFromString(const std::s
 
     std::string start_node_name;
 
-    while (std::regex_search(graph_literal, start_node_match, start_node_expression)) {
-        start_node_name = start_node_match.suffix().str().substr(1, start_node_match.suffix().str().size()-2);
+    while (std::regex_search(tmp_literal, start_node_match, start_node_expression)) {
+        start_node_name = start_node_match.str(1);
+        tmp_literal = start_node_match.suffix().str();
     }
-    while (std::regex_search(graph_literal, name_matches, name_expression)) {
-        node_names.push_back(name_matches.suffix().str());
+    tmp_literal = graph_literal;
+    while (std::regex_search(tmp_literal, name_matches, name_expression)) {
+        node_names.push_back(name_matches.str(1));
+        tmp_literal = name_matches.suffix().str();
     }
-    while (std::regex_search(graph_literal, pos_matches, pos_expression)) {
-        node_positions.push_back(pos_matches.suffix().str());
+    tmp_literal = graph_literal;
+    while (std::regex_search(tmp_literal, pos_matches, pos_expression)) {
+        node_positions.push_back(pos_matches.str(1));
+        tmp_literal = pos_matches.suffix().str();
+    }
+
+    if (node_names.size() != node_positions.size()){
+        std::cout<< "names size: " << node_names.size() << std::endl << "positions size: " << node_positions.size() << std::endl;
     }
 
     for (int i = 0; i < node_names.size(); i++) {
         std::string pos_str = node_positions[i];
-        float pos_x = (float)std::stoi(pos_str.substr(pos_str.find('<')+1, pos_str.find(',')-1));
-        float pos_y = (float)std::stoi(pos_str.substr(pos_str.find(',')+1, pos_str.find('>')-1));
-        std::shared_ptr<Node> to_add = std::make_shared<Node>(Node(node_names[i], pos_x, pos_y, this->vis_font));
+        std::string x_str = pos_str.substr(0, pos_str.find(','));
+        std::string y_str = pos_str.substr(pos_str.find(',')+1);
+        float pos_x = (float)std::stoi(x_str.substr(pos_str.find('-')+1));
+        float pos_y = (float)std::stoi(y_str.substr(pos_str.find('-')+1));
+        if (x_str[0] == '-') pos_x = -pos_x;
+        if (y_str[0] == '-') pos_y = -pos_y;
+        std::shared_ptr<Node> to_add = std::make_shared<Node>(Node(node_names[i], pos_x, pos_y, font));
         if (to_add->getName() == start_node_name) to_add->setState(NODE_START);
         nodes.push_back(to_add);
     }
@@ -696,18 +734,20 @@ std::vector<std::shared_ptr<Node>> Visualizer::parseNodesFromString(const std::s
 
 std::vector<std::shared_ptr<Edge>> Visualizer::parseEdgesFromString(const std::string& graph_literal,
                                                                     std::vector<std::shared_ptr<Node>>& nodes) {
+    std::string tmp_literal = graph_literal;
     std::vector<std::shared_ptr<Edge>> edges;
     std::vector<std::vector<std::string>> node_pairs;
     std::shared_ptr<Node> node1, node2;
 
-    std::regex pair_expression("\\(node_[0-9]+,node_[0-9]+\\)");
+    std::regex pair_expression("(\\(node_[0-9]+,node_[0-9]+)");
     std::smatch pair_matches;
 
-    while (std::regex_search(graph_literal, pair_matches, pair_expression)) {
-        std::string pair_str = pair_matches.suffix().str();
+    while (std::regex_search(tmp_literal, pair_matches, pair_expression)) {
+        std::string pair_str = pair_matches.str(1);
         std::string node1_name = pair_str.substr(pair_str.find('(')+1, pair_str.find(',')-1);
         std::string node2_name = pair_str.substr(pair_str.find(',')+1, pair_str.find(')')-1);
         node_pairs.push_back({node1_name, node2_name});
+        tmp_literal = pair_matches.suffix().str();
     }
 
     for (auto& pair : node_pairs) {

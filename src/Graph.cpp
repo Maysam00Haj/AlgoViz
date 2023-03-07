@@ -525,26 +525,26 @@ void Graph::untoggle() {
 }
 
 
-std::string Graph::getEncoding() {
-    std::string encoding = "{";
+std::string Graph::getLiteral() {
+    std::string literal = "{";
     for (const auto& node : this->nodes_list) {
         std::shared_ptr<Node> current_node = node.second;
         std::string node_x = std::to_string((int)current_node->getPosition().x);
         std::string node_y = std::to_string((int)current_node->getPosition().y);
-        encoding += node.first + ":<";
-        encoding += node_x + ",";
-        encoding += node_y + ">";
+        literal += node.first + ":<";
+        literal += node_x + ",";
+        literal += node_y + ">";
     }
-    encoding += "|";
+    literal += "|";
     for (const auto& node : this->nodes_list) {
         for (const auto& edge : this->edges_list[node.first]) {
-            encoding += "(" + edge->getFirstNode()->getName() + "," + edge->getSecondNode()->getName() + ")";
+            literal += "(" + edge->getFirstNode()->getName() + "," + edge->getSecondNode()->getName() + ")";
         }
     }
-    encoding += "|";
+    literal += "|";
     if (this->start_node)
-        encoding += this->start_node->getName();
-    encoding += "}\n";
-    return encoding;
+        literal += this->start_node->getName();
+    literal += "}\n";
+    return literal;
 }
 

@@ -24,10 +24,11 @@ class Visualizer {
     float current_zoom_factor = 1.f;
     std::vector<std::string> saved_graphs;
 
-    bool viewIsInBounds();
-    std::vector<std::shared_ptr<Node>> parseNodesFromString(const std::string& graph_literal);
-    std::vector<std::shared_ptr<Edge>> parseEdgesFromString(const std::string& graph_literal,
+    static std::vector<std::shared_ptr<Node>> parseNodesFromString(const std::string& graph_literal, sf::Font* font);
+    static std::vector<std::shared_ptr<Edge>> parseEdgesFromString(const std::string& graph_literal,
                                                             std::vector<std::shared_ptr<Node>>& nodes);
+
+    bool viewIsInBounds();
 
     void update();
     void render();
