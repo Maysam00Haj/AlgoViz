@@ -20,6 +20,7 @@ public:
 
 class InputBox : TextBox {
     std::string input;
+    static char unicodeToAscii(unsigned int uni_char);
 public:
     explicit InputBox(sf::RenderWindow& window, sf::Font* font): TextBox(window, font){};
     void render(sf::RenderWindow& window, const std::string& txt) override;
