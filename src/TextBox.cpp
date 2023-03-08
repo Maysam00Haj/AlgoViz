@@ -44,7 +44,7 @@ void InputBox::render(sf::RenderWindow &window, const std::string &txt) {
 std::string InputBox::getInput(sf::RenderWindow& window) {
     this->input = "";
     sf::Event event{};
-    window.pollEvent(event);
+    window.waitEvent(event);
     while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
         if (event.type == sf::Event::KeyPressed && !sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
             char c = unicodeToAscii(event.text.unicode);
@@ -59,7 +59,7 @@ std::string InputBox::getInput(sf::RenderWindow& window) {
             if (close((float)event.mouseButton.x, (float)event.mouseButton.y)) return "";
         }
         this->render(window, this->input);
-        window.pollEvent(event);
+        window.waitEvent(event);
     }
     return this->input;
 }
