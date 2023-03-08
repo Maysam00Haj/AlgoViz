@@ -87,7 +87,7 @@ void Graph::addNode(std::shared_ptr<Node>& node) {
     this->nodes_list[node->getName()] = node;
     this->neighbors_list[node->getName()] = {};
     this->nodes_num++;
-    this->name_count = std::max(this->name_count, std::stoi(node->getName().substr(5, node->getName().size()-5)));
+    this->name_count = std::max(this->name_count, std::stoi(node->getName().substr(5, node->getName().size()-5))+1);
 }
 
 

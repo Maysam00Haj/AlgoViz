@@ -687,7 +687,7 @@ std::vector<std::shared_ptr<Node>> Visualizer::parseNodesFromString(const std::s
 
     std::regex start_node_expression("\\|(node_[0-9]+)*\\}");
     std::regex name_expression("(node_[0-9]+):");
-    std::regex pos_expression("<([0-9]+,[0-9]+)>");
+    std::regex pos_expression("<((-)*[0-9]+,(-)*[0-9]+)>");
 
     std::smatch start_node_match;
     std::smatch name_matches;
@@ -718,8 +718,8 @@ std::vector<std::shared_ptr<Node>> Visualizer::parseNodesFromString(const std::s
         std::string pos_str = node_positions[i];
         std::string x_str = pos_str.substr(0, pos_str.find(','));
         std::string y_str = pos_str.substr(pos_str.find(',')+1);
-        float pos_x = (float)std::stoi(x_str.substr(pos_str.find('-')+1));
-        float pos_y = (float)std::stoi(y_str.substr(pos_str.find('-')+1));
+        float pos_x = (float)std::stoi(x_str.substr(std::min(0, (int)pos_str.find('-')+1)));
+        float pos_y = (float)std::stoi(y_str.substr(std::min(0, (int)pos_str.find('-')+1)));
         if (x_str[0] == '-') pos_x = -pos_x;
         if (y_str[0] == '-') pos_y = -pos_y;
         std::shared_ptr<Node> to_add = std::make_shared<Node>(Node(node_names[i], pos_x, pos_y, font));

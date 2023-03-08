@@ -47,8 +47,13 @@ std::string InputBox::getInput(sf::RenderWindow& window) {
     window.pollEvent(event);
     while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
         if (event.type == sf::Event::KeyPressed && !sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
-            this->input += static_cast<char>(event.text.unicode);
-            cout<< static_cast<char>(event.text.unicode)<<endl;
+            char c = unicodeToAscii(event.text.unicode);
+            if (c == 8) {
+                this->input = this->input.substr(0, this->input.size()-1);
+            }
+            else if (c != 0) {
+                this->input += unicodeToAscii(event.text.unicode);
+            }
         }
         else if (event.type == sf::Event::MouseButtonPressed || event.type == sf::Event::Resized) {
             if (close((float)event.mouseButton.x, (float)event.mouseButton.y)) return "";
@@ -62,4 +67,27 @@ std::string InputBox::getInput(sf::RenderWindow& window) {
 
 void OutputBox::render(sf::RenderWindow &window, const std::string &txt) {
     TextBox::render(window, txt);
+}
+
+char InputBox::unicodeToAscii(unsigned int uni_char) {
+    if (uni_char <= 25) {
+        return 'a' + uni_char;
+    }
+    else if (uni_char <= 35) {
+        return '0' + uni_char-26;
+    }
+    else if (uni_char >= 75 && uni_char <= 84) {
+        return '0' + uni_char-75;
+    }
+    else if (uni_char == 56) {
+        return '-';
+    }
+    else if (uni_char == 57) {
+        return ' ';
+    }
+    else if (uni_char == 59) {
+        return 8;
+    }
+
+    return 0;
 }
