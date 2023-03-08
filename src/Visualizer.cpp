@@ -96,17 +96,17 @@ Visualizer::~Visualizer() {
 
 void Visualizer::run() {
     while (this->window->isOpen()) {
-        this->update();
         if (!algo_thread_is_running) {
             this->render();
         }
+        this->update();
     }
 }
 
 
 void Visualizer::update() {
     CHECK_THREAD_AND_JOIN
-    while(this->window->pollEvent(this->sfEvent)) {
+    while(this->window->waitEvent(this->sfEvent)) {
         CHECK_THREAD_AND_JOIN
         switch (this->sfEvent.type) {
             case sf::Event::Closed: {
@@ -145,9 +145,13 @@ void Visualizer::update() {
 //                        this->current_zoom_factor *= 1.142857;
 //                    }
                 }
+                if (!algo_thread_is_running)
+                    this->render();
                 break;
             }
             default: {
+                if (!algo_thread_is_running)
+                    this->render();
                 break;
             }
         }
@@ -327,7 +331,7 @@ void Visualizer::runAlgorithm() {
     auto window_y = (float) this->sfEvent.mouseButton.y;
     sf::Vector2f original_active_button_coordinates = sf::Vector2f(window_x, window_y);
     while (this->sfEvent.type != sf::Event::MouseButtonReleased) {
-        this->window->pollEvent(this->sfEvent);
+        this->window->waitEvent(this->sfEvent);
     }
     if (!this->toolbar.updateActiveButton(sf::Vector2f(window_x, window_y))) {
         this->toolbar.updateActiveButton(original_active_button_coordinates);
@@ -385,7 +389,7 @@ void Visualizer::cursorRoutine() {
 //            }
             prev_pos = current_pos;
             this->render();
-            this->window->pollEvent(this->sfEvent);
+            this->window->waitEvent(this->sfEvent);
         }
         return;
     }
@@ -412,7 +416,7 @@ void Visualizer::cursorRoutine() {
             this->graph.setToggledNode(moving_node);
         }
         this->render();
-        this->window->pollEvent(this->sfEvent);
+        this->window->waitEvent(this->sfEvent);
     }
 }
 
@@ -461,7 +465,7 @@ void Visualizer::addEdgeRoutine() {
             // Keep rendering an edge animation that follows the mouse from the clicked node:
             this->render();
             dst = this->graph.getNodeByPosition(MOUSE_X, MOUSE_Y);
-            this->window->pollEvent(this->sfEvent);
+            this->window->waitEvent(this->sfEvent);
             if (this->sfEvent.type == sf::Event::MouseButtonReleased) {
                 if (dst == clicked_node) {
                     if (edge_was_added) {
@@ -493,7 +497,7 @@ void Visualizer::addEdgeRoutine() {
             this->render();
             edge_was_added = true;
         }
-        this->window->pollEvent(this->sfEvent);
+        this->window->waitEvent(this->sfEvent);
     }
     if (edge_was_added) {
         this->graph.reset();
@@ -599,7 +603,7 @@ void Visualizer::clearWindowRoutine() {
 
 void Visualizer::saveToFile() {
     std::string graph_name;
-    this->window->pollEvent(this->sfEvent);
+    this->window->waitEvent(this->sfEvent);
     InputBox inputBox(*(this->window), this->vis_font);
     this->window->setView(this->original_view);
     graph_name = inputBox.getInput(*(this->window));
@@ -624,7 +628,7 @@ void Visualizer::loadFromFile() {
     deleteFromFile();
     std::string graph_literal, input_graph_name;
 
-    this->window->pollEvent(this->sfEvent);
+    this->window->waitEvent(this->sfEvent);
     InputBox inputBox(*(this->window), this->vis_font);
     this->window->setView(this->original_view);
     input_graph_name = inputBox.getInput(*(this->window));
