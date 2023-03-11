@@ -10,7 +10,7 @@
 #include <unordered_set>
 #include "Node.h"
 #include "Edge.h"
-#include "Toolbar.h"
+#include "Interface.h"
 #include <SFML/Graphics.hpp>
 #include <thread>
 

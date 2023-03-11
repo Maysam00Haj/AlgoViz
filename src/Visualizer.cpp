@@ -1,7 +1,7 @@
 #include "Visualizer.h"
 #include "utils.h"
 #include "Node.h"
-#include "TextBox.h"
+#include "Interface.h"
 #include <thread>
 #include <mutex>
 #include <iostream>
@@ -52,11 +52,6 @@ sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zo
 
 
 
-#define CHECK_THREAD_AND_JOIN \
-if (is_finished) {            \
-    algo_thread.join();       \
-    is_finished = false;      \
-}
 
 
 std::mutex window_lock; // prevents multiple threads from accessing window resource
@@ -96,18 +91,24 @@ Visualizer::~Visualizer() {
 
 void Visualizer::run() {
     while (this->window->isOpen()) {
-        if (!algo_thread_is_running) {
-            this->render();
-        }
         this->update();
     }
 }
 
 
 void Visualizer::update() {
-    CHECK_THREAD_AND_JOIN
-    while(this->window->waitEvent(this->sfEvent)) {
-        CHECK_THREAD_AND_JOIN
+    if (!algo_thread_is_running) {
+        this->render();
+    }
+
+    while(is_finished || this->window->waitEvent(this->sfEvent)) {
+        if (is_finished) {
+            this->render();
+            algo_thread.join();
+            is_finished = false;
+            continue;
+        }
+
         switch (this->sfEvent.type) {
             case sf::Event::Closed: {
                 should_end = true;
@@ -145,15 +146,17 @@ void Visualizer::update() {
 //                        this->current_zoom_factor *= 1.142857;
 //                    }
                 }
-                if (!algo_thread_is_running)
+                if (!algo_thread_is_running) {
                     this->render();
+                }
                 break;
             }
             default: {
-                if (!algo_thread_is_running)
-                    this->render();
                 break;
             }
+        }
+        if (!algo_thread_is_running) {
+            this->render();
         }
     }
 }
@@ -637,7 +640,6 @@ void Visualizer::loadFromFile() {
     while(std::getline(save_file, graph_literal)) {
         bool found = false;
         for (int i = 0; i < graph_literal.size() - input_graph_name.size(); i++) {
-            std::cout << graph_literal.substr(i, input_graph_name.size()) << std::endl;
             if (graph_literal.substr(i, input_graph_name.size()) == input_graph_name) {
                 found = true;
                 break;
@@ -713,10 +715,7 @@ std::vector<std::shared_ptr<Node>> Visualizer::parseNodesFromString(const std::s
         node_positions.push_back(pos_matches.str(1));
         tmp_literal = pos_matches.suffix().str();
     }
-
-    if (node_names.size() != node_positions.size()){
-        std::cout<< "names size: " << node_names.size() << std::endl << "positions size: " << node_positions.size() << std::endl;
-    }
+    
 
     for (int i = 0; i < node_names.size(); i++) {
         std::string pos_str = node_positions[i];

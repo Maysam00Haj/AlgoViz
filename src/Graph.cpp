@@ -356,6 +356,7 @@ bool Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<No
 
 void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait) {
     algo_thread_is_running = true;
+
     if (wait) this->untoggle();
     if (!this->start_node) return;
     this->reset();
