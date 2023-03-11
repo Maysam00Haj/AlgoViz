@@ -31,7 +31,6 @@ class Visualizer {
 
     void update();
     void render();
-    void drawGrid();
     void executeClickAction();
     void runAlgorithm();
     void cursorRoutine();

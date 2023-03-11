@@ -80,7 +80,7 @@ public:
     Toolbar();
     ~Toolbar() = default;
     bool updateActiveButton(const sf::Vector2f& mousePosWindow);
-    void render(sf::RenderWindow& window, bool load_list);
+    void render(sf::RenderWindow& window, bool mid_run = false, bool load_list = false);
     void resetActiveButton(); //used after 'CLEAN'
     ButtonId getActiveButtonId() const;
 };

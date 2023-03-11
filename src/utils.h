@@ -14,4 +14,7 @@ float getCorrectedX1(float x1, float angle);
 float getCorrectedY1(float y1, float angle);
 std::vector<float> getClosestNonCollision(float node_x, float node_y, float cursor_x, float cursor_y);
 
+
+void drawGrid(sf::RenderWindow& window, sf::View& view);
+
 #endif //ALGOVIZ_UTILS_H

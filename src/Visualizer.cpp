@@ -43,10 +43,6 @@ sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zo
 
 
 
-
-#define ROWS    (120)
-#define COLS    (120*((float)this->window->getView().getSize().x/(float)this->window->getView().getSize().y))
-
 #define MAX_ZOOM    5
 #define MIN_ZOOM    0.2
 
@@ -166,10 +162,10 @@ void Visualizer::render() {
     window_lock.lock();
     window->setActive(true);
     this->window->clear(BG_COLOR);
-    this->drawGrid();
+    drawGrid((*this->window), this->original_view);
     this->graph.render(*this->window, this->vis_font);
     this->window->setView(this->original_view);
-    this->toolbar.render(*this->window, false);
+    this->toolbar.render(*this->window, false, false);
     this->messagesBox.render(*this->window);
     if (this->toolbar.getActiveButtonId() == ADD_NODE) {
         float corrected_radius = this->current_zoom_factor * NODE_RADIUS;
@@ -187,39 +183,6 @@ void Visualizer::render() {
     this->window->display();
     window->setActive(false);
     window_lock.unlock();
-}
-
-
-
-void Visualizer::drawGrid() {
-    // initialize values
-    int numLines = ROWS+COLS-2;
-    sf::VertexArray grid(sf::Lines, 2*(numLines));
-    auto size = this->original_view.getSize();
-    size.x *= 5;
-    size.y *= 5;
-    float rowH = 2 * NODE_RADIUS;
-    float colW = 2 * NODE_RADIUS;
-    // row separators
-    for(int i=0; i < ROWS-1; i++){
-        int r = i+1;
-        float rowY = (float)r * rowH;
-        grid[i*2].position = {-size.x/2-660, rowY-size.y/2-360};
-        grid[i*2].color = sf::Color(255,255,255,20);
-        grid[i*2+1].position = {size.x-1110, rowY-size.y/2-360};
-        grid[i*2+1].color = sf::Color(255,255,255,20);
-    }
-    // column separators
-    for(int i=ROWS-1; i < numLines; i++){
-        int c = i-ROWS+2;
-        float colX = (float)c * colW;
-        grid[i*2].position = {colX-size.x/2-660, -size.y/2-360};
-        grid[i*2].color = sf::Color(255,255,255,20);
-        grid[i*2+1].position = {colX-size.x/2-660, size.y-710};
-        grid[i*2+1].color = sf::Color(255,255,255,20);
-    }
-    // draw it
-    this->window->draw(grid);
 }
 
 
@@ -329,7 +292,10 @@ void Visualizer::executeClickAction() {
 
 
 void Visualizer::runAlgorithm() {
-    if (!this->graph.getStartNode() || algo_thread_is_running) return;
+    if (!this->graph.getStartNode() || algo_thread_is_running) {
+        this->toolbar.resetActiveButton();
+        return;
+    }
     auto window_x = (float) this->sfEvent.mouseButton.x;
     auto window_y = (float) this->sfEvent.mouseButton.y;
     sf::Vector2f original_active_button_coordinates = sf::Vector2f(window_x, window_y);

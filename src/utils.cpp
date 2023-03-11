@@ -10,6 +10,9 @@
 #define NODE_RADIUS 30
 #endif
 
+#define ROWS (120)
+#define COLS (120*((float)window.getView().getSize().x/(float)window.getView().getSize().y))
+
 float getAngle(float x1, float y1, float x2, float y2) {
     float rads = std::atan((y2 - y1) / (x2 - x1));
     float degrees = (rads * 180)/(float)std::numbers::pi;
@@ -43,4 +46,41 @@ std::vector<float> getClosestNonCollision(float node_x, float node_y, float curs
     res[0] = node_x + ((cursor_x-node_x) * coefficient);
     res[1] = node_y + ((cursor_y-node_y) * coefficient);
     return res;
+}
+
+
+
+
+
+
+
+void drawGrid(sf::RenderWindow& window, sf::View& view) {
+    // initialize values
+    int numLines = ROWS+COLS-2;
+    sf::VertexArray grid(sf::Lines, 2*(numLines));
+    auto size = view.getSize();
+    size.x *= 5;
+    size.y *= 5;
+    float rowH = 2 * NODE_RADIUS;
+    float colW = 2 * NODE_RADIUS;
+    // row separators
+    for(int i=0; i < ROWS-1; i++){
+        int r = i+1;
+        float rowY = (float)r * rowH;
+        grid[i*2].position = {-size.x/2-660, rowY-size.y/2-360};
+        grid[i*2].color = sf::Color(255,255,255,20);
+        grid[i*2+1].position = {size.x-1110, rowY-size.y/2-360};
+        grid[i*2+1].color = sf::Color(255,255,255,20);
+    }
+    // column separators
+    for(int i=ROWS-1; i < numLines; i++){
+        int c = i-ROWS+2;
+        float colX = (float)c * colW;
+        grid[i*2].position = {colX-size.x/2-660, -size.y/2-360};
+        grid[i*2].color = sf::Color(255,255,255,20);
+        grid[i*2+1].position = {colX-size.x/2-660, size.y-710};
+        grid[i*2+1].color = sf::Color(255,255,255,20);
+    }
+    // draw it
+    window.draw(grid);
 }
