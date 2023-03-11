@@ -8,6 +8,7 @@
 #include "Visualizer.h"
 #include <thread>
 #include <mutex>
+#include "utils.h"
 
 #define WAIT_TIME_MS 100
 
@@ -297,6 +298,9 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
         }
         this->start_node->setState(NODE_NEAREST);
     }
+
+    this->renderAndWait(window, toolbar, original_view, current_view, font, false, false);
+
     if (wait) {
         is_finished = true;
     }
@@ -310,6 +314,7 @@ void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
     if (!this->start_node) return;
 
     dfs(nullptr, this->start_node, window, toolbar, original_view, current_view, font, wait);
+    this->renderAndWait(window, toolbar, original_view, current_view, font, false, false);
 
     if (wait) {
         is_finished = true;
@@ -407,7 +412,7 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& or
             this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
         }
     }
-
+    this->renderAndWait(window, toolbar, original_view, current_view, font, false, false);
     if (wait) is_finished = true;
     algo_thread_is_running = false;
 }
@@ -443,23 +448,25 @@ void Graph::reset() {
     }
 }
 
-//***********************************************Private Helper Functions***************************************************************
+//*********************************************Auxiliary Functions******************************************************
 
 
-void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, sf::View original_view, sf::View current_view, sf::Font* font, bool wait) {
-    if (!wait) return;
+void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, sf::View original_view, sf::View current_view,
+                          sf::Font* font, bool wait, bool is_mid_run) {
+    if (!wait && is_mid_run) return;
     window_lock.lock();
     window.setActive(true);
     window.clear(BG_COLOR);
     window.setView(current_view);
+    if (!is_mid_run) drawGrid(window, original_view);
     this->render(window, font);
     window.setView(original_view);
-    toolbar.render(window, false);
+    toolbar.render(window, is_mid_run);
     window.setView(original_view);
     window.display();
     window.setActive(false);
     window_lock.unlock();
-    std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_TIME_MS));
+    if (wait) std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_TIME_MS));
 }
 
 

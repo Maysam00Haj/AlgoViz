@@ -126,7 +126,7 @@ bool Toolbar::updateActiveButton(const sf::Vector2f& mousePosWindow) {
     return false;
 }
 
-void Toolbar::render(sf::RenderWindow& window, bool load_list) {
+void Toolbar::render(sf::RenderWindow& window, bool is_mid_run, bool load_list) {
     std::vector<ButtonId> not_to_render_while_running = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE,
                                                          CHOOSE_TARGET_NODE, REMOVE_TARGET_NODE, RUN_BFS, RUN_DFS,
                                                          RUN_DIJKSTRA, SAVE_TO_FILE, LOAD_FROM_FILE};
@@ -137,7 +137,7 @@ void Toolbar::render(sf::RenderWindow& window, bool load_list) {
     }
 
     for (const auto& button : this->buttons) {
-        if (    algo_thread_is_running &&
+        if (    is_mid_run &&
                 find(not_to_render_while_running.begin(), not_to_render_while_running.end(), button->getId()) !=
                 not_to_render_while_running.end()
                 ) {
