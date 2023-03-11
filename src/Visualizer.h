@@ -1,8 +1,7 @@
 #ifndef ALGOVIZ_VISUALIZER_H
 #define ALGOVIZ_VISUALIZER_H
 #include "Graph.h"
-#include "Toolbar.h"
-#include "MessagesBox.h"
+#include "Interface.h"
 
 enum VisMode {
     BFS,
