@@ -94,7 +94,7 @@ Toolbar::Toolbar() {
     this->buttons.push_back(std::make_shared<Button>(30, 705, 45, 45, "./images/load_from_file.png", LOAD_FROM_FILE));
     this->rectangle.setPosition(10, 10);
     this->rectangle.setSize({80, 745});
-    this->rectangle.setFillColor(sf::Color(107, 107, 107, 255));
+    this->rectangle.setFillColor(TOOLBAR_COLOR);
     this->rectangle.setOutlineColor(sf::Color::White);
     this->rectangle.setOutlineThickness(2.f);
 
@@ -132,8 +132,8 @@ void Toolbar::render(sf::RenderWindow& window, bool is_mid_run, bool load_list) 
                                                          RUN_DIJKSTRA, SAVE_TO_FILE, LOAD_FROM_FILE};
     window.draw(this->rectangle);
 
-    for (int i = 0; i < this->horizontal_separators.size(); i++) {
-        window.draw(this->horizontal_separators[i]);
+    for (const auto & horizontal_separator : this->horizontal_separators) {
+        window.draw(horizontal_separator);
     }
 
     for (const auto& button : this->buttons) {
@@ -158,7 +158,8 @@ void Toolbar::resetActiveButton() {
 
 
 TextBox::TextBox(sf::RenderWindow& window, sf::Font* font): text_font(font) {
-    this->text_box.setPosition((float)window.getPosition().x+(float)window.getSize().x/4, (float)window.getPosition().y+(float)window.getSize().y/4);
+    this->text_box.setPosition((float)window.getDefaultView().getCenter().x+(float)window.getDefaultView().getSize().x/4,
+                               (float)window.getDefaultView().getCenter().y+(float)window.getDefaultView().getSize().y/4);
     this->text_field.setPosition((float)this->text_box.getPosition().x+15, (float)this->text_box.getPosition().y+70);
     this->text_box.setSize(sf::Vector2f(200, 120));
     this->text_field.setSize(sf::Vector2f(170, 30));
@@ -179,7 +180,7 @@ void TextBox::render(sf::RenderWindow& window, const std::string& txt) {
     t.setFont(*this->text_font);
     t.setFillColor(sf::Color::White);
     t.setCharacterSize(20);
-    t.setPosition(this->text_field.getPosition().x, this->text_field.getPosition().y);
+    t.setPosition(this->text_field.getPosition().x+10, this->text_field.getPosition().y);
     window.draw(this->text_box);
     window.draw(this->text_field);
     window.draw(t);
@@ -221,13 +222,13 @@ void OutputBox::render(sf::RenderWindow &window, const std::string &txt) {
 
 char InputBox::unicodeToAscii(unsigned int uni_char) {
     if (uni_char <= 25) {
-        return 'a' + uni_char;
+        return (char)('a' + uni_char);
     }
     else if (uni_char <= 35) {
-        return '0' + uni_char-26;
+        return (char)('0' + uni_char-26);
     }
     else if (uni_char >= 75 && uni_char <= 84) {
-        return '0' + uni_char-75;
+        return (char)('0' + uni_char-75);
     }
     else if (uni_char == 56) {
         return '-';
@@ -241,89 +242,6 @@ char InputBox::unicodeToAscii(unsigned int uni_char) {
 
     return 0;
 }
-
-//---------------------------------------------MessageBox methods-------------------------------------------------------
-
-
-#define BOX_COLOR sf::Color(107, 107, 107, 150)
-
-
-MessagesBox::MessagesBox(sf::Font* font) : minimize(975, 812.5, 30, 30, "./images/minimize.png", MINIMIZE),
-                                           maximize(10, 920, 50, 50, "./images/messages.png", MAXIMIZE)
-{
-    this->rectangle.setPosition(10, 820);
-    this->rectangle.setSize({1000, 150});
-    this->rectangle.setFillColor(BOX_COLOR);
-    this->rectangle.setOutlineColor(sf::Color::White);
-    this->rectangle.setOutlineThickness(1.f);
-    this->frame.setPosition(10, 820);
-    this->frame.setSize({1000, 20});
-    this->frame.setFillColor(sf::Color(107, 107, 107, 255));
-    this->messages[EMPTY_GRAPH_M] ={
-            "Click on the white circle to add a node\nClick on the dotted line to add an edge",
-    };
-    this->messages[CHANGE_START_NODE_M] = {
-            "Change the source node by clicking on the blue circle"
-    };
-
-    auto* text = new sf::Text();
-    text->setString(messages[EMPTY_GRAPH_M]);
-    text->setFont(*font);
-    text->setFillColor(sf::Color::White);
-    text->setCharacterSize(20);
-    text->setPosition(20, 850);
-    text->setLineSpacing(2);
-    this->texts.push_back(text);
-    this->is_rendered[EMPTY_GRAPH_M] = true;
-}
-
-
-
-MessagesBox& MessagesBox::operator=(const MessagesBox& other) {
-    if (this != &other) {
-        this->rectangle = other.rectangle;
-        this->messages = other.messages;
-        this->texts = other.texts;
-        this->is_rendered = other.is_rendered;
-        this->state = other.state;
-        this->maximize = other.maximize;
-        this->frame = other.frame;
-        this->minimize = other.minimize;
-    }
-    return *this;
-}
-
-void MessagesBox::render(sf::RenderTarget& target) {
-    if (this->state == MINIMIZED) {
-        this->maximize.render(target);
-    }
-    else if (this->state == MAXIMIZED) {
-        target.draw(this->rectangle);
-        target.draw(this->frame);
-        this->minimize.render(target);
-        for (int i = 0; i < this->is_rendered.size(); i++)
-            if (is_rendered[EMPTY_GRAPH_M]) {
-                target.draw(*this->texts[EMPTY_GRAPH_M]);
-            }
-    }
-}
-
-void MessagesBox::minimizeBox() {
-    this->state = MINIMIZED;
-}
-
-void MessagesBox::maximizeBox() {
-    this->state = MAXIMIZED;
-}
-
-bool MessagesBox::inBoundsMinimize(float x, float y) {
-    return this->minimize.update({x, y});
-}
-
-bool MessagesBox::inBoundsMaximize(float x, float y) {
-    return this->maximize.update({x, y});
-}
-
 
 //----------------------------------------SavedGraphsList methods-------------------------------------------------------
 

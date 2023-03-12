@@ -70,8 +70,6 @@ Visualizer::Visualizer(const Graph& graph): graph(graph) {
     this->window = new sf::RenderWindow(sf::VideoMode(1400, 1000), "Graph Visualizer");
     this->window->setFramerateLimit(120);
 
-    this->messagesBox = MessagesBox(vis_font);
-
     this->current_view = this->window->getView();
     this->original_view = this->window->getDefaultView();
 }
@@ -82,7 +80,6 @@ Visualizer::~Visualizer() {
   delete this->window;
   delete this->vis_font;
 }
-
 
 
 void Visualizer::run() {
@@ -166,7 +163,6 @@ void Visualizer::render() {
     this->graph.render(*this->window, this->vis_font);
     this->window->setView(this->original_view);
     this->toolbar.render(*this->window, false, false);
-    this->messagesBox.render(*this->window);
     if (this->toolbar.getActiveButtonId() == ADD_NODE) {
         float corrected_radius = this->current_zoom_factor * NODE_RADIUS;
         sf::CircleShape hover_node(corrected_radius);
@@ -192,16 +188,6 @@ void Visualizer::executeClickAction() {
     // and not global or world position:
     auto window_x = (float)this->sfEvent.mouseButton.x;
     auto window_y = (float)this->sfEvent.mouseButton.y;
-
-    if (this->messagesBox.inBoundsMinimize(window_x, window_y)) {
-        this->messagesBox.minimizeBox();
-        return;
-    }
-
-    if (this->messagesBox.inBoundsMaximize(window_x, window_y)) {
-        this->messagesBox.maximizeBox();
-        return;
-    }
 
     is_immediate = this->toolbar.updateActiveButton(sf::Vector2f(window_x,window_y));
     ButtonId id = this->toolbar.getActiveButtonId();
@@ -395,9 +381,6 @@ void Visualizer::addNodeRoutine() {
     if (node_exists) {
         this->graph.reset();
     }
-    if (graph.getStartNode() != nullptr) {
-        this->messagesBox.is_rendered[EMPTY_GRAPH_M] = false;
-    }
 }
 
 
@@ -481,9 +464,6 @@ void Visualizer::eraseRoutine() {
     std::shared_ptr<Edge> edge_to_delete = this->graph.getEdgeByPosition(EVENT_X, EVENT_Y);
     if (node_to_delete) {
         this->graph.removeNode(node_to_delete->getName());
-        if (graph.getStartNode() == nullptr) {
-            this->messagesBox.is_rendered[EMPTY_GRAPH_M] = true;
-        }
     }
     else if (edge_to_delete) {
         this->graph.removeEdge(edge_to_delete);
