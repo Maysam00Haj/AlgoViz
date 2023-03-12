@@ -118,47 +118,5 @@ public:
 };
 
 
-//-------------------------------------------------MessageBox Class-----------------------------------------------------
-
-
-enum BoxState {
-    MAXIMIZED,
-    MINIMIZED
-};
-
-enum MessageType {
-    EMPTY_GRAPH_M,
-    CHANGE_START_NODE_M,
-    DIJKSTRA_M,
-};
-
-
-
-class MessagesBox {
-private:
-    BoxState state = MAXIMIZED;
-    Button maximize;
-    Button minimize;
-    sf::RectangleShape rectangle;
-    sf::RectangleShape frame;
-    std::map<MessageType, std::string> messages;
-    std::vector<sf::Text*> texts;
-
-
-public:
-    MessagesBox() = default;
-    explicit MessagesBox(sf::Font* font);
-    void render(sf::RenderTarget& target);
-    void minimizeBox();
-    void maximizeBox();
-    bool inBoundsMaximize(float x, float y);
-    bool inBoundsMinimize(float x, float y);
-    MessagesBox& operator=(const MessagesBox& other);
-
-
-    std::map<MessageType, bool> is_rendered;
-};
-
-
 //----------------------------------------------------------------------------------------------------------------------
 #endif //ALGOVIZ_INTERFACE_H
