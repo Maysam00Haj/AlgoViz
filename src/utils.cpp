@@ -5,6 +5,7 @@
 #include <numbers>
 #include "utils.h"
 #include <iostream>
+#include <fstream>
 
 #ifndef NODE_RADIUS
 #define NODE_RADIUS 30
@@ -83,4 +84,23 @@ void drawGrid(sf::RenderWindow& window, sf::View& view) {
     }
     // draw it
     window.draw(grid);
+}
+
+
+std::vector<std::string> getGraphNamesFromFile(std::ifstream& file) {
+    std::vector<std::string> graph_names;
+    std::string current_graph, current_name;
+    int i = 0;
+    while (std::getline(file, current_graph)) {
+        while (i < current_graph.size() && current_graph[i] != ':') i++;
+        i++;
+        while (i < current_graph.size() && current_graph[i] != '{') {
+            current_name += current_graph[i];
+            i++;
+        }
+        if (current_name.empty()) continue;
+        graph_names.push_back(current_name);
+        current_name = "";
+    }
+    return graph_names;
 }

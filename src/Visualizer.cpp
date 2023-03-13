@@ -72,6 +72,10 @@ Visualizer::Visualizer(const Graph& graph): graph(graph) {
 
     this->current_view = this->window->getView();
     this->original_view = this->window->getDefaultView();
+
+    std::ifstream save_file("SavedGraphs.txt", std::ios::in);
+    this->saved_graphs_list = SavedGraphsList(save_file, this->vis_font);
+    save_file.close();
 }
 
 
@@ -155,14 +159,15 @@ void Visualizer::update() {
 }
 
 
-void Visualizer::render() {
+void Visualizer::render(bool load_list) {
     window_lock.lock();
     window->setActive(true);
     this->window->clear(BG_COLOR);
     drawGrid((*this->window), this->original_view);
     this->graph.render(*this->window, this->vis_font);
     this->window->setView(this->original_view);
-    this->toolbar.render(*this->window, false, false);
+    this->toolbar.render(*this->window, false);
+    if (load_list) this->saved_graphs_list.render(*(this->window));
     if (this->toolbar.getActiveButtonId() == ADD_NODE) {
         float corrected_radius = this->current_zoom_factor * NODE_RADIUS;
         sf::CircleShape hover_node(corrected_radius);
@@ -557,8 +562,7 @@ void Visualizer::saveToFile() {
     this->window->setView(this->original_view);
     graph_name = inputBox.getInput(*(this->window));
 
-    if (graph_name.empty() ||
-        std::find(this->saved_graphs.begin(), this->saved_graphs.end(), graph_name) != this->saved_graphs.end()) {
+    if (graph_name.empty() || this->saved_graphs_list.contains(graph_name)) {
         this->toolbar.resetActiveButton();
         return;
     }
@@ -574,19 +578,32 @@ void Visualizer::saveToFile() {
 
 
 void Visualizer::loadFromFile() {
-    deleteFromFile();
-    std::string graph_literal, input_graph_name;
-
-    this->window->waitEvent(this->sfEvent);
-    InputBox inputBox(*(this->window), this->vis_font);
-    this->window->setView(this->original_view);
-    input_graph_name = inputBox.getInput(*(this->window));
+    bool load_list = true;
+    std::string graph_literal;
+    std::string graph_name;
+    this->toolbar.resetActiveButton();
 
     std::ifstream save_file("SavedGraphs.txt", std::ios::in);
+    save_file.clear();
+    save_file.seekg(0);
+
+    if (!algo_thread_is_running) this->render(load_list);
+    while (this->window->waitEvent(this->sfEvent)) {
+        if (this->sfEvent.type == sf::Event::MouseButtonPressed) {
+            graph_name = this->saved_graphs_list.getClickedGraph(EVENT_X, EVENT_Y);
+            break;
+        }
+    }
+
+    if (graph_name.empty()) {
+        save_file.close();
+        return;
+    }
+
     while(std::getline(save_file, graph_literal)) {
         bool found = false;
-        for (int i = 0; i < graph_literal.size() - input_graph_name.size(); i++) {
-            if (graph_literal.substr(i, input_graph_name.size()) == input_graph_name) {
+        for (int i = 0; i < graph_literal.size() - graph_name.size(); i++) {
+            if (graph_literal.substr(i, graph_name.size()) == graph_name) {
                 found = true;
                 break;
             }
@@ -594,11 +611,6 @@ void Visualizer::loadFromFile() {
         if (found) break;
     }
     save_file.close();
-
-    if (graph_literal.empty() || graph_literal == std::to_string(EOF)) {
-        this->toolbar.resetActiveButton();
-        return;
-    }
 
     std::vector<std::shared_ptr<Node>> nodes = parseNodesFromString(graph_literal, this->vis_font);
     std::vector<std::shared_ptr<Edge>> edges = parseEdgesFromString(graph_literal, nodes);

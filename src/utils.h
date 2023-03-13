@@ -16,5 +16,6 @@ std::vector<float> getClosestNonCollision(float node_x, float node_y, float curs
 
 
 void drawGrid(sf::RenderWindow& window, sf::View& view);
+std::vector<std::string> getGraphNamesFromFile(std::ifstream& file);
 
 #endif //ALGOVIZ_UTILS_H

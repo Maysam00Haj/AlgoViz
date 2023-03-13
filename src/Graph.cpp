@@ -173,8 +173,10 @@ bool Graph::containsEdge(const std::shared_ptr<Edge>& edge) {
         return false;
 
     for (const auto& current_edge: edges_list[edge->getFirstNode()->getName()]) {
-        if (current_edge->getFirstNode()->getName() == node1_name && current_edge->getSecondNode()->getName() == node2_name ||
-            current_edge->getSecondNode()->getName() == node1_name && current_edge->getFirstNode()->getName() == node2_name)
+        if ((current_edge->getFirstNode()->getName() == node1_name &&
+            current_edge->getSecondNode()->getName() == node2_name) ||
+            (current_edge->getSecondNode()->getName() == node1_name &&
+            current_edge->getFirstNode()->getName() == node2_name))
             return true;
     }
 
@@ -241,7 +243,8 @@ void Graph::setToggledNode(std::shared_ptr<Node>& to_toggle) {
     this->toggled_node = to_toggle;
 }
 
-void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait) {
+void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view,
+                   sf::Font* font, bool wait) {
     algo_thread_is_running = true;
     this->untoggle();
     if (!this->start_node) return;
@@ -308,7 +311,8 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
 }
 
 
-void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait) {
+void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view,
+                   sf::Font* font, bool wait) {
     algo_thread_is_running = true;
     this->untoggle();
     if (!this->start_node) return;
@@ -323,7 +327,9 @@ void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
 }
 
 
-bool Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<Node>& curr_node, sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait) {
+bool Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<Node>& curr_node,
+                sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view,
+                sf::Font* font, bool wait) {
     CHECK_IF_SHOULD_END_REC
     if (prev_node) {
         getEdgeByNodes(prev_node, curr_node)->setState(EDGE_DISCOVERED);
@@ -359,7 +365,8 @@ bool Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<No
 
 
 
-void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait) {
+void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view,
+                        sf::Font* font, bool wait) {
     algo_thread_is_running = true;
 
     if (wait) this->untoggle();

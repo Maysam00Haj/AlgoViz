@@ -2,7 +2,9 @@
 // Created by User on 3/11/2023.
 //
 #include "Interface.h"
+#include "utils.h"
 #include <iostream>
+#include <fstream>
 #include <filesystem>
 
 
@@ -126,7 +128,7 @@ bool Toolbar::updateActiveButton(const sf::Vector2f& mousePosWindow) {
     return false;
 }
 
-void Toolbar::render(sf::RenderWindow& window, bool is_mid_run, bool load_list) {
+void Toolbar::render(sf::RenderWindow& window, bool is_mid_run) {
     std::vector<ButtonId> not_to_render_while_running = {CURSOR, ADD_NODE, ADD_EDGE, ERASE, CHANGE_START_NODE,
                                                          CHOOSE_TARGET_NODE, REMOVE_TARGET_NODE, RUN_BFS, RUN_DFS,
                                                          RUN_DIJKSTRA, SAVE_TO_FILE, LOAD_FROM_FILE};
@@ -245,10 +247,66 @@ char InputBox::unicodeToAscii(unsigned int uni_char) {
 
 //----------------------------------------SavedGraphsList methods-------------------------------------------------------
 
-void SavedGraphsList::render(sf::RenderWindow& window) {
-
+SavedGraphsList::SavedGraphsList(std::ifstream &file, sf::Font *font): text_font(font) {
+    std::vector<std::string> graph_names = getGraphNamesFromFile(file);
+    for (const auto& graph_name : graph_names) {
+        this->addGraph(graph_name);
+    }
 }
 
 
-//--------------------------------------------Button methods------------------------------------------------------------
+void SavedGraphsList::render(sf::RenderWindow& window) {
+    for (const auto & saved_graph: this->saved_graphs) {
+        window.draw(*(saved_graph.second));
+        sf::Text graph_name;
+        graph_name.setString(saved_graph.first);
+        graph_name.setFont(*this->text_font);
+        graph_name.setFillColor(sf::Color::White);
+        graph_name.setCharacterSize(20);
+        graph_name.setPosition(saved_graph.second->getPosition().x + (float)(10*saved_graph.first.size()),
+                               saved_graph.second->getPosition().y + 20);
+        window.draw(graph_name);
+    }
+}
+
+void SavedGraphsList::addGraph(const std::string& graph_name) {
+    if (this->saved_graphs.find(graph_name) != this->saved_graphs.end()) return;
+    sf::RectangleShape frame;
+    frame.setSize(sf::Vector2f(150, 50));
+    frame.setFillColor(TOOLBAR_COLOR);
+    frame.setPosition(92, (float)(695 - this->saved_graphs_num * 50));
+    frame.setOutlineThickness(1);
+    frame.setOutlineColor(sf::Color::White);
+    this->saved_graphs[graph_name] = std::make_shared<sf::RectangleShape>(frame);
+    this->saved_graphs_num++;
+}
+
+void SavedGraphsList::deleteGraph(const std::string& graph_name) {
+    if (this->saved_graphs.find(graph_name) == this->saved_graphs.end()) return;
+    this->saved_graphs.erase(graph_name);
+    this->saved_graphs_num--;
+    int i = 0;
+    for (const auto& saved_graph : this->saved_graphs) {
+        saved_graph.second->setPosition(92, (float)(795 - 50*i));
+    }
+}
+
+bool SavedGraphsList::empty() const {
+    return this->saved_graphs_num == 0;
+}
+
+bool SavedGraphsList::contains(const std::string& graph_name) {
+    for (const auto& graph : this->saved_graphs) {
+        if (graph.first == graph_name) return true;
+    }
+    return false;
+}
+
+std::string SavedGraphsList::getClickedGraph(float pos_x, float pos_y) {
+    std::string clicked_graph_name;
+    for (const auto& graph : saved_graphs) {
+        if (graph.second->getGlobalBounds().contains(pos_x, pos_y)) clicked_graph_name = graph.first;
+    }
+    return clicked_graph_name;
+}
 

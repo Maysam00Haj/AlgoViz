@@ -22,11 +22,11 @@ private:
     sf::View current_view;
     Graph graph;
     Toolbar toolbar;
+    SavedGraphsList saved_graphs_list;
     std::shared_ptr<Node> clicked_node;
     sf::Font* vis_font;
     bool node_is_clicked = false;
     float current_zoom_factor = 1.f;
-    std::vector<std::string> saved_graphs;
 
 
     std::map<int, ButtonId> tutorial_stages {
@@ -44,7 +44,7 @@ private:
 
     void runTutorial();
     void update();
-    void render();
+    void render(bool load_list = false);
     void executeClickAction();
     void runAlgorithm();
     void cursorRoutine();

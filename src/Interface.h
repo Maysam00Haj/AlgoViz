@@ -17,11 +17,19 @@ class SavedGraphsList;
 //-----------------------------------------------SavedGraphsList Class--------------------------------------------------
 
 class SavedGraphsList {
-    std::vector<std::string> saved_graphs;
+    std::map<std::string, std::shared_ptr<sf::RectangleShape>> saved_graphs;
+    unsigned int saved_graphs_num = 0;
+    sf::Font* text_font = nullptr;
 public:
     SavedGraphsList() = default;
+    explicit SavedGraphsList(std::ifstream& file, sf::Font* font);
     ~SavedGraphsList() = default;
+    void addGraph(const std::string& graph_name);
+    void deleteGraph(const std::string& graph_name);
+    bool contains(const std::string& graph_name);
+    [[nodiscard]] bool empty() const;
     void render(sf::RenderWindow& window);
+    std::string getClickedGraph(float pos_x, float pos_y);
 
 };
 
@@ -41,9 +49,7 @@ enum ButtonId {
     RESET,
     CLEAR_WINDOW,
     SAVE_TO_FILE,
-    LOAD_FROM_FILE,
-    MINIMIZE,
-    MAXIMIZE
+    LOAD_FROM_FILE
 };
 
 class Button {
@@ -72,7 +78,6 @@ class Toolbar {
 private:
     std::shared_ptr<Button> active_button;
     std::vector<std::shared_ptr<Button>> buttons;
-    SavedGraphsList saved_graphs_list;
     sf::RectangleShape rectangle;
     std::vector<sf::RectangleShape> horizontal_separators;
 
@@ -80,7 +85,7 @@ public:
     Toolbar();
     ~Toolbar() = default;
     bool updateActiveButton(const sf::Vector2f& mousePosWindow);
-    void render(sf::RenderWindow& window, bool mid_run = false, bool load_list = false);
+    void render(sf::RenderWindow& window, bool mid_run = false);
     void resetActiveButton(); //used after 'CLEAN'
     ButtonId getActiveButtonId() const;
 };
