@@ -4,7 +4,6 @@
 #include <cmath>
 #include <numbers>
 #include "utils.h"
-#include <iostream>
 #include <fstream>
 
 #ifndef NODE_RADIUS
@@ -42,7 +41,7 @@ float getCorrectedY1(float y1, float angle) {
 std::vector<float> getClosestNonCollision(float node_x, float node_y, float cursor_x, float cursor_y) {
     std::vector<float> res(2);
     if (node_x == cursor_x && node_y == cursor_y) node_x += 0.1;
-    float dist = std::sqrt(std::pow(cursor_x-node_x,2) + std::pow(cursor_y-node_y,2));
+    auto dist = (float)std::sqrt(std::pow(cursor_x-node_x,2) + std::pow(cursor_y-node_y,2));
     float coefficient = (2 * NODE_RADIUS) / dist;
     res[0] = node_x + ((cursor_x-node_x) * coefficient);
     res[1] = node_y + ((cursor_y-node_y) * coefficient);

@@ -147,7 +147,7 @@ void Visualizer::render(bool load_list) {
     window->setActive(true);
     this->window->clear(BG_COLOR);
     drawGrid((*this->window), this->original_view);
-    this->graph.render(*this->window, this->vis_font);
+    this->graph.render(*this->window);
     this->window->setView(this->original_view);
     this->toolbar.render(*this->window, false);
     if (load_list) this->saved_graphs_list.render(*(this->window));

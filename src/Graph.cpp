@@ -1,7 +1,6 @@
 //
 // Created by User on 12/23/2022.
 //
-#include <iostream>
 #include <queue>
 #include "Graph.h"
 #include "Node.h"
@@ -46,7 +45,7 @@ Graph::Graph(const Graph &other) {
 }
 
 
-void Graph::render(sf::RenderWindow& target, sf::Font* font) {
+void Graph::render(sf::RenderWindow& target) {
     std::string node_text;
     for (auto &node: this->nodes_list) {
         switch (current_algo_mode) {
@@ -464,7 +463,7 @@ void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, sf::View o
     window.clear(BG_COLOR);
     window.setView(current_view);
     if (!is_mid_run) drawGrid(window, original_view);
-    this->render(window, font);
+    this->render(window);
     window.setView(original_view);
     toolbar.render(window, is_mid_run);
     window.setView(current_view);
