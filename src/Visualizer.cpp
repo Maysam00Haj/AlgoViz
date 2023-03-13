@@ -52,12 +52,12 @@ sf::Vector2i((float)sf::Mouse::getPosition(*this->window).x-(30*this->current_zo
 
 std::mutex window_lock; // prevents multiple threads from accessing window resource
 bool algo_thread_is_running = false; // true when a thread is currently running runBfs
-bool is_finished = false; // true when a thread ran and ended execution of runBfs, so we need to call join()
-bool should_end = false;
+bool algo_thread_is_finished = false; // true when a thread ran and ended execution of runBfs, so we need to call join()
+bool algo_thread_should_end = false;
 
 bool is_immediate = false;
 
-std::thread algo_thread; // the thread we use to execute runBfs
+std::thread algo_thread; // the thread we use to execute run<Algorithm> methods
 
 VisMode current_algo_mode;
 
@@ -87,30 +87,20 @@ Visualizer::~Visualizer() {
 
 
 void Visualizer::run() {
-    while (this->window->isOpen()) {
-        this->update();
-    }
-}
-
-
-void Visualizer::update() {
-    if (!algo_thread_is_running) {
-        this->render();
-    }
-
-    while(is_finished || this->window->waitEvent(this->sfEvent)) {
-        if (is_finished) {
-            this->render();
+    this->render();
+    while(this->window->waitEvent(this->sfEvent)) {
+        if (algo_thread_is_finished) {
             algo_thread.join();
-            is_finished = false;
-            continue;
+            algo_thread_is_finished = false;
         }
 
         switch (this->sfEvent.type) {
             case sf::Event::Closed: {
-                should_end = true;
-                if (algo_thread_is_running || is_finished)
+                if (algo_thread_is_running || algo_thread_is_finished) {
+                    algo_thread_should_end = true;
                     algo_thread.join();
+                    algo_thread_is_finished = false;
+                }
                 this->window->close();
                 break;
             }
@@ -119,29 +109,22 @@ void Visualizer::update() {
                 break;
             }
             case sf::Event::Resized: {
-                sf::FloatRect view(0, 0, (float)this->sfEvent.size.width, (float)this->sfEvent.size.height);
-                this->current_view = sf::View(view);
-                this->original_view = sf::View(view);
+                sf::FloatRect view_rect(0, 0, (float)this->sfEvent.size.width, (float)this->sfEvent.size.height);
+                auto resized_view = sf::View(view_rect);
+                this->original_view = resized_view;
+                resized_view.zoom(1.f/this->current_zoom_factor);
+                this->current_view = resized_view;
                 this->window->setView(this->current_view);
-                this->current_zoom_factor = 1;
                 break;
             }
             case sf::Event::MouseWheelScrolled: {
                 if (this->sfEvent.mouseWheelScroll.delta > 0 && current_zoom_factor < MAX_ZOOM) {
                     this->current_view.zoom(0.875);
                     this->current_zoom_factor *= 1.142857;
-//                    if (!this->viewIsInBounds()) {
-//                        this->current_view.zoom(1.142857);
-//                        this->current_zoom_factor *= 0.875;
-//                    }
                 }
                 else if (this->sfEvent.mouseWheelScroll.delta < 0 && current_zoom_factor > MIN_ZOOM){
                     this->current_view.zoom(1.142857);
                     this->current_zoom_factor *= 0.875;
-//                    if (!this->viewIsInBounds()) {
-//                        this->current_view.zoom(0.875);
-//                        this->current_zoom_factor *= 1.142857;
-//                    }
                 }
                 if (!algo_thread_is_running) {
                     this->render();
@@ -376,7 +359,7 @@ void Visualizer::cursorRoutine() {
             this->graph.setToggledNode(moving_node);
         }
         this->render();
-        this->window->waitEvent(this->sfEvent);
+        this->window->pollEvent(this->sfEvent);
     }
 }
 
@@ -506,10 +489,10 @@ void Visualizer::removeTargetNodeRoutine() {
 void Visualizer::endRoutine() {
     this->toolbar.resetActiveButton();
     if (!algo_thread_is_running) return;
-    should_end = true;
+    algo_thread_should_end = true;
     algo_thread.join();
-    is_finished = false;
-    should_end = false;
+    algo_thread_is_finished = false;
+    algo_thread_should_end = false;
 
     this->graph.reset();
     if (current_algo_mode == BFS) {
@@ -530,10 +513,10 @@ void Visualizer::endRoutine() {
 
 void Visualizer::resetRoutine() {
     if (algo_thread_is_running) {
-        should_end = true;
+        algo_thread_should_end = true;
         algo_thread.join();
-        is_finished = false;
-        should_end = false;
+        algo_thread_is_finished = false;
+        algo_thread_should_end = false;
     }
     this->graph.reset();
     this->toolbar.resetActiveButton();
@@ -542,10 +525,10 @@ void Visualizer::resetRoutine() {
 
 void Visualizer::clearWindowRoutine() {
     if (algo_thread_is_running) {
-        should_end = true;
+        algo_thread_should_end = true;
         algo_thread.join();
-        is_finished = false;
-        should_end = false;
+        algo_thread_is_finished = false;
+        algo_thread_should_end = false;
     }
     this->graph = Graph();
     this->node_is_clicked = false;

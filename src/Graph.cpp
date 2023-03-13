@@ -12,25 +12,25 @@
 
 #define WAIT_TIME_MS 100
 
-#define CHECK_IF_SHOULD_END \
-if (should_end) {           \
+#define CHECK_IF_algo_thread_should_end \
+if (algo_thread_should_end) {           \
     algo_thread_is_running = false; \
-    is_finished = true;\
+    algo_thread_is_finished = true;\
     return;                 \
     }
 
-#define CHECK_IF_SHOULD_END_REC \
-if (should_end) {           \
+#define CHECK_IF_algo_thread_should_end_REC \
+if (algo_thread_should_end) {           \
     algo_thread_is_running = false; \
-    is_finished = true;\
+    algo_thread_is_finished = true;\
     return false;                 \
     }
 
 
 extern std::mutex window_lock;
 extern bool algo_thread_is_running;
-extern bool is_finished;
-extern bool should_end;
+extern bool algo_thread_is_finished;
+extern bool algo_thread_should_end;
 extern VisMode current_algo_mode;
 
 
@@ -254,11 +254,11 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
     std::shared_ptr<Edge> current_edge;
     bfs_q.push(this->start_node);
     bfs_q.front()->setState(NODE_CURRENT);
-    CHECK_IF_SHOULD_END
+    CHECK_IF_algo_thread_should_end
     this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
 
     while (!bfs_q.empty()) {
-        CHECK_IF_SHOULD_END
+        CHECK_IF_algo_thread_should_end
         previous_node = bfs_q.front();
         if (previous_node->getState() == NODE_DONE) {
             bfs_q.pop();
@@ -266,7 +266,7 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
         }
         previous_node->setState(NODE_CURRENT);
         for (const std::shared_ptr<Node>& current_node: this->neighbors_list[previous_node->getName()]) {
-            CHECK_IF_SHOULD_END
+            CHECK_IF_algo_thread_should_end
             if (current_node->getState() != NODE_DONE && current_node->getState() != NODE_DISCOVERED) {
                 current_edge = getEdgeByNodes(previous_node, current_node);
                 current_edge->setState(EDGE_DISCOVERED);
@@ -284,15 +284,15 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
         if (bfs_q.front()->getState() == NODE_TARGET) break;
         previous_node->setState(NODE_DONE);
         bfs_q.pop();
-        CHECK_IF_SHOULD_END
+        CHECK_IF_algo_thread_should_end
         this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
     }
 
     if (!bfs_q.empty()) {
-        CHECK_IF_SHOULD_END
+        CHECK_IF_algo_thread_should_end
         std::shared_ptr<Node> current_node = bfs_q.front();
         while (current_node->getParent()) {
-            CHECK_IF_SHOULD_END
+            CHECK_IF_algo_thread_should_end
             std::shared_ptr<Edge> next_edge = this->getEdgeByNodes(current_node, current_node->getParent());
             next_edge->setState(EDGE_NEAREST);
             if (current_node->getState() != NODE_TARGET) current_node->setState(NODE_NEAREST);
@@ -305,7 +305,7 @@ void Graph::runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
     this->renderAndWait(window, toolbar, original_view, current_view, font, false, false);
 
     if (wait) {
-        is_finished = true;
+        algo_thread_is_finished = true;
     }
     algo_thread_is_running = false;
 }
@@ -321,7 +321,7 @@ void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
     this->renderAndWait(window, toolbar, original_view, current_view, font, false, false);
 
     if (wait) {
-        is_finished = true;
+        algo_thread_is_finished = true;
     }
     algo_thread_is_running = false;
 }
@@ -330,7 +330,7 @@ void Graph::runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& origina
 bool Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<Node>& curr_node,
                 sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view,
                 sf::Font* font, bool wait) {
-    CHECK_IF_SHOULD_END_REC
+    CHECK_IF_algo_thread_should_end_REC
     if (prev_node) {
         getEdgeByNodes(prev_node, curr_node)->setState(EDGE_DISCOVERED);
         curr_node->setDistance(prev_node->getDistance() + 1);
@@ -347,7 +347,7 @@ bool Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<No
 
     bool found_target = false;
     for (const std::shared_ptr<Node>& neighbor_node : this->neighbors_list[curr_node->getName()]) {
-        CHECK_IF_SHOULD_END_REC
+        CHECK_IF_algo_thread_should_end_REC
         if (neighbor_node->getState() != NODE_DISCOVERED && neighbor_node->getState() != NODE_DONE)
             found_target = dfs(curr_node, neighbor_node, window, toolbar, original_view, current_view, font, wait);
         if (found_target) {
@@ -358,7 +358,7 @@ bool Graph::dfs(const std::shared_ptr<Node>& prev_node, const std::shared_ptr<No
     }
 
     curr_node->setState(NODE_DONE);
-    CHECK_IF_SHOULD_END_REC
+    CHECK_IF_algo_thread_should_end_REC
     this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
     return false;
 }
@@ -385,7 +385,7 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& or
             if (discovered_edges.find(current_node) != discovered_edges.end()) {
                 discovered_edges[current_node]->setState(EDGE_DISCOVERED);
             }
-            CHECK_IF_SHOULD_END
+            CHECK_IF_algo_thread_should_end
             this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
             for (const std::shared_ptr<Node> &neighbor_node: this->neighbors_list[current_node->getName()]) {
                 // updating the distance of neighboring nodes
@@ -404,14 +404,14 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& or
                 break;
             }
             current_node->setState(NODE_DONE);
-            CHECK_IF_SHOULD_END
+            CHECK_IF_algo_thread_should_end
             this->renderAndWait(window, toolbar, original_view, current_view, font, wait);
         }
     }
 
     if (target_found) {
         while (current_node) {
-            CHECK_IF_SHOULD_END
+            CHECK_IF_algo_thread_should_end
             std::shared_ptr<Edge> nearest_path_edge = this->getEdgeByNodes(current_node, current_node->getParent());
             if (current_node->getState() != NODE_TARGET) current_node->setState(NODE_NEAREST);
             if (nearest_path_edge) nearest_path_edge->setState(EDGE_NEAREST);
@@ -420,17 +420,15 @@ void Graph::runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& or
         }
     }
     this->renderAndWait(window, toolbar, original_view, current_view, font, false, false);
-    if (wait) is_finished = true;
+    if (wait) algo_thread_is_finished = true;
     algo_thread_is_running = false;
 }
 
 
 void Graph::reset() {
-    if (!this->start_node ||
-        (this->start_node->getState() != NODE_DONE && this->start_node->getState() != NODE_NEAREST))
+    if (!this->start_node || (this->start_node->getState() != NODE_DONE &&
+        this->start_node->getState() != NODE_NEAREST && this->start_node->getState() != NODE_DISCOVERED))
         return;
-
-    this->untoggle();
 
     for (const auto& node: nodes_list) {
         if (node.second == this->start_node) {
@@ -469,7 +467,7 @@ void Graph::renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, sf::View o
     this->render(window, font);
     window.setView(original_view);
     toolbar.render(window, is_mid_run);
-    window.setView(original_view);
+    window.setView(current_view);
     window.display();
     window.setActive(false);
     window_lock.unlock();
@@ -494,7 +492,8 @@ bool Graph::checkValidPosition(const Node& node) const {
 std::shared_ptr<Edge> Graph::getEdgeByNodes(const std::shared_ptr<Node>& node1, const std::shared_ptr<Node>& node2) {
     if (!node1 || !node2) return nullptr;
     for (const auto& edge: this->edges_list[node1->getName()]) {
-        if (edge->getSecondNode()->getName() == node2->getName() || edge->getFirstNode()->getName() == node2->getName())
+        if (edge->getSecondNode()->getName() == node2->getName() ||
+            edge->getFirstNode()->getName() == node2->getName())
             return edge;
     }
     return nullptr;
