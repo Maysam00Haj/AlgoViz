@@ -1,7 +1,7 @@
 # AlgoViz
 A simple dynamic editor that allows you to build and manipulate graphs and get a real-time vizualization of various algorithms (currently supports BFS, DFS, Dijkstra).
 
-Prerequisites
+# Prerequisites
 Before you can use this project, you will need to install SFML, a multimedia library used for graphics, audio, and input handling.
 
 Windows
