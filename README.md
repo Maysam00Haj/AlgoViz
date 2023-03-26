@@ -6,7 +6,7 @@ Before you can use this project, you will need to install SFML, a multimedia lib
 
 Windows
 
-1. Download the latest version of SFML from the SFML website.
+1. Download the latest version of SFML from the [SFML website].
 2. Extract the contents of the downloaded archive to a directory of your choice.
 
 Running the project
