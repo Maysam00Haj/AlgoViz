@@ -10,7 +10,6 @@ Windows
 2. Extract the contents of the downloaded archive to a directory of your choice.
 
 Running the project
-Once you have installed SFML, you can run the project by following these steps:
 
 1. Clone this repository to your local machine.
 2. Open the project in your preferred IDE.
