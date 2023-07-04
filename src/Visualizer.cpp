@@ -608,9 +608,6 @@ void Visualizer::loadFromFile() {
     this->toolbar.resetActiveButton();
 }
 
-void Visualizer::deleteFromFile() {
-
-}
 
 //**********************************************Auxiliary Functions***************************************************//
 
