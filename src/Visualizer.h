@@ -48,6 +48,7 @@ private:
     sf::Font* vis_font;
     bool node_is_clicked = false;
     float current_zoom_factor = 1.f;
+    sf::FloatRect* grid_bounds;
 
 
     /** Parses the graph_literal parameter and creates Node objects for each node in the graph.

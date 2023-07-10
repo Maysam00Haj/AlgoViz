@@ -50,7 +50,7 @@ class Graph {
        * the grid and other parts won't get rendered.
        */
     void renderAndWait(sf::RenderWindow& window, Toolbar& toolbar, sf::View original_view, sf::View current_view,
-                       sf::Font* font, bool wait = true, bool is_mid_run = true);
+                       sf::Font* font, sf::FloatRect& grid_bounds, bool wait = true, bool is_mid_run = true);
 
 
     /** Recursive function for performing depth-first search on the graph.
@@ -66,7 +66,7 @@ class Graph {
      *
      * @return True if the target node is found during the traversal, false otherwise.
      */
-    bool dfs(const std::shared_ptr<Node>& prev, const std::shared_ptr<Node>& start, sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait = false);
+    bool dfs(const std::shared_ptr<Node>& prev, const std::shared_ptr<Node>& start, sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, sf::FloatRect& grid_bounds, bool wait = false);
 
 
     /** Helper function for finding the node with the minimum distance in Dijkstra's algorithm.
@@ -181,7 +181,7 @@ class Graph {
      * @param wait - flag indicating whether to wait after each object rendering or not. set to false when
      * called by END-operation.
      */
-    void runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait = false);
+    void runBFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, sf::FloatRect& grid_bounds, bool wait = false);
 
 
     /** Runs Depth-First Search on the graph.
@@ -194,7 +194,7 @@ class Graph {
      * @param wait - flag indicating whether to wait after each object rendering or not. set to false when
      * called by END-operation.
      */
-    void runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait = false);
+    void runDFS(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, sf::FloatRect& grid_bounds, bool wait = false);
 
 
     /** Runs Dijkstra's algorithm on the graph.
@@ -207,7 +207,7 @@ class Graph {
      * @param wait - flag indicating whether to wait after each object rendering or not. set to false when
      * called by END-operation.
      */
-    void runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, bool wait = false);
+    void runDijkstra(sf::RenderWindow& window, Toolbar& toolbar, sf::View& original_view, sf::View& current_view, sf::Font* font, sf::FloatRect& grid_bounds, bool wait = false);
 
 
     /** Resets the graph, clearing all nodes and edges.
