@@ -66,7 +66,7 @@
      * @param window - the window to draw the grid on
      * @param view - the view to use for positioning the grid
      */
-    void drawGrid(sf::RenderWindow& window, sf::View& view);
+    void drawGrid(sf::RenderWindow& window, sf::View& view, sf::FloatRect& gridBounds);
 
 
     /** Get the names of graphs stored in a file.
